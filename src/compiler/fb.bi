@@ -475,6 +475,8 @@ declare function fbcRunBin _
 		byref ln as string _
 	) as integer
 
+declare function getTargetGccInvokeCommand( ) as string
+
 ''
 '' macros
 ''

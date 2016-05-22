@@ -442,6 +442,8 @@ sub fbGlobalInit()
 	strlistInit(@env.predefines, FB_INITINCFILES)
 	strlistInit(@env.preincludes, FB_INITINCFILES)
 	strlistInit(@env.includepaths, FB_INITINCFILES)
+	strlistInit(@env.gccincludepaths, FB_INITINCFILES)
+	env.queried_gccincludepaths = FALSE
 
 	'' default settings
 	env.clopt.outtype       = FB_DEFAULT_OUTTYPE
@@ -1417,14 +1419,101 @@ sub fbIncludeFile( byref filename as const string, byval isonce as integer )
 	env.inf = infileTb( env.includerec )
 end sub
 
+''
+'' Run the gcc preprocessor with -v and parse its output,
+'' which contains a list of #include search dirs, for example:
+''
+''  ...
+''  #include "..." search starts here:
+''   /foo/bar
+''  #include <...> search starts here:
+''   /usr/lib/gcc/x86_64-linux-gnu/5/include
+''   /usr/local/include
+''   /usr/lib/gcc/x86_64-linux-gnu/5/include-fixed
+''   /usr/include/x86_64-linux-gnu
+''   /usr/include
+''  End of search list.
+''  ...
+''
+private sub hQueryGccIncludeDirs( )
+	var cmd = getTargetGccInvokeCommand( )
+	cmd += " -E -v -"
+
+	var f = freefile( )
+	if( open pipe( "echo | " + cmd + " 2>&1", for input, as f ) <> 0 ) then
+		print "error: can't run " + cmd
+		return
+	end if
+
+	enum
+		StateNotYet
+		StatePart1
+		StatePart2
+		StateFinished
+	end enum
+	dim state as integer
+
+	dim ln as string
+	while( not eof( f ) )
+		line input #f, ln
+
+		select case( ln )
+		case "#include ""..."" search starts here:"
+			if( state = StateNotYet ) then
+				state = StatePart1
+			end if
+
+		case "#include <...> search starts here:"
+			if( state = StatePart1 ) then
+				state = StatePart2
+			end if
+
+		case "End of search list."
+			state = StateFinished
+
+		case else
+			select case( state )
+			case StatePart1, StatePart2
+				if( len( ln ) > 1 andalso ln[0] = asc( " " ) ) then
+					ln = right( ln, len( ln ) - 1 )
+					strlistAppend( @env.gccincludepaths, ln )
+				end if
+			end select
+
+		end select
+	wend
+
+	close f
+end sub
+
+private sub appendFbfrogIncdirs( byref args as string, byval incdirs as TLIST ptr )
+	dim as string ptr incdir = listGetHead( incdirs )
+	while( incdir )
+		args += " -incdir """ + *incdir + """"
+		incdir = listGetNext( incdir )
+	wend
+end sub
+
 sub fbFbfrogInclude( byref args as string )
+	if( env.queried_gccincludepaths = FALSE ) then
+		hQueryGccIncludeDirs( )
+		env.queried_gccincludepaths = TRUE
+	end if
+
 	var tempheader = "temp.bi"
+
+	'' Prepend "-include" to header file name, otherwise fbfrog won't use -incdirs
+	args = "-include " + args
 	args += " -o " + tempheader
+
+	appendFbfrogIncdirs( args, @env.gccincludepaths )
+
 	if( fbcRunBin( "bindgen", FBCTOOL_FBFROG, args ) ) then
 		fbIncludeFile( tempheader, FALSE )
 	else
 		errReportEx( FB_ERRMSG_BINDGEN, "", -1 )
 	end if
+
 	if( kill( tempheader ) ) then
 	end if
 end sub

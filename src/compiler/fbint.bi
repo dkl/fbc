@@ -601,6 +601,8 @@ type FBENV
 	predefines		as TLIST
 	preincludes		as TLIST
 	includepaths		as TLIST
+	gccincludepaths		as TLIST
+	queried_gccincludepaths	as integer
 
 	clopt			as FBCMMLINEOPT				'' cmm-line options
 	target			as FBTARGET					'' target specific
