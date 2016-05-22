@@ -231,6 +231,20 @@ private function hGet1stOutputLineFromCommand( byref cmd as string ) as string
 	return ln
 end function
 
+function getTargetGccInvokeCommand( ) as string
+	dim as string path
+	fbcFindBin( FBCTOOL_GCC, path )
+
+	select case( fbGetCpuFamily( ) )
+	case FB_CPUFAMILY_X86
+		path += " -m32"
+	case FB_CPUFAMILY_X86_64
+		path += " -m64"
+	end select
+
+	return path
+end function
+
 ''
 '' Build the path to a certain file in our lib/ directory (or, in case of
 '' non-standalone, somewhere in a system directory such as /usr/lib).
@@ -268,19 +282,10 @@ private function fbcBuildPathToLibFile( byval file as zstring ptr ) as string
 	end if
 
 	'' Not found in our lib/, query the target-specific gcc
-	dim as string path
-	fbcFindBin( FBCTOOL_GCC, path )
+	var cmd = getTargetGccInvokeCommand( )
+	cmd += " -print-file-name=" + *file
 
-	select case( fbGetCpuFamily( ) )
-	case FB_CPUFAMILY_X86
-		path += " -m32"
-	case FB_CPUFAMILY_X86_64
-		path += " -m64"
-	end select
-
-	path += " -print-file-name=" + *file
-
-	found = hGet1stOutputLineFromCommand( path )
+	found = hGet1stOutputLineFromCommand( cmd )
 	if( len( found ) = 0 ) then
 		exit function
 	end if
