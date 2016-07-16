@@ -15,7 +15,8 @@ fi
 export PATH="$install_native/bin:$PATH"
 
 version_binutils=2.26.1
-version_fbc=1.05.0
+version_fbc=327f5f6
+version_fbc_git=yes
 version_gcc=6.1.0
 version_gmp=6.1.0
 version_libffi=3.2.1
@@ -24,7 +25,6 @@ version_mpc=1.0.3
 version_mpfr=3.1.4
 
 title_binutils=binutils-$version_binutils
-title_fbc=FreeBASIC-$version_fbc-source
 title_gcc=gcc-$version_gcc
 title_gmp=gmp-$version_gmp
 title_libffi=libffi-$version_libffi
@@ -33,7 +33,6 @@ title_mpc=mpc-$version_mpc
 title_mpfr=mpfr-$version_mpfr
 
 tarball_binutils=$title_binutils.tar.bz2
-tarball_fbc=$title_fbc.tar.xz
 tarball_gcc=$title_gcc.tar.bz2
 tarball_gmp=$title_gmp.tar.lz
 tarball_libffi=$title_libffi.tar.gz
@@ -42,13 +41,22 @@ tarball_mpc=$title_mpc.tar.gz
 tarball_mpfr=$title_mpfr.tar.xz
 
 my_fetch $tarball_binutils "http://ftpmirror.gnu.org/binutils/$tarball_binutils"
-my_fetch $tarball_fbc      "https://sourceforge.net/projects/fbc/files/Source%20Code/$tarball_fbc/download"
 my_fetch $tarball_gcc      "http://ftpmirror.gnu.org/gcc/$title_gcc/$tarball_gcc"
 my_fetch $tarball_gmp      "https://gmplib.org/download/gmp/$tarball_gmp"
 my_fetch $tarball_libffi   "ftp://sourceware.org/pub/libffi/$tarball_libffi"
 my_fetch $tarball_mingww64 "https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/$tarball_mingww64/download"
 my_fetch $tarball_mpc      "ftp://ftp.gnu.org/gnu/mpc/$tarball_mpc"
 my_fetch $tarball_mpfr     "http://www.mpfr.org/mpfr-current/$tarball_mpfr"
+
+if [ "$version_fbc_git" = "yes" ]; then
+	title_fbc=fbc-$version_fbc
+	tarball_fbc=$title_fbc.tar.gz
+	my_fetch $tarball_fbc "https://github.com/freebasic/fbc/archive/$version_fbc.tar.gz"
+else
+	title_fbc=FreeBASIC-$version_fbc-source
+	tarball_fbc=$title_fbc.tar.xz
+	my_fetch $tarball_fbc "https://sourceforge.net/projects/fbc/files/Source%20Code/$tarball_fbc/download"
+fi
 
 my_extract $title_binutils $tarball_binutils
 my_extract $title_fbc      $tarball_fbc
