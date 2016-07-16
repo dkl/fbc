@@ -279,9 +279,9 @@ maybe_do_build $title_mingww64-build-win32-headers
 maybe_do_build $title_gcc-build-native-to-win32-gcc
 maybe_do_build $title_mingww64-build-win32-crt
 maybe_do_build $title_gcc-build-native-to-win32-full
+maybe_do_build $title_libffi-build-win32
 maybe_do_build fbc-$version_fbc-build-native
 
-maybe_do_build $title_ffi-build-win32
 maybe_do_build $title_gmp-build-win32
 maybe_do_build $title_mpfr-build-win32
 maybe_do_build $title_mpc-build-win32
