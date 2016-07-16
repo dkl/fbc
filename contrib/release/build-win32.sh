@@ -220,8 +220,7 @@ do_build() {
 		echo 'V := 1'                                               >> config.mk
 		echo 'TARGET := i686-w64-mingw32'                           >> config.mk
 		echo "CFLAGS += -I\"$install_win32/lib/$title_libffi/include\"" >> config.mk
-		make
-		make -f ../$title_fbc/makefile install DESTDIR="$install_win32"
+		make -f ../$title_fbc/makefile all install DESTDIR="$install_win32"
 		;;
 
 	fbc-*-build-win32-standalone)
