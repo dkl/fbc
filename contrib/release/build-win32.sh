@@ -9,7 +9,9 @@ cd win32
 install_native="$PWD/install"
 install_win32="$install_native/i686-w64-mingw32"
 mkdir -p "$install_win32"
-ln -s . "$install_win32/mingw"
+if [ ! -e "$install_win32/mingw" ]; then
+	ln -s . "$install_win32/mingw"
+fi
 export PATH="$install_native/bin:$PATH"
 
 version_binutils=2.26.1
