@@ -215,10 +215,10 @@ do_build() {
 	fbc-*-build-native)
 		rm -f config.mk
 		echo 'V := 1'                                                 >> config.mk
-		echo "prefix := $install_native"                              >> config.mk
 		echo 'ifeq ($(TARGET),i686-w64-mingw32)'                      >> config.mk
 		echo "  CFLAGS += -I\"$install_win32/lib/$title_libffi/include\"" >> config.mk
 		echo 'endif'                                                  >> config.mk
+		echo "prefix := $install_native"                              >> config.mk
 		make -f ../$title_fbc/makefile compiler install-compiler install-includes
 		make -f ../$title_fbc/makefile TARGET=i686-w64-mingw32 rtlib gfxlib2 install-rtlib install-gfxlib2
 		;;
@@ -228,15 +228,16 @@ do_build() {
 		echo 'V := 1'                                               >> config.mk
 		echo 'TARGET := i686-w64-mingw32'                           >> config.mk
 		echo "CFLAGS += -I\"$install_win32/lib/$title_libffi/include\"" >> config.mk
+		echo "prefix := $install_win32"                             >> config.mk
 		make -f ../$title_fbc/makefile all install DESTDIR="$install_win32"
 		;;
 
 	fbc-*-build-win32-standalone)
 		rm -f config.mk
 		echo 'V := 1'                                                 >> config.mk
-		echo 'ENABLE_STANDALONE := 1'                                 >> config.mk
 		echo 'TARGET := i686-w64-mingw32'                             >> config.mk
 		echo "CFLAGS += -I\"$install_win32/lib/$title_libffi/include\"" >> config.mk
+		echo 'ENABLE_STANDALONE := 1'                                 >> config.mk
 		make -f ../$title_fbc/makefile
 		;;
 
