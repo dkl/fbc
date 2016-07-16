@@ -56,7 +56,7 @@ my_extract() {
 
 	# unpack
 	if [ ! -d "$name" ]; then
-		echo "unpack: $tarball => $name"
+		echo "unpack: $tarball"
 
 		# Extract archive inside tmpextract/
 		rm -rf tmpextract
