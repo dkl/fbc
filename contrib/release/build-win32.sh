@@ -258,9 +258,9 @@ maybe_do_build() {
 		cd "$buildname"
 
 		if do_build "$buildname" > build-log.txt 2>&1; then
-			printf '%s%*s%s\n' "$term_color_green" "$term_columns" "[ ok ]" "$term_color_reset"
+			printf '%s%s%s\n' "$term_color_green" "ok" "$term_color_reset"
 		else
-			printf '%s%*s%s\n' "$term_color_red"   "$term_columns" "[fail]" "$term_color_reset"
+			printf '%s%s%s\n' "$term_color_red"   "fail" "$term_color_reset"
 			exit 1
 		fi
 		remove_la_files_in_dirs "$install_native"
