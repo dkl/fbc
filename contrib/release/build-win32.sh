@@ -22,6 +22,7 @@ version_mingww64="4.0.6"
 version_gmp="6.1.0"
 version_mpfr="3.1.4"
 version_mpc="1.0.3"
+version_libffi="3.2.1"
 
 title_binutils="binutils-$version_binutils"
 title_gcc="gcc-$version_gcc"
@@ -29,6 +30,7 @@ title_mingww64="mingw-w64-v$version_mingww64"
 title_gmp="gmp-$version_gmp"
 title_mpfr="mpfr-$version_mpfr"
 title_mpc="mpc-$version_mpc"
+title_libffi="libffi-$version_libffi"
 
 tarball_binutils="$title_binutils.tar.bz2"
 tarball_gcc="$title_gcc.tar.bz2"
@@ -36,6 +38,7 @@ tarball_mingww64="$title_mingww64.tar.bz2"
 tarball_gmp="$title_gmp.tar.lz"
 tarball_mpfr="$title_mpfr.tar.xz"
 tarball_mpc="$title_mpc.tar.gz"
+tarball_libffi="$title_libffi.tar.gz"
 
 my_fetch "$tarball_binutils" "http://ftpmirror.gnu.org/binutils/$tarball_binutils"
 my_fetch "$tarball_gcc"      "http://ftpmirror.gnu.org/gcc/$title_gcc/$tarball_gcc"
@@ -43,6 +46,7 @@ my_fetch "$tarball_mingww64" "https://sourceforge.net/projects/mingw-w64/files/m
 my_fetch "$tarball_gmp"  "https://gmplib.org/download/gmp/$tarball_gmp"
 my_fetch "$tarball_mpfr" "http://www.mpfr.org/mpfr-current/$tarball_mpfr"
 my_fetch "$tarball_mpc"  "ftp://ftp.gnu.org/gnu/mpc/$tarball_mpc"
+my_fetch "$tarball_libffi" "ftp://sourceware.org/pub/libffi/$tarball_libffi"
 
 my_extract "$title_binutils" "$tarball_binutils"
 my_extract "$title_gcc"      "$tarball_gcc"
@@ -50,6 +54,7 @@ my_extract "$title_mingww64" "$tarball_mingww64"
 my_extract "$title_gmp"      "$tarball_gmp"
 my_extract "$title_mpfr"     "$tarball_mpfr"
 my_extract "$title_mpc"      "$tarball_mpc"
+my_extract "$title_libffi"   "$tarball_libffi"
 
 if [ ! -f "$title_gcc"/patch-done.stamp ]; then
 	echo "patching: $title_gcc"
@@ -216,6 +221,15 @@ my_autotools_build "$title_gcc" "$title_gcc-build-win32-to-win32" \
 		--disable-decimal-float
 		--enable-threads=win32 --enable-sjlj-exceptions
 		--disable-win32-registry
+	" \
+	"" "install DESTDIR=$install_win32"
+
+my_autotools_build "$title_libffi" "$title_libffi-build-win32" \
+	"" \
+	"
+		--host=i686-w64-mingw32
+		--prefix=
+		--enable-static --disable-shared
 	" \
 	"" "install DESTDIR=$install_win32"
 
