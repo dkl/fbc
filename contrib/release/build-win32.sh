@@ -23,6 +23,7 @@ version_gmp="6.1.0"
 version_mpfr="3.1.4"
 version_mpc="1.0.3"
 version_libffi="3.2.1"
+version_fbc="1.05.0"
 
 title_binutils="binutils-$version_binutils"
 title_gcc="gcc-$version_gcc"
@@ -31,6 +32,7 @@ title_gmp="gmp-$version_gmp"
 title_mpfr="mpfr-$version_mpfr"
 title_mpc="mpc-$version_mpc"
 title_libffi="libffi-$version_libffi"
+title_fbc="FreeBASIC-$version_fbc-source"
 
 tarball_binutils="$title_binutils.tar.bz2"
 tarball_gcc="$title_gcc.tar.bz2"
@@ -39,6 +41,7 @@ tarball_gmp="$title_gmp.tar.lz"
 tarball_mpfr="$title_mpfr.tar.xz"
 tarball_mpc="$title_mpc.tar.gz"
 tarball_libffi="$title_libffi.tar.gz"
+tarball_fbc="$title_fbc.tar.xz"
 
 my_fetch "$tarball_binutils" "http://ftpmirror.gnu.org/binutils/$tarball_binutils"
 my_fetch "$tarball_gcc"      "http://ftpmirror.gnu.org/gcc/$title_gcc/$tarball_gcc"
@@ -47,6 +50,7 @@ my_fetch "$tarball_gmp"  "https://gmplib.org/download/gmp/$tarball_gmp"
 my_fetch "$tarball_mpfr" "http://www.mpfr.org/mpfr-current/$tarball_mpfr"
 my_fetch "$tarball_mpc"  "ftp://ftp.gnu.org/gnu/mpc/$tarball_mpc"
 my_fetch "$tarball_libffi" "ftp://sourceware.org/pub/libffi/$tarball_libffi"
+my_fetch "$tarball_fbc"  "https://sourceforge.net/projects/fbc/files/Source%20Code/$tarball_fbc/download"
 
 my_extract "$title_binutils" "$tarball_binutils"
 my_extract "$title_gcc"      "$tarball_gcc"
@@ -55,6 +59,9 @@ my_extract "$title_gmp"      "$tarball_gmp"
 my_extract "$title_mpfr"     "$tarball_mpfr"
 my_extract "$title_mpc"      "$tarball_mpc"
 my_extract "$title_libffi"   "$tarball_libffi"
+my_extract "FreeBASIC-$version_fbc-native" "$tarball_fbc"
+my_extract "FreeBASIC-$version_fbc-win32" "$tarball_fbc"
+my_extract "fbc-$version_fbc-win32" "$tarball_fbc"
 
 if [ ! -f "$title_gcc"/patch-done.stamp ]; then
 	echo "patching: $title_gcc"
@@ -85,7 +92,7 @@ my_autotools_build() {
 		mkdir "$builddir"
 		cd "$builddir"
 		( \
-			set -x
+			set -x && \
 			"../$title/${confsubdir}configure" --build=$build_triplet $confargs && \
 			make $maketarget && \
 			make $makeinstalltarget && \
@@ -232,6 +239,58 @@ my_autotools_build "$title_libffi" "$title_libffi-build-win32" \
 		--enable-static --disable-shared
 	" \
 	"" "install DESTDIR=$install_win32"
+
+if [ ! -f "FreeBASIC-$version_fbc-native/build-done.stamp" ]; then
+	echo "build: FreeBASIC-$version_fbc-native"
+	cd "FreeBASIC-$version_fbc-native"
+	( \
+		set -x && \
+		rm -f config.mk && \
+		echo 'V := 1'                                                 >> config.mk && \
+		echo "prefix := $install_native"                              >> config.mk && \
+		echo 'ifeq ($(TARGET),i686-w64-mingw32)'                      >> config.mk && \
+		echo "  CFLAGS += -I$install_win32/lib/$title_libffi/include" >> config.mk && \
+		echo 'endif'                                                  >> config.mk && \
+		make compiler && \
+		make install-compiler install-includes && \
+		make TARGET=i686-w64-mingw32 rtlib gfxlib2 && \
+		make TARGET=i686-w64-mingw32 install-rtlib install-gfxlib2 \
+	) > build-log.txt 2>&1
+	cd ..
+	touch "FreeBASIC-$version_fbc-native/build-done.stamp"
+fi
+
+if [ ! -f "FreeBASIC-$version_fbc-win32/build-done.stamp" ]; then
+	echo "build: FreeBASIC-$version_fbc-win32"
+	cd "FreeBASIC-$version_fbc-win32"
+	( \
+		set -x && \
+		rm -f config.mk && \
+		echo 'ENABLE_STANDALONE := 1'                               >> config.mk && \
+		echo 'TARGET := i686-w64-mingw32'                           >> config.mk && \
+		echo "CFLAGS += -I$install_win32/lib/$title_libffi/include" >> config.mk && \
+		echo 'V := 1'                                               >> config.mk && \
+		make \
+	) > build-log.txt 2>&1
+	cd ..
+	touch "FreeBASIC-$version_fbc-win32/build-done.stamp"
+fi
+
+if [ ! -f "fbc-$version_fbc-win32/build-done.stamp" ]; then
+	echo "build: fbc-$version_fbc-win32"
+	cd "fbc-$version_fbc-win32"
+	( \
+		set -x && \
+		rm -f config.mk && \
+		echo 'TARGET := i686-w64-mingw32'                           >> config.mk && \
+		echo "CFLAGS += -I$install_win32/lib/$title_libffi/include" >> config.mk && \
+		echo 'V := 1'                                               >> config.mk && \
+		make && \
+		make install "prefix=$install_win32" \
+	) > build-log.txt 2>&1
+	cd ..
+	touch "fbc-$version_fbc-win32/build-done.stamp"
+fi
 
 echo "stripping debug symbols"
 find "$install_win32" -type f -name "*.exe" -or -name "*.dll" -or -name "*.a" -or -name "*.o" | \
