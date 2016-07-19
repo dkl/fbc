@@ -85,32 +85,6 @@ index 1c6e340..d892e4a 100755
       SYSROOT_CFLAGS_FOR_TARGET="--sysroot=$withval"
     fi
  else
-@@ -3491,6 +3494,7 @@ fi
- 
- 
- 
-+
- if test "x$prefix" = xNONE; then
-  test_prefix=/usr/local
- else
-@@ -18453,7 +18457,7 @@ else
-   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
-   lt_status=$lt_dlunknown
-   cat > conftest.$ac_ext <<_LT_EOF
--#line 18456 "configure"
-+#line 18460 "configure"
- #include "confdefs.h"
- 
- #if HAVE_DLFCN_H
-@@ -18559,7 +18563,7 @@ else
-   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
-   lt_status=$lt_dlunknown
-   cat > conftest.$ac_ext <<_LT_EOF
--#line 18562 "configure"
-+#line 18566 "configure"
- #include "confdefs.h"
- 
- #if HAVE_DLFCN_H
 diff --git a/gcc/configure.ac b/gcc/configure.ac
 index 6c1dcd9..0f508c5 100644
 --- a/gcc/configure.ac

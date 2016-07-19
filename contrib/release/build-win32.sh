@@ -279,7 +279,7 @@ maybe_do_build() {
 	fi
 }
 
-# cross toolchain
+# cross toolchain and needed target libs
 maybe_do_build $title_binutils-build-native-to-win32
 maybe_do_build $title_gmp-build-native
 maybe_do_build $title_mpfr-build-native
@@ -291,6 +291,7 @@ maybe_do_build $title_gcc-build-native-to-win32-full
 maybe_do_build $title_libffi-build-win32
 maybe_do_build fbc-$version_fbc-build-native
 
+# more target libs
 maybe_do_build $title_gmp-build-win32
 maybe_do_build $title_mpfr-build-win32
 maybe_do_build $title_mpc-build-win32
