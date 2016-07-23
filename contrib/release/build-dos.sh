@@ -136,11 +136,17 @@ do_build() {
 	$title_djcrx-build-dos)
 		cp -R ../$title_djcrx/. .
 		cp -R ../$title_djlsr/. .
+		find . -type f -name "*.o" -or -name "*.a" | xargs rm
 		cd src
-		rm -f gcc.opt
+		rm -f *.opt
+		sed -i 's/-Werror//g' makefile.cfg
 		make
 		cd ..
 		cp -R include/. "$install_dos"/include
+		cp lib/*.a lib/*.o "$install_dos"/lib
+		install -m 0755 hostbin/stubify.exe "$install_native"/bin/stubify
+		install -m 0755 hostbin/stubedit.exe "$install_native"/bin/stubedit
+		install -m 0755 hostbin/dxegen.exe "$install_native"/bin/dxegen
 		;;
 
 	$title_djgcc-build-native-to-dos-gcc)
