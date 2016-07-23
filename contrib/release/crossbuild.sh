@@ -358,7 +358,8 @@ do_build() {
 		echo 'endif'                                                  >> config.mk
 		echo "prefix := $install_native"                              >> config.mk
 		make -f ../$title_fbc/makefile compiler install-compiler install-includes
-		make -f ../$title_fbc/makefile TARGET=i686-w64-mingw32 rtlib gfxlib2 install-rtlib install-gfxlib2
+		make -f ../$title_fbc/makefile TARGET=i686-w64-mingw32   rtlib gfxlib2 install-rtlib install-gfxlib2
+		make -f ../$title_fbc/makefile TARGET=i586-pc-msdosdjgpp rtlib gfxlib2 install-rtlib install-gfxlib2
 		;;
 
 	fbc-*-build-win32)
@@ -366,8 +367,16 @@ do_build() {
 		echo 'V := 1'                                               >> config.mk
 		echo 'TARGET := i686-w64-mingw32'                           >> config.mk
 		echo "CFLAGS += -I\"$install_win32/lib/$title_libffi/include\"" >> config.mk
-		echo "prefix := $install_win32"                             >> config.mk
+		echo "prefix :="                                            >> config.mk
 		make -f ../$title_fbc/makefile all install DESTDIR="$install_win32"
+		;;
+
+	fbc-*-build-dos)
+		rm -f config.mk
+		echo 'V := 1'                                               >> config.mk
+		echo 'TARGET := i586-pc-msdosdjgpp'                         >> config.mk
+		echo "prefix :="                                            >> config.mk
+		make -f ../$title_fbc/makefile all install DESTDIR="$install_dos"
 		;;
 
 	fbc-*-build-win32-standalone)
@@ -375,6 +384,14 @@ do_build() {
 		echo 'V := 1'                                                 >> config.mk
 		echo 'TARGET := i686-w64-mingw32'                             >> config.mk
 		echo "CFLAGS += -I\"$install_win32/lib/$title_libffi/include\"" >> config.mk
+		echo 'ENABLE_STANDALONE := 1'                                 >> config.mk
+		make -f ../$title_fbc/makefile
+		;;
+
+	fbc-*-build-dos-standalone)
+		rm -f config.mk
+		echo 'V := 1'                                                 >> config.mk
+		echo 'TARGET := i586-pc-msdosdjgpp'                           >> config.mk
 		echo 'ENABLE_STANDALONE := 1'                                 >> config.mk
 		make -f ../$title_fbc/makefile
 		;;
