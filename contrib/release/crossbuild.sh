@@ -118,6 +118,7 @@ do_patch() {
 
 		# Disable fixincludes
 		sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
+		;;
 
 	gcc-*)
 		# Fix precheck for fixincludes
