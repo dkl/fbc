@@ -8,11 +8,16 @@ cd build
 
 install_native="$PWD/install"
 install_win32="$install_native/i686-w64-mingw32"
+install_win64="$install_native/i686-w64-mingw32"
 install_dos="$install_native/i586-pc-msdosdjgpp"
-mkdir -p "$install_dos"
 mkdir -p "$install_win32"
+mkdir -p "$install_win64"
+mkdir -p "$install_dos"
 if [ ! -e "$install_win32/mingw" ]; then
 	ln -s . "$install_win32/mingw"
+fi
+if [ ! -e "$install_win64/mingw" ]; then
+	ln -s . "$install_win64/mingw"
 fi
 if [ ! -e "$install_dos/dev/env/DJDIR" ]; then
 	mkdir -p "$install_dos/dev/env"
@@ -161,6 +166,17 @@ do_build_autotools_win32() {
 	make install DESTDIR="$install_win32"
 }
 
+do_build_autotools_win64() {
+	local srcname="$1"
+	shift
+	../"$srcname"/configure \
+		--build=$build_triplet --host=x86_64-w64-mingw32 \
+		--prefix= \
+		--enable-static --disable-shared "$@"
+	make
+	make install DESTDIR="$install_win64"
+}
+
 do_build_autotools_dos() {
 	local srcname="$1"
 	shift
@@ -183,15 +199,27 @@ do_build() {
 			--disable-nls --disable-multilib --disable-werror
 		;;
 
-	$title_binutils-build-win32-to-win32)
-		do_build_autotools_win32 $title_binutils \
-			--target=i686-w64-mingw32 \
+	$title_binutils-build-native-to-win64)
+		do_build_autotools_native $title_binutils \
+			--target=x86_64-w64-mingw32 --with-sysroot="$install_win64" \
 			--disable-nls --disable-multilib --disable-werror
 		;;
 
 	$title_djbnu-build-native-to-dos)
 		do_build_autotools_native $title_djbnu \
 			--target=i586-pc-msdosdjgpp --with-sysroot="$install_dos" \
+			--disable-nls --disable-multilib --disable-werror
+		;;
+
+	$title_binutils-build-win32-to-win32)
+		do_build_autotools_win32 $title_binutils \
+			--target=i686-w64-mingw32 \
+			--disable-nls --disable-multilib --disable-werror
+		;;
+
+	$title_binutils-build-win64-to-win64)
+		do_build_autotools_win64 $title_binutils \
+			--target=x86_64-w64-mingw32 \
 			--disable-nls --disable-multilib --disable-werror
 		;;
 
@@ -209,6 +237,14 @@ do_build() {
 		make install DESTDIR="$install_win32"
 		;;
 
+	$title_mingww64-build-win64-headers)
+		../$title_mingww64/mingw-w64-headers/configure \
+			--build=$build_triplet --host=x86_64-w64-mingw32 \
+			--prefix=
+		make
+		make install DESTDIR="$install_win64"
+		;;
+
 	$title_mingww64-build-win32-crt)
 		../$title_mingww64/mingw-w64-crt/configure \
 			--build=$build_triplet --host=i686-w64-mingw32 \
@@ -216,6 +252,15 @@ do_build() {
 			--enable-wildcard
 		make
 		make install DESTDIR="$install_win32"
+		;;
+
+	$title_mingww64-build-win64-crt)
+		../$title_mingww64/mingw-w64-crt/configure \
+			--build=$build_triplet --host=x86_64-w64-mingw32 \
+			--prefix= \
+			--enable-wildcard
+		make
+		make install DESTDIR="$install_win64"
 		;;
 
 	$title_djcrx-build-dos)
@@ -255,12 +300,12 @@ do_build() {
 		make install-gcc
 		;;
 
-	$title_gcc-build-native-to-win32-full)
+	$title_gcc-build-native-to-win64-gcc)
 		../$title_gcc/configure \
-			--build=$build_triplet --host=$build_triplet --target=i686-w64-mingw32 \
+			--build=$build_triplet --host=$build_triplet --target=x86_64-w64-mingw32 \
 			--prefix="$install_native" \
 			--with-local-prefix="$install_native" \
-			--with-sysroot="$install_win32" \
+			--with-sysroot="$install_win64" \
 			--with-gmp="$install_native" \
 			--with-mpfr="$install_native" \
 			--with-mpc="$install_native" \
@@ -272,26 +317,8 @@ do_build() {
 			--disable-libmudflap --disable-libgomp --disable-libatomic \
 			--disable-decimal-float \
 			--enable-threads=win32 --enable-sjlj-exceptions
-		make
-		make install
-		;;
-
-	$title_gcc-build-win32-to-win32)
-		do_build_autotools_win32 $title_gcc \
-			--target=i686-w64-mingw32 \
-			--with-local-prefix= \
-			--with-build-sysroot="$install_win32" \
-			--with-gmp="$install_win32" \
-			--with-mpfr="$install_win32" \
-			--with-mpc="$install_win32" \
-			--disable-bootstrap --enable-languages=c,c++ \
-			--disable-nls --disable-multilib \
-			--disable-lto --disable-lto-plugin \
-			--disable-libssp --disable-libquadmath \
-			--disable-libmudflap --disable-libgomp --disable-libatomic \
-			--disable-decimal-float \
-			--enable-threads=win32 --enable-sjlj-exceptions \
-			--disable-win32-registry
+		make all-gcc
+		make install-gcc
 		;;
 
 	$title_djgcc-build-native-to-dos-gcc)
@@ -314,6 +341,48 @@ do_build() {
 		make install-gcc
 		;;
 
+	$title_gcc-build-native-to-win32-full)
+		../$title_gcc/configure \
+			--build=$build_triplet --host=$build_triplet --target=i686-w64-mingw32 \
+			--prefix="$install_native" \
+			--with-local-prefix="$install_native" \
+			--with-sysroot="$install_win32" \
+			--with-gmp="$install_native" \
+			--with-mpfr="$install_native" \
+			--with-mpc="$install_native" \
+			--enable-static --disable-shared \
+			--disable-bootstrap --enable-languages=c,c++ \
+			--disable-nls --disable-multilib \
+			--disable-lto --disable-lto-plugin \
+			--disable-libssp --disable-libquadmath \
+			--disable-libmudflap --disable-libgomp --disable-libatomic \
+			--disable-decimal-float \
+			--enable-threads=win32 --enable-sjlj-exceptions
+		make
+		make install
+		;;
+
+	$title_gcc-build-native-to-win64-full)
+		../$title_gcc/configure \
+			--build=$build_triplet --host=$build_triplet --target=x86_64-w64-mingw32 \
+			--prefix="$install_native" \
+			--with-local-prefix="$install_native" \
+			--with-sysroot="$install_win64" \
+			--with-gmp="$install_native" \
+			--with-mpfr="$install_native" \
+			--with-mpc="$install_native" \
+			--enable-static --disable-shared \
+			--disable-bootstrap --enable-languages=c,c++ \
+			--disable-nls --disable-multilib \
+			--disable-lto --disable-lto-plugin \
+			--disable-libssp --disable-libquadmath \
+			--disable-libmudflap --disable-libgomp --disable-libatomic \
+			--disable-decimal-float \
+			--enable-threads=win32 --enable-sjlj-exceptions
+		make
+		make install
+		;;
+
 	$title_djgcc-build-native-to-dos-full)
 		../$title_djgcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=i586-pc-msdosdjgpp \
@@ -332,6 +401,42 @@ do_build() {
 			--disable-decimal-float
 		make
 		make install
+		;;
+
+	$title_gcc-build-win32-to-win32)
+		do_build_autotools_win32 $title_gcc \
+			--target=i686-w64-mingw32 \
+			--with-local-prefix= \
+			--with-build-sysroot="$install_win32" \
+			--with-gmp="$install_win32" \
+			--with-mpfr="$install_win32" \
+			--with-mpc="$install_win32" \
+			--disable-bootstrap --enable-languages=c,c++ \
+			--disable-nls --disable-multilib \
+			--disable-lto --disable-lto-plugin \
+			--disable-libssp --disable-libquadmath \
+			--disable-libmudflap --disable-libgomp --disable-libatomic \
+			--disable-decimal-float \
+			--enable-threads=win32 --enable-sjlj-exceptions \
+			--disable-win32-registry
+		;;
+
+	$title_gcc-build-win64-to-win64)
+		do_build_autotools_win64 $title_gcc \
+			--target=x86_64-w64-mingw32 \
+			--with-local-prefix= \
+			--with-build-sysroot="$install_win64" \
+			--with-gmp="$install_win64" \
+			--with-mpfr="$install_win64" \
+			--with-mpc="$install_win64" \
+			--disable-bootstrap --enable-languages=c,c++ \
+			--disable-nls --disable-multilib \
+			--disable-lto --disable-lto-plugin \
+			--disable-libssp --disable-libquadmath \
+			--disable-libmudflap --disable-libgomp --disable-libatomic \
+			--disable-decimal-float \
+			--enable-threads=win32 --enable-sjlj-exceptions \
+			--disable-win32-registry
 		;;
 
 	$title_djgcc-build-dos-to-dos)
@@ -356,9 +461,13 @@ do_build() {
 		echo 'ifeq ($(TARGET),i686-w64-mingw32)'                      >> config.mk
 		echo "  CFLAGS += -I\"$install_win32/lib/$title_libffi/include\"" >> config.mk
 		echo 'endif'                                                  >> config.mk
+		echo 'ifeq ($(TARGET),x86_64-w64-mingw32)'                    >> config.mk
+		echo "  CFLAGS += -I\"$install_win64/lib/$title_libffi/include\"" >> config.mk
+		echo 'endif'                                                  >> config.mk
 		echo "prefix := $install_native"                              >> config.mk
 		make -f ../$title_fbc/makefile compiler install-compiler install-includes
 		make -f ../$title_fbc/makefile TARGET=i686-w64-mingw32   rtlib gfxlib2 install-rtlib install-gfxlib2
+		make -f ../$title_fbc/makefile TARGET=x86_64-w64-mingw32 rtlib gfxlib2 install-rtlib install-gfxlib2
 		make -f ../$title_fbc/makefile TARGET=i586-pc-msdosdjgpp rtlib gfxlib2 install-rtlib install-gfxlib2
 		;;
 
@@ -369,6 +478,15 @@ do_build() {
 		echo "CFLAGS += -I\"$install_win32/lib/$title_libffi/include\"" >> config.mk
 		echo "prefix :="                                            >> config.mk
 		make -f ../$title_fbc/makefile all install DESTDIR="$install_win32"
+		;;
+
+	fbc-*-build-win64)
+		rm -f config.mk
+		echo 'V := 1'                                               >> config.mk
+		echo 'TARGET := x86_64-w64-mingw32'                         >> config.mk
+		echo "CFLAGS += -I\"$install_win64/lib/$title_libffi/include\"" >> config.mk
+		echo "prefix :="                                            >> config.mk
+		make -f ../$title_fbc/makefile all install DESTDIR="$install_win64"
 		;;
 
 	fbc-*-build-dos)
@@ -384,6 +502,15 @@ do_build() {
 		echo 'V := 1'                                                 >> config.mk
 		echo 'TARGET := i686-w64-mingw32'                             >> config.mk
 		echo "CFLAGS += -I\"$install_win32/lib/$title_libffi/include\"" >> config.mk
+		echo 'ENABLE_STANDALONE := 1'                                 >> config.mk
+		make -f ../$title_fbc/makefile
+		;;
+
+	fbc-*-build-win64-standalone)
+		rm -f config.mk
+		echo 'V := 1'                                                 >> config.mk
+		echo 'TARGET := x86_64-w64-mingw32'                           >> config.mk
+		echo "CFLAGS += -I\"$install_win64/lib/$title_libffi/include\"" >> config.mk
 		echo 'ENABLE_STANDALONE := 1'                                 >> config.mk
 		make -f ../$title_fbc/makefile
 		;;
@@ -404,6 +531,11 @@ do_build() {
 	$title_mpfr-build-win32)   do_build_autotools_win32 $title_mpfr --with-gmp="$install_win32";;
 	$title_mpc-build-win32)    do_build_autotools_win32 $title_mpc  --with-gmp="$install_win32" --with-mpfr="$install_win32";;
 	$title_libffi-build-win32) do_build_autotools_win32 $title_libffi;;
+
+	$title_gmp-build-win64)    do_build_autotools_win64 $title_gmp;;
+	$title_mpfr-build-win64)   do_build_autotools_win64 $title_mpfr --with-gmp="$install_win64";;
+	$title_mpc-build-win64)    do_build_autotools_win64 $title_mpc  --with-gmp="$install_win64" --with-mpfr="$install_win64";;
+	$title_libffi-build-win64) do_build_autotools_win64 $title_libffi;;
 
 	$title_gmp-build-dos)    do_build_autotools_dos $title_gmp;;
 	$title_mpfr-build-dos)   do_build_autotools_dos $title_mpfr --with-gmp="$install_dos";;
@@ -440,29 +572,42 @@ maybe_do_build() {
 
 # cross toolchain and needed target libs
 maybe_do_build $title_binutils-build-native-to-win32
+maybe_do_build $title_binutils-build-native-to-win64
 maybe_do_build $title_djbnu-build-native-to-dos
 maybe_do_build $title_gmp-build-native
 maybe_do_build $title_mpfr-build-native
 maybe_do_build $title_mpc-build-native
 maybe_do_build $title_mingww64-build-win32-headers
+maybe_do_build $title_mingww64-build-win64-headers
 maybe_do_build $title_gcc-build-native-to-win32-gcc
+maybe_do_build $title_gcc-build-native-to-win64-gcc
 maybe_do_build $title_djgcc-build-native-to-dos-gcc
 maybe_do_build $title_mingww64-build-win32-crt
+maybe_do_build $title_mingww64-build-win64-crt
 maybe_do_build $title_djcrx-build-dos
 maybe_do_build $title_gcc-build-native-to-win32-full
+maybe_do_build $title_gcc-build-native-to-win64-full
 maybe_do_build $title_djgcc-build-native-to-dos-full
 maybe_do_build $title_libffi-build-win32
+maybe_do_build $title_libffi-build-win64
 maybe_do_build fbc-$version_fbc-build-native
 
 # more target libs
 maybe_do_build $title_gmp-build-win32
+maybe_do_build $title_gmp-build-win64
 maybe_do_build $title_mpfr-build-win32
+maybe_do_build $title_mpfr-build-win64
 maybe_do_build $title_mpc-build-win32
+maybe_do_build $title_mpc-build-win64
 
 maybe_do_build $title_binutils-build-win32-to-win32
+maybe_do_build $title_binutils-build-win64-to-win64
 maybe_do_build $title_gcc-build-win32-to-win32
+maybe_do_build $title_gcc-build-win64-to-win64
 maybe_do_build fbc-$version_fbc-build-win32
+maybe_do_build fbc-$version_fbc-build-win64
 maybe_do_build fbc-$version_fbc-build-win32-standalone
+maybe_do_build fbc-$version_fbc-build-win64-standalone
 
 ################################################################################
 
