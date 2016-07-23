@@ -21,7 +21,7 @@ fi
 export PATH="$install_native/bin:$PATH"
 
 version_binutils=2.26.1
-version_fbc=327f5f6
+version_fbc=c89cb5a235c1214ced96724765e8ea207823d7dd
 version_fbc_git=yes
 version_gcc=6.1.0
 version_gmp=6.1.0
