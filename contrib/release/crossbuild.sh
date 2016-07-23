@@ -602,12 +602,16 @@ maybe_do_build $title_mpc-build-win64
 
 maybe_do_build $title_binutils-build-win32-to-win32
 maybe_do_build $title_binutils-build-win64-to-win64
+maybe_do_build $title_djbnu-build-dos-to-dos
 maybe_do_build $title_gcc-build-win32-to-win32
 maybe_do_build $title_gcc-build-win64-to-win64
+maybe_do_build $title_djgcc-build-dos-to-dos
 maybe_do_build fbc-$version_fbc-build-win32
 maybe_do_build fbc-$version_fbc-build-win64
+maybe_do_build fbc-$version_fbc-build-dos
 maybe_do_build fbc-$version_fbc-build-win32-standalone
 maybe_do_build fbc-$version_fbc-build-win64-standalone
+maybe_do_build fbc-$version_fbc-build-dos
 
 ################################################################################
 
