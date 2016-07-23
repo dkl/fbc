@@ -289,7 +289,7 @@ do_build() {
 			--with-mpfr="$install_native" \
 			--with-mpc="$install_native" \
 			--enable-static --disable-shared \
-			--disable-bootstrap --enable-languages=c,c++ \
+			--disable-bootstrap --enable-languages=c \
 			--disable-nls --disable-multilib \
 			--disable-lto --disable-lto-plugin \
 			--disable-libssp --disable-libquadmath \
@@ -310,7 +310,7 @@ do_build() {
 			--with-mpfr="$install_native" \
 			--with-mpc="$install_native" \
 			--enable-static --disable-shared \
-			--disable-bootstrap --enable-languages=c,c++ \
+			--disable-bootstrap --enable-languages=c \
 			--disable-nls --disable-multilib \
 			--disable-lto --disable-lto-plugin \
 			--disable-libssp --disable-libquadmath \
@@ -331,7 +331,7 @@ do_build() {
 			--with-mpfr="$install_native" \
 			--with-mpc="$install_native" \
 			--enable-static --disable-shared \
-			--disable-bootstrap --enable-languages=c,c++ \
+			--disable-bootstrap --enable-languages=c \
 			--disable-nls --disable-multilib \
 			--disable-lto --disable-lto-plugin \
 			--disable-libssp --disable-libquadmath \
