@@ -25,6 +25,9 @@ if [ ! -e "$install_dos/dev/env/DJDIR" ]; then
 fi
 export PATH="$install_native/bin:$PATH"
 
+export CFLAGS="-O2 -g0"
+export CXXFLAGS="-O2 -g0"
+
 version_binutils=2.26.1
 version_fbc=c89cb5a235c1214ced96724765e8ea207823d7dd
 version_fbc_git=yes
@@ -612,14 +615,3 @@ maybe_do_build fbc-$version_fbc-build-dos
 maybe_do_build fbc-$version_fbc-build-win32-standalone
 maybe_do_build fbc-$version_fbc-build-win64-standalone
 maybe_do_build fbc-$version_fbc-build-dos
-
-################################################################################
-
-# TODO: copy binaries from install dir into packaging dir, and then strip there
-# for non-debug packages
-echo "stripping debug symbols"
-find "$install_win32" -type f -name "*.exe" -or -name "*.dll" -or -name "*.a" -or -name "*.o" | \
-	grep -v 'libruntimeobject\.a$' | \
-	xargs i686-w64-mingw32-strip --strip-debug
-
-echo "ok, done"
