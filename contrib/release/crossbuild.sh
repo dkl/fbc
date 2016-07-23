@@ -8,7 +8,7 @@ cd build
 
 install_native="$PWD/install"
 install_win32="$install_native/i686-w64-mingw32"
-install_win64="$install_native/i686-w64-mingw32"
+install_win64="$install_native/x86_64-w64-mingw32"
 install_dos="$install_native/i586-pc-msdosdjgpp"
 mkdir -p "$install_win32"
 mkdir -p "$install_win64"
