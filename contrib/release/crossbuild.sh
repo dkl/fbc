@@ -90,6 +90,7 @@ fi
 
 if [ ! -f ../downloads/config.guess ]; then
 	wget -O ../downloads/config.guess 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD'
+	chmod +x ../downloads/config.guess
 fi
 
 my_extract $title_binutils $tarball_binutils
