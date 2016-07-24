@@ -14,18 +14,18 @@ mkdir -p "$install_win32"
 mkdir -p "$install_win64"
 mkdir -p "$install_dos"
 if [ ! -e "$install_win32/mingw" ]; then
-	ln -s . "$install_win32/mingw"
+	ln -s "$install_win32" "$install_win32/mingw"
 fi
 if [ ! -e "$install_win64/mingw" ]; then
-	ln -s . "$install_win64/mingw"
+	ln -s "$install_win64" "$install_win64/mingw"
 fi
 if [ ! -e "$install_dos/dev/env/DJDIR" ]; then
 	mkdir -p "$install_dos/dev/env"
-	ln -s ../.. "$install_dos/dev/env/DJDIR"
+	ln -s "$install_dos" "$install_dos/dev/env/DJDIR"
 fi
 mkdir -p "$install_dos"/include
 if [ ! -e "$install_dos"/sys-include ]; then
-	ln -s include "$install_dos"/sys-include
+	ln -s "$install_dos"/include "$install_dos"/sys-include
 fi
 export PATH="$install_native/bin:$PATH"
 
@@ -305,6 +305,7 @@ do_build() {
 			--enable-threads=win32 --enable-sjlj-exceptions
 		make all-gcc
 		make install-gcc
+		rm -f "$install_native"/lib/gcc/i586-pc-msdosdjgpp/?.?.?/include-fixed/*
 		;;
 
 	$title_gcc-build-native-to-win64-gcc)
