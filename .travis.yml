@@ -1,4 +1,4 @@
 language: c
 compiler: gcc
 script:
-  - contrib/release/crossbuild.sh
+  - cd contrib/release && ./crossbuild.sh
