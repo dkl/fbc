@@ -14,7 +14,10 @@ my_fetch() {
 			:
 		else
 			rm -f "../downloads/$tarball"
-			echo "failed, see $PWD/../downloads/$tarball.log"
+			echo
+			echo "failed:"
+			echo
+			cat "$PWD/../downloads/$tarball.log"
 			exit 1
 		fi
 	fi
