@@ -17,7 +17,7 @@ version_mpc=1.0.3
 version_mpfr=3.1.4
 
 title_binutils=binutils-$version_binutils
-title_djbnu=bnu2261s
+title_djbnu=bnu226sr3
 title_djcrx=djcrx205
 title_djgcc=gcc610s
 title_djlsr=djlsr205
@@ -41,7 +41,7 @@ tarball_mpc=$title_mpc.tar.gz
 tarball_mpfr=$title_mpfr.tar.xz
 
 my_fetch $tarball_binutils "http://ftpmirror.gnu.org/binutils/$tarball_binutils"
-my_fetch $tarball_djbnu    "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2gnu/$tarball_djbnu"
+my_fetch $tarball_djbnu    "ftp://ftp.fu-berlin.de/pc/languages/djgpp/deleted/v2gnu/$tarball_djbnu"
 my_fetch $tarball_djcrx    "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2/$tarball_djcrx"
 my_fetch $tarball_djgcc    "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2gnu/$tarball_djgcc"
 my_fetch $tarball_djlsr    "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2/$tarball_djlsr"
