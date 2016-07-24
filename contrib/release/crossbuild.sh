@@ -23,6 +23,10 @@ if [ ! -e "$install_dos/dev/env/DJDIR" ]; then
 	mkdir -p "$install_dos/dev/env"
 	ln -s ../../.. "$install_dos/dev/env/DJDIR"
 fi
+mkdir -p "$install_dos"/include
+if [ ! -e "$install_dos"/sys-include ]; then
+	ln -s include "$install_dos"/sys-include
+fi
 export PATH="$install_native/bin:$PATH"
 
 export CFLAGS="-O2 -g0"
