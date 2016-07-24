@@ -291,7 +291,6 @@ do_build() {
 		../$title_gcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=i686-w64-mingw32 \
 			--prefix="$install_native" \
-			--with-local-prefix="$install_native" \
 			--with-sysroot="$install_win32" \
 			--with-gmp="$install_native" \
 			--with-mpfr="$install_native" \
@@ -312,7 +311,6 @@ do_build() {
 		../$title_gcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=x86_64-w64-mingw32 \
 			--prefix="$install_native" \
-			--with-local-prefix="$install_native" \
 			--with-sysroot="$install_win64" \
 			--with-gmp="$install_native" \
 			--with-mpfr="$install_native" \
@@ -333,7 +331,6 @@ do_build() {
 		../$title_djgcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=i586-pc-msdosdjgpp \
 			--prefix="$install_native" \
-			--with-local-prefix="$install_native" \
 			--with-sysroot="$install_dos" \
 			--with-gmp="$install_native" \
 			--with-mpfr="$install_native" \
@@ -353,7 +350,6 @@ do_build() {
 		../$title_gcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=i686-w64-mingw32 \
 			--prefix="$install_native" \
-			--with-local-prefix="$install_native" \
 			--with-sysroot="$install_win32" \
 			--with-gmp="$install_native" \
 			--with-mpfr="$install_native" \
@@ -374,7 +370,6 @@ do_build() {
 		../$title_gcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=x86_64-w64-mingw32 \
 			--prefix="$install_native" \
-			--with-local-prefix="$install_native" \
 			--with-sysroot="$install_win64" \
 			--with-gmp="$install_native" \
 			--with-mpfr="$install_native" \
@@ -395,7 +390,6 @@ do_build() {
 		../$title_djgcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=i586-pc-msdosdjgpp \
 			--prefix="$install_native" \
-			--with-local-prefix="$install_native" \
 			--with-sysroot="$install_dos" \
 			--with-gmp="$install_native" \
 			--with-mpfr="$install_native" \
