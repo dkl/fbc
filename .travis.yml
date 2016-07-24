@@ -1,4 +1,9 @@
 language: c
 compiler: gcc
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get -y install xz lzip
+
 script:
   - cd contrib/release && ./crossbuild.sh
