@@ -43,7 +43,7 @@ version_mpc=1.0.3
 version_mpfr=3.1.4
 
 title_binutils=binutils-$version_binutils
-title_djbnu=bnu226sr3
+title_djbnu=bnu2261s
 title_djcrx=djcrx205
 title_djgcc=gcc610s
 title_djlsr=djlsr205
