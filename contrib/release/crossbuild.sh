@@ -572,7 +572,7 @@ maybe_do_build() {
 	buildname="$1"
 
 	if [ ! -f "$buildname/build-done.stamp" ]; then
-		printf "build: $buildname "
+		echo "build: $buildname"
 		rm -rf "$buildname"
 		mkdir "$buildname"
 		cd "$buildname"
