@@ -6,32 +6,6 @@ set -e
 mkdir -p build
 cd build
 
-install_native="$PWD/install"
-install_win32="$install_native/i686-w64-mingw32"
-install_win64="$install_native/x86_64-w64-mingw32"
-install_dos="$install_native/i586-pc-msdosdjgpp"
-mkdir -p "$install_win32"
-mkdir -p "$install_win64"
-mkdir -p "$install_dos"
-if [ ! -e "$install_win32/mingw" ]; then
-	ln -s "$install_win32" "$install_win32/mingw"
-fi
-if [ ! -e "$install_win64/mingw" ]; then
-	ln -s "$install_win64" "$install_win64/mingw"
-fi
-if [ ! -e "$install_dos/dev/env/DJDIR" ]; then
-	mkdir -p "$install_dos/dev/env"
-	ln -s "$install_dos" "$install_dos/dev/env/DJDIR"
-fi
-mkdir -p "$install_dos"/include
-if [ ! -e "$install_dos"/sys-include ]; then
-	ln -s "$install_dos"/include "$install_dos"/sys-include
-fi
-export PATH="$install_native/bin:$PATH"
-
-export CFLAGS="-O2 -g0"
-export CXXFLAGS="-O2 -g0"
-
 version_binutils=2.26.1
 version_fbc=c89cb5a235c1214ced96724765e8ea207823d7dd
 version_fbc_git=yes
@@ -108,6 +82,32 @@ my_extract $title_mpfr     $tarball_mpfr
 
 ################################################################################
 
+install_native="$PWD/install"
+install_win32="$install_native/i686-w64-mingw32"
+install_win64="$install_native/x86_64-w64-mingw32"
+install_dos="$install_native/i586-pc-msdosdjgpp"
+mkdir -p "$install_win32"
+mkdir -p "$install_win64"
+mkdir -p "$install_dos"
+if [ ! -e "$install_win32/mingw" ]; then
+	ln -s "$install_win32" "$install_win32/mingw"
+fi
+if [ ! -e "$install_win64/mingw" ]; then
+	ln -s "$install_win64" "$install_win64/mingw"
+fi
+if [ ! -e "$install_dos/dev/env/DJDIR" ]; then
+	mkdir -p "$install_dos/dev/env"
+	ln -s "$install_dos" "$install_dos/dev/env/DJDIR"
+fi
+mkdir -p "$install_dos"/include
+if [ ! -e "$install_dos"/sys-include ]; then
+	ln -s "$install_dos"/include "$install_dos"/sys-include
+fi
+
+export PATH="$install_native/bin:$PATH"
+export CFLAGS="-O2 -g0"
+export CXXFLAGS="-O2 -g0"
+
 build_triplet=$(../downloads/config.guess)
 
 ################################################################################
@@ -149,7 +149,15 @@ maybe_do_patch() {
 	if [ ! -f "$srcdirname/patch-done.stamp" ]; then
 		echo "patch: $srcdirname"
 		cd "$srcdirname"
-		do_patch "$srcdirname" > patch-log.txt 2>&1
+		if do_patch "$srcdirname" > patch-log.txt 2>&1; then
+			:
+		else
+			echo
+			echo "failed:"
+			echo
+			cat patch-log.txt
+			exit 1
+		fi
 		touch patch-done.stamp
 		cd ..
 	fi
@@ -570,9 +578,12 @@ maybe_do_build() {
 		cd "$buildname"
 
 		if do_build "$buildname" > build-log.txt 2>&1; then
-			printf '%s%s%s\n' "$term_color_green" "ok" "$term_color_reset"
+			:
 		else
-			printf '%s%s%s\n' "$term_color_red"   "fail" "$term_color_reset"
+			echo
+			echo "failed:"
+			echo
+			cat build-log.txt
 			exit 1
 		fi
 		remove_la_files_in_dirs "$install_native"

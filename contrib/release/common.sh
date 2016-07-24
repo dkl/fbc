@@ -1,7 +1,3 @@
-term_color_red="$(tput setaf 1)"
-term_color_green="$(tput setaf 2)"
-term_color_reset="$(tput sgr0)"
-
 my_fetch() {
 	local tarball="$1"
 	local url="$2"
