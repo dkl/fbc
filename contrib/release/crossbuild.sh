@@ -88,6 +88,10 @@ else
 	my_fetch $tarball_fbc "https://sourceforge.net/projects/fbc/files/Source%20Code/$tarball_fbc/download"
 fi
 
+if [ ! -f ../downloads/config.guess ]; then
+	wget -O ../downloads/config.guess 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD'
+fi
+
 my_extract $title_binutils $tarball_binutils
 my_extract $title_djbnu    $tarball_djbnu
 my_extract $title_djcrx    $tarball_djcrx
@@ -100,6 +104,10 @@ my_extract $title_libffi   $tarball_libffi
 my_extract $title_mingww64 $tarball_mingww64
 my_extract $title_mpc      $tarball_mpc
 my_extract $title_mpfr     $tarball_mpfr
+
+################################################################################
+
+build_triplet=$(../downloads/config.guess)
 
 ################################################################################
 

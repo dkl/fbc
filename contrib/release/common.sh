@@ -1,5 +1,3 @@
-build_triplet=$(/usr/share/automake-1.15/config.guess)
-
 term_color_red="$(tput setaf 1)"
 term_color_green="$(tput setaf 2)"
 term_color_reset="$(tput sgr0)"
