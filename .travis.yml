@@ -3,7 +3,7 @@ compiler: gcc
 
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get -y install xz lzip
+  - sudo apt-get -y install xz-utils lzip
 
 script:
   - cd contrib/release && ./crossbuild.sh
