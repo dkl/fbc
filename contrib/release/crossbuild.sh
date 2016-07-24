@@ -21,7 +21,7 @@ if [ ! -e "$install_win64/mingw" ]; then
 fi
 if [ ! -e "$install_dos/dev/env/DJDIR" ]; then
 	mkdir -p "$install_dos/dev/env"
-	ln -s ../../.. "$install_dos/dev/env/DJDIR"
+	ln -s ../.. "$install_dos/dev/env/DJDIR"
 fi
 mkdir -p "$install_dos"/include
 if [ ! -e "$install_dos"/sys-include ]; then
