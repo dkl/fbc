@@ -1,6 +1,20 @@
 #!/bin/bash
 set -e
 
+SHOW_LOGS=no
+while [ "$#" -gt 0 ]; do
+	case "$1" in
+	--show-logs)
+		SHOW_LOGS=yes
+		;;
+	*)
+		echo "unknown/unexpected command line argument '$1'"
+		exit 1
+		;;
+	esac
+	shift
+done
+
 . common.sh
 
 mkdir -p build
@@ -149,15 +163,21 @@ maybe_do_patch() {
 	if [ ! -f "$srcdirname/patch-done.stamp" ]; then
 		echo "patch: $srcdirname"
 		cd "$srcdirname"
-		if do_patch "$srcdirname" > patch-log.txt 2>&1; then
-			:
+
+		if [ "$SHOW_LOGS" = "yes" ]; then
+			do_patch "$srcdirname"
 		else
-			echo
-			echo "failed:"
-			echo
-			cat patch-log.txt
-			exit 1
+			if do_patch "$srcdirname" > patch-log.txt 2>&1; then
+				:
+			else
+				echo
+				echo "failed:"
+				echo
+				cat patch-log.txt
+				exit 1
+			fi
 		fi
+
 		touch patch-done.stamp
 		cd ..
 	fi
@@ -577,14 +597,18 @@ maybe_do_build() {
 		mkdir "$buildname"
 		cd "$buildname"
 
-		if do_build "$buildname" > build-log.txt 2>&1; then
-			:
+		if [ "$SHOW_LOGS" = "yes" ]; then
+			do_build "$buildname"
 		else
-			echo
-			echo "failed:"
-			echo
-			cat build-log.txt
-			exit 1
+			if do_build "$buildname" > build-log.txt 2>&1; then
+				:
+			else
+				echo
+				echo "failed:"
+				echo
+				cat build-log.txt
+				exit 1
+			fi
 		fi
 		remove_la_files_in_dirs "$install_native"
 
