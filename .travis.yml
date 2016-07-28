@@ -7,4 +7,4 @@ before_install:
   - sudo apt-get -y install gcc g++ patch make autoconf automake libtool bison flex texinfo cmake
 
 script:
-  - cd contrib/release && ./crossbuild.sh
+  - cd contrib/release && ./crossbuild.sh --show-logs
