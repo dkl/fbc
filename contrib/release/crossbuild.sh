@@ -121,7 +121,7 @@ fi
 export PATH="$install_native/bin:$PATH"
 export CFLAGS="-O2 -g0"
 export CXXFLAGS="-O2 -g0"
-
+export MAKEFLAGS="-j $(grep -c '^processor' /proc/cpuinfo)"
 build_triplet=$(../downloads/config.guess)
 
 ################################################################################
