@@ -618,10 +618,13 @@ maybe_do_build fbc-$version_fbc-build-native
 # more target libs
 maybe_do_build $title_gmp-build-win32
 maybe_do_build $title_gmp-build-win64
+maybe_do_build $title_gmp-build-dos
 maybe_do_build $title_mpfr-build-win32
 maybe_do_build $title_mpfr-build-win64
+maybe_do_build $title_mpfr-build-dos
 maybe_do_build $title_mpc-build-win32
 maybe_do_build $title_mpc-build-win64
+maybe_do_build $title_mpc-build-dos
 
 maybe_do_build $title_binutils-build-win32-to-win32
 maybe_do_build $title_binutils-build-win64-to-win64
