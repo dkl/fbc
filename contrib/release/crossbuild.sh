@@ -6,11 +6,11 @@ set -e
 mkdir -p build
 cd build
 
-version_binutils=2.26.1
-version_fbc=c89cb5a235c1214ced96724765e8ea207823d7dd
+version_binutils=2.27
+version_fbc=6a5e4fbac453f5c1d37c3a643c2d76753aac1844
 version_fbc_git=yes
-version_gcc=6.1.0
-version_gmp=6.1.0
+version_gcc=6.2.0
+version_gmp=6.1.1
 version_libffi=3.2.1
 version_mingww64=4.0.6
 version_mpc=1.0.3
