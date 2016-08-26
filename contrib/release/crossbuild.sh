@@ -94,29 +94,28 @@ my_extract $title_zlib     $tarball_zlib
 
 ################################################################################
 
-install_native="$PWD/install"
-install_win32="$install_native/i686-w64-mingw32"
-install_win64="$install_native/x86_64-w64-mingw32"
-install_dos="$install_native/i586-pc-msdosdjgpp"
-mkdir -p "$install_win32"
-mkdir -p "$install_win64"
-mkdir -p "$install_dos"
-if [ ! -e "$install_win32/mingw" ]; then
-	ln -s "$install_win32" "$install_win32/mingw"
+prefix_native="$PWD/native"
+sysroot_win32="$PWD/sysroot-win32"
+sysroot_win64="$PWD/sysroot-win64"
+sysroot_dos="$PWD/sysroot-dos"
+mkdir -p "$sysroot_win32"; cd "$sysroot_win32"; mkdir -p bin include lib; cd ..
+mkdir -p "$sysroot_win64"; cd "$sysroot_win64"; mkdir -p bin include lib; cd ..
+mkdir -p "$sysroot_dos"  ; cd "$sysroot_dos"  ; mkdir -p bin include lib; cd ..
+if [ ! -e "$sysroot_win32/mingw" ]; then
+	ln -s "$sysroot_win32" "$sysroot_win32/mingw"
 fi
-if [ ! -e "$install_win64/mingw" ]; then
-	ln -s "$install_win64" "$install_win64/mingw"
+if [ ! -e "$sysroot_win64/mingw" ]; then
+	ln -s "$sysroot_win64" "$sysroot_win64/mingw"
 fi
-if [ ! -e "$install_dos/dev/env/DJDIR" ]; then
-	mkdir -p "$install_dos/dev/env"
-	ln -s "$install_dos" "$install_dos/dev/env/DJDIR"
+if [ ! -e "$sysroot_dos/dev/env/DJDIR" ]; then
+	mkdir -p "$sysroot_dos/dev/env"
+	ln -s "$sysroot_dos" "$sysroot_dos/dev/env/DJDIR"
 fi
-mkdir -p "$install_dos"/include
-if [ ! -e "$install_dos"/sys-include ]; then
-	ln -s "$install_dos"/include "$install_dos"/sys-include
+if [ ! -e "$sysroot_dos"/sys-include ]; then
+	ln -s "$sysroot_dos"/include "$sysroot_dos"/sys-include
 fi
 
-export PATH="$install_native/bin:$PATH"
+export PATH="$prefix_native/bin:$PATH"
 export CFLAGS="-O2 -g0"
 export CXXFLAGS="-O2 -g0"
 cpucount="$(grep -c '^processor' /proc/cpuinfo)"
@@ -178,7 +177,7 @@ do_build_autotools_native() {
 	shift
 	../"$srcname"/configure \
 		--build=$build_triplet --host=$build_triplet \
-		--prefix="$install_native" \
+		--prefix="$prefix_native" \
 		--enable-static --disable-shared "$@"
 	make -j"$cpucount"
 	make -j"$cpucount" install
@@ -192,7 +191,7 @@ do_build_autotools_win32() {
 		--prefix= \
 		--enable-static --disable-shared "$@"
 	make -j"$cpucount"
-	make -j"$cpucount" install DESTDIR="$install_win32"
+	make -j"$cpucount" install DESTDIR="$sysroot_win32"
 }
 
 do_build_autotools_win64() {
@@ -203,7 +202,7 @@ do_build_autotools_win64() {
 		--prefix= \
 		--enable-static --disable-shared "$@"
 	make -j"$cpucount"
-	make -j"$cpucount" install DESTDIR="$install_win64"
+	make -j"$cpucount" install DESTDIR="$sysroot_win64"
 }
 
 do_build_autotools_dos() {
@@ -214,7 +213,7 @@ do_build_autotools_dos() {
 		--prefix= \
 		--enable-static --disable-shared "$@"
 	make -j"$cpucount"
-	make -j"$cpucount" install DESTDIR="$install_dos"
+	make -j"$cpucount" install DESTDIR="$sysroot_dos"
 }
 
 do_build() {
@@ -224,19 +223,19 @@ do_build() {
 
 	$title_binutils-build-native-to-win32)
 		do_build_autotools_native $title_binutils \
-			--target=i686-w64-mingw32 --with-sysroot="$install_win32" \
+			--target=i686-w64-mingw32 --with-sysroot="$sysroot_win32" \
 			--disable-nls --disable-multilib --disable-werror
 		;;
 
 	$title_binutils-build-native-to-win64)
 		do_build_autotools_native $title_binutils \
-			--target=x86_64-w64-mingw32 --with-sysroot="$install_win64" \
+			--target=x86_64-w64-mingw32 --with-sysroot="$sysroot_win64" \
 			--disable-nls --disable-multilib --disable-werror
 		;;
 
 	$title_djbnu-build-native-to-dos)
 		do_build_autotools_native $title_djbnu \
-			--target=i586-pc-msdosdjgpp --with-sysroot="$install_dos" \
+			--target=i586-pc-msdosdjgpp --with-sysroot="$sysroot_dos" \
 			--disable-nls --disable-multilib --disable-werror
 		;;
 
@@ -263,7 +262,7 @@ do_build() {
 			--build=$build_triplet --host=i686-w64-mingw32 \
 			--prefix=
 		make -j"$cpucount"
-		make -j"$cpucount" install DESTDIR="$install_win32"
+		make -j"$cpucount" install DESTDIR="$sysroot_win32"
 		;;
 
 	$title_mingww64-build-win64-headers)
@@ -271,14 +270,14 @@ do_build() {
 			--build=$build_triplet --host=x86_64-w64-mingw32 \
 			--prefix=
 		make -j"$cpucount"
-		make -j"$cpucount" install DESTDIR="$install_win64"
+		make -j"$cpucount" install DESTDIR="$sysroot_win64"
 		;;
 
 	$title_djcrx-build-dos-headers)
 		cp -R ../$title_djcrx/. .
 		cp -R ../$title_djlsr/. .
 		find . -type f -name "*.o" -or -name "*.a" | xargs rm
-		cp -R include/. "$install_dos"/include
+		cp -R include/. "$sysroot_dos"/include
 		;;
 
 	$title_mingww64-build-win32-crt)
@@ -287,7 +286,7 @@ do_build() {
 			--prefix= \
 			--enable-wildcard
 		make -j"$cpucount"
-		make -j"$cpucount" install DESTDIR="$install_win32"
+		make -j"$cpucount" install DESTDIR="$sysroot_win32"
 		;;
 
 	$title_mingww64-build-win64-crt)
@@ -296,7 +295,7 @@ do_build() {
 			--prefix= \
 			--enable-wildcard
 		make -j"$cpucount"
-		make -j"$cpucount" install DESTDIR="$install_win64"
+		make -j"$cpucount" install DESTDIR="$sysroot_win64"
 		;;
 
 	$title_djcrx-build-dos-crt)
@@ -327,10 +326,10 @@ do_build() {
 		make -f makempty
 		make ../lib/libg.a ../lib/libpc.a
 		cd ..
-		cp lib/*.a lib/*.o "$install_dos"/lib
-		install -m 0755 hostbin/stubify.exe "$install_native"/bin/stubify
-		install -m 0755 hostbin/stubedit.exe "$install_native"/bin/stubedit
-		install -m 0755 hostbin/dxegen.exe "$install_native"/bin/dxegen
+		cp lib/*.a lib/*.o "$sysroot_dos"/lib
+		install -m 0755 hostbin/stubify.exe "$prefix_native"/bin/stubify
+		install -m 0755 hostbin/stubedit.exe "$prefix_native"/bin/stubedit
+		install -m 0755 hostbin/dxegen.exe "$prefix_native"/bin/dxegen
 		;;
 
 	$title_djcrx-build-dos-full)
@@ -342,17 +341,17 @@ do_build() {
 		sed -i 's/-Werror//g' makefile.cfg
 		make
 		cd ..
-		cp bin/*.exe "$install_dos"/bin
+		cp bin/*.exe "$sysroot_dos"/bin
 		;;
 
 	$title_gcc-build-native-to-win32-gcc)
 		../$title_gcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=i686-w64-mingw32 \
-			--prefix="$install_native" \
-			--with-sysroot="$install_win32" \
-			--with-gmp="$install_native" \
-			--with-mpfr="$install_native" \
-			--with-mpc="$install_native" \
+			--prefix="$prefix_native" \
+			--with-sysroot="$sysroot_win32" \
+			--with-gmp="$prefix_native" \
+			--with-mpfr="$prefix_native" \
+			--with-mpc="$prefix_native" \
 			--enable-static --disable-shared \
 			--disable-bootstrap --enable-languages=c \
 			--disable-nls --disable-multilib \
@@ -363,17 +362,17 @@ do_build() {
 			--enable-threads=win32 --enable-sjlj-exceptions
 		make -j"$cpucount" all-gcc
 		make -j"$cpucount" install-gcc
-		rm -f "$install_native"/lib/gcc/i586-pc-msdosdjgpp/?.?.?/include-fixed/*
+		rm -f "$prefix_native"/lib/gcc/i586-pc-msdosdjgpp/?.?.?/include-fixed/*
 		;;
 
 	$title_gcc-build-native-to-win64-gcc)
 		../$title_gcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=x86_64-w64-mingw32 \
-			--prefix="$install_native" \
-			--with-sysroot="$install_win64" \
-			--with-gmp="$install_native" \
-			--with-mpfr="$install_native" \
-			--with-mpc="$install_native" \
+			--prefix="$prefix_native" \
+			--with-sysroot="$sysroot_win64" \
+			--with-gmp="$prefix_native" \
+			--with-mpfr="$prefix_native" \
+			--with-mpc="$prefix_native" \
 			--enable-static --disable-shared \
 			--disable-bootstrap --enable-languages=c \
 			--disable-nls --disable-multilib \
@@ -389,11 +388,11 @@ do_build() {
 	$title_djgcc-build-native-to-dos-gcc)
 		../$title_djgcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=i586-pc-msdosdjgpp \
-			--prefix="$install_native" \
-			--with-sysroot="$install_dos" \
-			--with-gmp="$install_native" \
-			--with-mpfr="$install_native" \
-			--with-mpc="$install_native" \
+			--prefix="$prefix_native" \
+			--with-sysroot="$sysroot_dos" \
+			--with-gmp="$prefix_native" \
+			--with-mpfr="$prefix_native" \
+			--with-mpc="$prefix_native" \
 			--enable-static --disable-shared \
 			--disable-bootstrap --enable-languages=c \
 			--disable-nls --disable-multilib \
@@ -408,11 +407,11 @@ do_build() {
 	$title_gcc-build-native-to-win32-full)
 		../$title_gcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=i686-w64-mingw32 \
-			--prefix="$install_native" \
-			--with-sysroot="$install_win32" \
-			--with-gmp="$install_native" \
-			--with-mpfr="$install_native" \
-			--with-mpc="$install_native" \
+			--prefix="$prefix_native" \
+			--with-sysroot="$sysroot_win32" \
+			--with-gmp="$prefix_native" \
+			--with-mpfr="$prefix_native" \
+			--with-mpc="$prefix_native" \
 			--enable-static --disable-shared \
 			--disable-bootstrap --enable-languages=c,c++ \
 			--disable-nls --disable-multilib \
@@ -428,11 +427,11 @@ do_build() {
 	$title_gcc-build-native-to-win64-full)
 		../$title_gcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=x86_64-w64-mingw32 \
-			--prefix="$install_native" \
-			--with-sysroot="$install_win64" \
-			--with-gmp="$install_native" \
-			--with-mpfr="$install_native" \
-			--with-mpc="$install_native" \
+			--prefix="$prefix_native" \
+			--with-sysroot="$sysroot_win64" \
+			--with-gmp="$prefix_native" \
+			--with-mpfr="$prefix_native" \
+			--with-mpc="$prefix_native" \
 			--enable-static --disable-shared \
 			--disable-bootstrap --enable-languages=c,c++ \
 			--disable-nls --disable-multilib \
@@ -448,11 +447,11 @@ do_build() {
 	$title_djgcc-build-native-to-dos-full)
 		../$title_djgcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=i586-pc-msdosdjgpp \
-			--prefix="$install_native" \
-			--with-sysroot="$install_dos" \
-			--with-gmp="$install_native" \
-			--with-mpfr="$install_native" \
-			--with-mpc="$install_native" \
+			--prefix="$prefix_native" \
+			--with-sysroot="$sysroot_dos" \
+			--with-gmp="$prefix_native" \
+			--with-mpfr="$prefix_native" \
+			--with-mpc="$prefix_native" \
 			--enable-static --disable-shared \
 			--disable-bootstrap --enable-languages=c,c++ \
 			--disable-nls --disable-multilib \
@@ -468,10 +467,10 @@ do_build() {
 		do_build_autotools_win32 $title_gcc \
 			--target=i686-w64-mingw32 \
 			--with-local-prefix= \
-			--with-build-sysroot="$install_win32" \
-			--with-gmp="$install_win32" \
-			--with-mpfr="$install_win32" \
-			--with-mpc="$install_win32" \
+			--with-build-sysroot="$sysroot_win32" \
+			--with-gmp="$sysroot_win32" \
+			--with-mpfr="$sysroot_win32" \
+			--with-mpc="$sysroot_win32" \
 			--disable-bootstrap --enable-languages=c,c++ \
 			--disable-nls --disable-multilib \
 			--disable-lto --disable-lto-plugin \
@@ -486,10 +485,10 @@ do_build() {
 		do_build_autotools_win64 $title_gcc \
 			--target=x86_64-w64-mingw32 \
 			--with-local-prefix= \
-			--with-build-sysroot="$install_win64" \
-			--with-gmp="$install_win64" \
-			--with-mpfr="$install_win64" \
-			--with-mpc="$install_win64" \
+			--with-build-sysroot="$sysroot_win64" \
+			--with-gmp="$sysroot_win64" \
+			--with-mpfr="$sysroot_win64" \
+			--with-mpc="$sysroot_win64" \
 			--disable-bootstrap --enable-languages=c,c++ \
 			--disable-nls --disable-multilib \
 			--disable-lto --disable-lto-plugin \
@@ -505,10 +504,10 @@ do_build() {
 		do_build_autotools_dos $title_djgcc \
 			--target=i586-pc-msdosdjgpp \
 			--with-local-prefix= \
-			--with-build-sysroot="$install_dos" \
-			--with-gmp="$install_dos" \
-			--with-mpfr="$install_dos" \
-			--with-mpc="$install_dos" \
+			--with-build-sysroot="$sysroot_dos" \
+			--with-gmp="$sysroot_dos" \
+			--with-mpfr="$sysroot_dos" \
+			--with-mpc="$sysroot_dos" \
 			--disable-bootstrap --enable-languages=c,c++ \
 			--disable-nls --disable-multilib \
 			--disable-lto --disable-lto-plugin \
@@ -520,47 +519,47 @@ do_build() {
 	fbc-*-build-native)
 		rm -f config.mk
 		echo 'ifeq ($(TARGET),i686-w64-mingw32)'                      >> config.mk
-		echo "  CFLAGS += -I\"$install_win32/lib/$title_libffi/include\"" >> config.mk
+		echo "  CFLAGS += -I\"$sysroot_win32/lib/$title_libffi/include\"" >> config.mk
 		echo 'endif'                                                  >> config.mk
 		echo 'ifeq ($(TARGET),x86_64-w64-mingw32)'                    >> config.mk
-		echo "  CFLAGS += -I\"$install_win64/lib/$title_libffi/include\"" >> config.mk
+		echo "  CFLAGS += -I\"$sysroot_win64/lib/$title_libffi/include\"" >> config.mk
 		echo 'endif'                                                  >> config.mk
-		echo "prefix := $install_native"                              >> config.mk
+		echo "prefix := $prefix_native"                              >> config.mk
 		make -j"$cpucount" -f ../$title_fbc/makefile compiler install-compiler install-includes
 		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=i686-w64-mingw32   rtlib gfxlib2 install-rtlib install-gfxlib2
 		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=x86_64-w64-mingw32 rtlib gfxlib2 install-rtlib install-gfxlib2
 		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=i586-pc-msdosdjgpp rtlib gfxlib2 install-rtlib install-gfxlib2
-		mv "$install_native"/lib/freebas/* "$install_native"/lib/freebasic
+		mv "$prefix_native"/lib/freebas/* "$prefix_native"/lib/freebasic
 		;;
 
 	fbc-*-build-win32)
 		rm -f config.mk
 		echo 'TARGET := i686-w64-mingw32'                           >> config.mk
-		echo "CFLAGS += -I\"$install_win32/lib/$title_libffi/include\"" >> config.mk
+		echo "CFLAGS += -I\"$sysroot_win32/lib/$title_libffi/include\"" >> config.mk
 		echo "prefix :="                                            >> config.mk
-		make -j"$cpucount" -f ../$title_fbc/makefile all install DESTDIR="$install_win32"
+		make -j"$cpucount" -f ../$title_fbc/makefile all install DESTDIR="$sysroot_win32"
 		;;
 
 	fbc-*-build-win64)
 		rm -f config.mk
 		echo 'TARGET := x86_64-w64-mingw32'                         >> config.mk
-		echo "CFLAGS += -I\"$install_win64/lib/$title_libffi/include\"" >> config.mk
+		echo "CFLAGS += -I\"$sysroot_win64/lib/$title_libffi/include\"" >> config.mk
 		echo "prefix :="                                            >> config.mk
-		make -j"$cpucount" -f ../$title_fbc/makefile all install DESTDIR="$install_win64"
+		make -j"$cpucount" -f ../$title_fbc/makefile all install DESTDIR="$sysroot_win64"
 		;;
 
 	fbc-*-build-dos)
 		rm -f config.mk
 		echo 'TARGET := i586-pc-msdosdjgpp'                         >> config.mk
 		echo "prefix :="                                            >> config.mk
-		make -j"$cpucount" -f ../$title_fbc/makefile all install DESTDIR="$install_dos"
-		mv "$install_dos"/lib/freebas "$install_dos"/lib/freebasic
+		make -j"$cpucount" -f ../$title_fbc/makefile all install DESTDIR="$sysroot_dos"
+		mv "$sysroot_dos"/lib/freebas "$sysroot_dos"/lib/freebasic
 		;;
 
 	fbc-*-build-win32-standalone)
 		rm -f config.mk
 		echo 'TARGET := i686-w64-mingw32'                             >> config.mk
-		echo "CFLAGS += -I\"$install_win32/lib/$title_libffi/include\"" >> config.mk
+		echo "CFLAGS += -I\"$sysroot_win32/lib/$title_libffi/include\"" >> config.mk
 		echo 'ENABLE_STANDALONE := 1'                                 >> config.mk
 		make -j"$cpucount" -f ../$title_fbc/makefile
 		;;
@@ -568,7 +567,7 @@ do_build() {
 	fbc-*-build-win64-standalone)
 		rm -f config.mk
 		echo 'TARGET := x86_64-w64-mingw32'                           >> config.mk
-		echo "CFLAGS += -I\"$install_win64/lib/$title_libffi/include\"" >> config.mk
+		echo "CFLAGS += -I\"$sysroot_win64/lib/$title_libffi/include\"" >> config.mk
 		echo 'ENABLE_STANDALONE := 1'                                 >> config.mk
 		make -j"$cpucount" -f ../$title_fbc/makefile
 		;;
@@ -581,27 +580,27 @@ do_build() {
 		;;
 
 	$title_gmp-build-native)  do_build_autotools_native $title_gmp;;
-	$title_mpfr-build-native) do_build_autotools_native $title_mpfr --with-gmp="$install_native";;
-	$title_mpc-build-native)  do_build_autotools_native $title_mpc  --with-gmp="$install_native" --with-mpfr="$install_native";;
+	$title_mpfr-build-native) do_build_autotools_native $title_mpfr --with-gmp="$prefix_native";;
+	$title_mpc-build-native)  do_build_autotools_native $title_mpc  --with-gmp="$prefix_native" --with-mpfr="$prefix_native";;
 
 	$title_gmp-build-win32)    do_build_autotools_win32 $title_gmp;;
-	$title_mpfr-build-win32)   do_build_autotools_win32 $title_mpfr --with-gmp="$install_win32";;
-	$title_mpc-build-win32)    do_build_autotools_win32 $title_mpc  --with-gmp="$install_win32" --with-mpfr="$install_win32";;
+	$title_mpfr-build-win32)   do_build_autotools_win32 $title_mpfr --with-gmp="$sysroot_win32";;
+	$title_mpc-build-win32)    do_build_autotools_win32 $title_mpc  --with-gmp="$sysroot_win32" --with-mpfr="$sysroot_win32";;
 	$title_libffi-build-win32) do_build_autotools_win32 $title_libffi;;
 
 	$title_gmp-build-win64)    do_build_autotools_win64 $title_gmp;;
-	$title_mpfr-build-win64)   do_build_autotools_win64 $title_mpfr --with-gmp="$install_win64";;
-	$title_mpc-build-win64)    do_build_autotools_win64 $title_mpc  --with-gmp="$install_win64" --with-mpfr="$install_win64";;
+	$title_mpfr-build-win64)   do_build_autotools_win64 $title_mpfr --with-gmp="$sysroot_win64";;
+	$title_mpc-build-win64)    do_build_autotools_win64 $title_mpc  --with-gmp="$sysroot_win64" --with-mpfr="$sysroot_win64";;
 	$title_libffi-build-win64) do_build_autotools_win64 $title_libffi;;
 
 	$title_gmp-build-dos)    do_build_autotools_dos $title_gmp;;
-	$title_mpfr-build-dos)   do_build_autotools_dos $title_mpfr --with-gmp="$install_dos";;
-	$title_mpc-build-dos)    do_build_autotools_dos $title_mpc  --with-gmp="$install_dos" --with-mpfr="$install_dos";;
+	$title_mpfr-build-dos)   do_build_autotools_dos $title_mpfr --with-gmp="$sysroot_dos";;
+	$title_mpc-build-dos)    do_build_autotools_dos $title_mpc  --with-gmp="$sysroot_dos" --with-mpfr="$sysroot_dos";;
 	$title_zlib-build-dos)
 		cp -R ../$title_zlib/. .
 		CHOST=i586-pc-msdosdjgpp ./configure --static --prefix=
 		make
-		make install DESTDIR="$install_dos"
+		make install DESTDIR="$sysroot_dos"
 		;;
 
 	*)
@@ -620,7 +619,7 @@ maybe_do_build() {
 		mkdir "$buildname"
 		cd "$buildname"
 		do_build "$buildname" > build-log.txt 2>&1
-		remove_la_files_in_dirs "$install_native"
+		remove_la_files_in_dirs "$prefix_native" "$sysroot_win32" "$sysroot_win64" "$sysroot_dos"
 		cd ..
 		touch "$buildname/build-done.stamp"
 	fi
