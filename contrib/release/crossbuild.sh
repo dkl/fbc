@@ -22,6 +22,7 @@ version_libffi=3.2.1
 version_mingww64=4.0.6
 version_mpc=1.0.3
 version_mpfr=3.1.4
+version_zlib=1.2.8
 
 title_binutils=binutils-$version_binutils
 title_djbnu=bnu226sr3
@@ -34,6 +35,7 @@ title_libffi=libffi-$version_libffi
 title_mingww64=mingw-w64-v$version_mingww64
 title_mpc=mpc-$version_mpc
 title_mpfr=mpfr-$version_mpfr
+title_zlib=zlib-$version_zlib
 
 tarball_binutils=$title_binutils.tar.bz2
 tarball_djbnu=$title_djbnu.zip
@@ -46,6 +48,7 @@ tarball_libffi=$title_libffi.tar.gz
 tarball_mingww64=$title_mingww64.tar.bz2
 tarball_mpc=$title_mpc.tar.gz
 tarball_mpfr=$title_mpfr.tar.xz
+tarball_zlib=$title_zlib.tar.xz
 
 my_fetch $tarball_binutils "http://ftpmirror.gnu.org/binutils/$tarball_binutils"
 my_fetch $tarball_djbnu    "ftp://ftp.fu-berlin.de/pc/languages/djgpp/deleted/v2gnu/$tarball_djbnu"
@@ -58,6 +61,7 @@ my_fetch $tarball_libffi   "ftp://sourceware.org/pub/libffi/$tarball_libffi"
 my_fetch $tarball_mingww64 "https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/$tarball_mingww64/download"
 my_fetch $tarball_mpc      "ftp://ftp.gnu.org/gnu/mpc/$tarball_mpc"
 my_fetch $tarball_mpfr     "http://www.mpfr.org/mpfr-current/$tarball_mpfr"
+my_fetch $tarball_zlib     "http://zlib.net/$tarball_zlib"
 
 if [ "$version_fbc_git" = "yes" ]; then
 	title_fbc=fbc-$version_fbc
@@ -86,6 +90,7 @@ my_extract $title_libffi   $tarball_libffi
 my_extract $title_mingww64 $tarball_mingww64
 my_extract $title_mpc      $tarball_mpc
 my_extract $title_mpfr     $tarball_mpfr
+my_extract $title_zlib     $tarball_zlib
 
 ################################################################################
 
@@ -560,6 +565,12 @@ do_build() {
 	$title_gmp-build-dos)    do_build_autotools_dos $title_gmp;;
 	$title_mpfr-build-dos)   do_build_autotools_dos $title_mpfr --with-gmp="$install_dos";;
 	$title_mpc-build-dos)    do_build_autotools_dos $title_mpc  --with-gmp="$install_dos" --with-mpfr="$install_dos";;
+	$title_zlib-build-dos)
+		cp -R ../$title_zlib/. .
+		CHOST=i586-pc-msdosdjgpp ./configure --static --prefix=
+		make
+		make install DESTDIR="$install_dos"
+		;;
 
 	*)
 		echo "TODO: build $buildname"
@@ -615,6 +626,7 @@ maybe_do_build $title_mpfr-build-dos
 maybe_do_build $title_mpc-build-win32
 maybe_do_build $title_mpc-build-win64
 maybe_do_build $title_mpc-build-dos
+maybe_do_build $title_zlib-build-dos
 
 maybe_do_build $title_binutils-build-win32-to-win32
 maybe_do_build $title_binutils-build-win64-to-win64
