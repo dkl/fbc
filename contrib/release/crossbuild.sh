@@ -459,6 +459,7 @@ do_build() {
 		;;
 
 	$title_djgcc-build-dos-to-dos)
+		ac_cv_c_bigendian=no \
 		do_build_autotools_dos $title_djgcc \
 			--target=i586-pc-msdosdjgpp \
 			--with-local-prefix= \
