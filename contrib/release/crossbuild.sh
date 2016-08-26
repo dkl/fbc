@@ -519,7 +519,6 @@ do_build() {
 
 	fbc-*-build-native)
 		rm -f config.mk
-		echo 'V := 1'                                                 >> config.mk
 		echo 'ifeq ($(TARGET),i686-w64-mingw32)'                      >> config.mk
 		echo "  CFLAGS += -I\"$install_win32/lib/$title_libffi/include\"" >> config.mk
 		echo 'endif'                                                  >> config.mk
@@ -536,7 +535,6 @@ do_build() {
 
 	fbc-*-build-win32)
 		rm -f config.mk
-		echo 'V := 1'                                               >> config.mk
 		echo 'TARGET := i686-w64-mingw32'                           >> config.mk
 		echo "CFLAGS += -I\"$install_win32/lib/$title_libffi/include\"" >> config.mk
 		echo "prefix :="                                            >> config.mk
@@ -545,7 +543,6 @@ do_build() {
 
 	fbc-*-build-win64)
 		rm -f config.mk
-		echo 'V := 1'                                               >> config.mk
 		echo 'TARGET := x86_64-w64-mingw32'                         >> config.mk
 		echo "CFLAGS += -I\"$install_win64/lib/$title_libffi/include\"" >> config.mk
 		echo "prefix :="                                            >> config.mk
@@ -554,7 +551,6 @@ do_build() {
 
 	fbc-*-build-dos)
 		rm -f config.mk
-		echo 'V := 1'                                               >> config.mk
 		echo 'TARGET := i586-pc-msdosdjgpp'                         >> config.mk
 		echo "prefix :="                                            >> config.mk
 		make -j"$cpucount" -f ../$title_fbc/makefile all install DESTDIR="$install_dos"
@@ -563,7 +559,6 @@ do_build() {
 
 	fbc-*-build-win32-standalone)
 		rm -f config.mk
-		echo 'V := 1'                                                 >> config.mk
 		echo 'TARGET := i686-w64-mingw32'                             >> config.mk
 		echo "CFLAGS += -I\"$install_win32/lib/$title_libffi/include\"" >> config.mk
 		echo 'ENABLE_STANDALONE := 1'                                 >> config.mk
@@ -572,7 +567,6 @@ do_build() {
 
 	fbc-*-build-win64-standalone)
 		rm -f config.mk
-		echo 'V := 1'                                                 >> config.mk
 		echo 'TARGET := x86_64-w64-mingw32'                           >> config.mk
 		echo "CFLAGS += -I\"$install_win64/lib/$title_libffi/include\"" >> config.mk
 		echo 'ENABLE_STANDALONE := 1'                                 >> config.mk
@@ -581,7 +575,6 @@ do_build() {
 
 	fbc-*-build-dos-standalone)
 		rm -f config.mk
-		echo 'V := 1'                                                 >> config.mk
 		echo 'TARGET := i586-pc-msdosdjgpp'                           >> config.mk
 		echo 'ENABLE_STANDALONE := 1'                                 >> config.mk
 		make -j"$cpucount" -f ../$title_fbc/makefile
