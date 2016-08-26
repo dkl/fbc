@@ -14,7 +14,7 @@ mkdir -p build
 cd build
 
 version_binutils=2.27
-version_fbc=25cf58cf29233fb8f010843fd0d1e07a63495f65
+version_fbc=cc2711596a2953d028f5df21dccb92c88a2d879d
 version_fbc_git=yes
 version_gcc=6.2.0
 version_gmp=6.1.1
