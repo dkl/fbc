@@ -531,6 +531,7 @@ do_build() {
 		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=i686-w64-mingw32   rtlib gfxlib2 install-rtlib install-gfxlib2
 		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=x86_64-w64-mingw32 rtlib gfxlib2 install-rtlib install-gfxlib2
 		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=i586-pc-msdosdjgpp rtlib gfxlib2 install-rtlib install-gfxlib2
+		mv "$install_native"/lib/freebas/* "$install_native"/lib/freebasic
 		;;
 
 	fbc-*-build-win32)
@@ -557,6 +558,7 @@ do_build() {
 		echo 'TARGET := i586-pc-msdosdjgpp'                         >> config.mk
 		echo "prefix :="                                            >> config.mk
 		make -j"$cpucount" -f ../$title_fbc/makefile all install DESTDIR="$install_dos"
+		mv "$install_dos"/lib/freebas "$install_dos"/lib/freebasic
 		;;
 
 	fbc-*-build-win32-standalone)
