@@ -274,6 +274,13 @@ do_build() {
 		make -j"$cpucount" install DESTDIR="$install_win64"
 		;;
 
+	$title_djcrx-build-dos-headers)
+		cp -R ../$title_djcrx/. .
+		cp -R ../$title_djlsr/. .
+		find . -type f -name "*.o" -or -name "*.a" | xargs rm
+		cp -R include/. "$install_dos"/include
+		;;
+
 	$title_mingww64-build-win32-crt)
 		../$title_mingww64/mingw-w64-crt/configure \
 			--build=$build_triplet --host=i686-w64-mingw32 \
@@ -292,7 +299,41 @@ do_build() {
 		make -j"$cpucount" install DESTDIR="$install_win64"
 		;;
 
-	$title_djcrx-build-dos)
+	$title_djcrx-build-dos-crt)
+		cp -R ../$title_djcrx/. .
+		cp -R ../$title_djlsr/. .
+		find . -type f -name "*.o" -or -name "*.a" | xargs rm
+		cd src
+		rm -f *.opt
+		sed -i 's/-Werror//g' makefile.cfg
+		# Build DJGPP libc without any target binaries, because the latter would
+		# fail because we don't have full gcc yet (libgcc.a missing)
+		# based on src/makefile's "all" target:
+		make misc.exe config ../hostbin ../bin ../include ../info ../lib makemake.exe
+		make -C djasm native
+		make -C stub native
+		make -C utils native
+		make -C dxe native
+		make -C mkdoc
+		make -C libc
+		#make -C debug
+		#make -C djasm
+		#make -C stub
+		#make -C dxe
+		#make -C libemu
+		make -C libm
+		#make -C utils
+		#make -C docs
+		make -f makempty
+		make ../lib/libg.a ../lib/libpc.a
+		cd ..
+		cp lib/*.a lib/*.o "$install_dos"/lib
+		install -m 0755 hostbin/stubify.exe "$install_native"/bin/stubify
+		install -m 0755 hostbin/stubedit.exe "$install_native"/bin/stubedit
+		install -m 0755 hostbin/dxegen.exe "$install_native"/bin/dxegen
+		;;
+
+	$title_djcrx-build-dos-full)
 		cp -R ../$title_djcrx/. .
 		cp -R ../$title_djlsr/. .
 		find . -type f -name "*.o" -or -name "*.a" | xargs rm
@@ -301,11 +342,7 @@ do_build() {
 		sed -i 's/-Werror//g' makefile.cfg
 		make
 		cd ..
-		cp -R include/. "$install_dos"/include
-		cp lib/*.a lib/*.o "$install_dos"/lib
-		install -m 0755 hostbin/stubify.exe "$install_native"/bin/stubify
-		install -m 0755 hostbin/stubedit.exe "$install_native"/bin/stubedit
-		install -m 0755 hostbin/dxegen.exe "$install_native"/bin/dxegen
+		cp bin/*.exe "$install_dos"/bin
 		;;
 
 	$title_gcc-build-native-to-win32-gcc)
@@ -603,15 +640,17 @@ maybe_do_build $title_mpfr-build-native
 maybe_do_build $title_mpc-build-native
 maybe_do_build $title_mingww64-build-win32-headers
 maybe_do_build $title_mingww64-build-win64-headers
+maybe_do_build $title_djcrx-build-dos-headers
 maybe_do_build $title_gcc-build-native-to-win32-gcc
 maybe_do_build $title_gcc-build-native-to-win64-gcc
 maybe_do_build $title_djgcc-build-native-to-dos-gcc
 maybe_do_build $title_mingww64-build-win32-crt
 maybe_do_build $title_mingww64-build-win64-crt
-maybe_do_build $title_djcrx-build-dos
+maybe_do_build $title_djcrx-build-dos-crt
 maybe_do_build $title_gcc-build-native-to-win32-full
 maybe_do_build $title_gcc-build-native-to-win64-full
 maybe_do_build $title_djgcc-build-native-to-dos-full
+maybe_do_build $title_djcrx-build-dos-full
 maybe_do_build $title_libffi-build-win32
 maybe_do_build $title_libffi-build-win64
 maybe_do_build fbc-$version_fbc-build-native
