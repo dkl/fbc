@@ -107,7 +107,7 @@ fi
 export PATH="$install_native/bin:$PATH"
 export CFLAGS="-O2 -g0"
 export CXXFLAGS="-O2 -g0"
-export MAKEFLAGS="-j $(grep -c '^processor' /proc/cpuinfo)"
+cpucount="$(grep -c '^processor' /proc/cpuinfo)"
 build_triplet=$(../downloads/config.guess)
 
 ################################################################################
@@ -175,8 +175,8 @@ do_build_autotools_native() {
 		--build=$build_triplet --host=$build_triplet \
 		--prefix="$install_native" \
 		--enable-static --disable-shared "$@"
-	make
-	make install
+	make -j"$cpucount"
+	make -j"$cpucount" install
 }
 
 do_build_autotools_win32() {
@@ -186,8 +186,8 @@ do_build_autotools_win32() {
 		--build=$build_triplet --host=i686-w64-mingw32 \
 		--prefix= \
 		--enable-static --disable-shared "$@"
-	make
-	make install DESTDIR="$install_win32"
+	make -j"$cpucount"
+	make -j"$cpucount" install DESTDIR="$install_win32"
 }
 
 do_build_autotools_win64() {
@@ -197,8 +197,8 @@ do_build_autotools_win64() {
 		--build=$build_triplet --host=x86_64-w64-mingw32 \
 		--prefix= \
 		--enable-static --disable-shared "$@"
-	make
-	make install DESTDIR="$install_win64"
+	make -j"$cpucount"
+	make -j"$cpucount" install DESTDIR="$install_win64"
 }
 
 do_build_autotools_dos() {
@@ -208,8 +208,8 @@ do_build_autotools_dos() {
 		--build=$build_triplet --host=i586-pc-msdosdjgpp \
 		--prefix= \
 		--enable-static --disable-shared "$@"
-	make
-	make install DESTDIR="$install_dos"
+	make -j"$cpucount"
+	make -j"$cpucount" install DESTDIR="$install_dos"
 }
 
 do_build() {
@@ -257,16 +257,16 @@ do_build() {
 		../$title_mingww64/mingw-w64-headers/configure \
 			--build=$build_triplet --host=i686-w64-mingw32 \
 			--prefix=
-		make
-		make install DESTDIR="$install_win32"
+		make -j"$cpucount"
+		make -j"$cpucount" install DESTDIR="$install_win32"
 		;;
 
 	$title_mingww64-build-win64-headers)
 		../$title_mingww64/mingw-w64-headers/configure \
 			--build=$build_triplet --host=x86_64-w64-mingw32 \
 			--prefix=
-		make
-		make install DESTDIR="$install_win64"
+		make -j"$cpucount"
+		make -j"$cpucount" install DESTDIR="$install_win64"
 		;;
 
 	$title_mingww64-build-win32-crt)
@@ -274,8 +274,8 @@ do_build() {
 			--build=$build_triplet --host=i686-w64-mingw32 \
 			--prefix= \
 			--enable-wildcard
-		make
-		make install DESTDIR="$install_win32"
+		make -j"$cpucount"
+		make -j"$cpucount" install DESTDIR="$install_win32"
 		;;
 
 	$title_mingww64-build-win64-crt)
@@ -283,8 +283,8 @@ do_build() {
 			--build=$build_triplet --host=x86_64-w64-mingw32 \
 			--prefix= \
 			--enable-wildcard
-		make
-		make install DESTDIR="$install_win64"
+		make -j"$cpucount"
+		make -j"$cpucount" install DESTDIR="$install_win64"
 		;;
 
 	$title_djcrx-build-dos)
@@ -319,8 +319,8 @@ do_build() {
 			--disable-libmudflap --disable-libgomp --disable-libatomic \
 			--disable-decimal-float \
 			--enable-threads=win32 --enable-sjlj-exceptions
-		make all-gcc
-		make install-gcc
+		make -j"$cpucount" all-gcc
+		make -j"$cpucount" install-gcc
 		rm -f "$install_native"/lib/gcc/i586-pc-msdosdjgpp/?.?.?/include-fixed/*
 		;;
 
@@ -340,8 +340,8 @@ do_build() {
 			--disable-libmudflap --disable-libgomp --disable-libatomic \
 			--disable-decimal-float \
 			--enable-threads=win32 --enable-sjlj-exceptions
-		make all-gcc
-		make install-gcc
+		make -j"$cpucount" all-gcc
+		make -j"$cpucount" install-gcc
 		;;
 
 	$title_djgcc-build-native-to-dos-gcc)
@@ -359,8 +359,8 @@ do_build() {
 			--disable-libssp --disable-libquadmath \
 			--disable-libmudflap --disable-libgomp --disable-libatomic \
 			--disable-decimal-float
-		make all-gcc
-		make install-gcc
+		make -j"$cpucount" all-gcc
+		make -j"$cpucount" install-gcc
 		;;
 
 	$title_gcc-build-native-to-win32-full)
@@ -379,8 +379,8 @@ do_build() {
 			--disable-libmudflap --disable-libgomp --disable-libatomic \
 			--disable-decimal-float \
 			--enable-threads=win32 --enable-sjlj-exceptions
-		make
-		make install
+		make -j"$cpucount"
+		make -j"$cpucount" install
 		;;
 
 	$title_gcc-build-native-to-win64-full)
@@ -399,8 +399,8 @@ do_build() {
 			--disable-libmudflap --disable-libgomp --disable-libatomic \
 			--disable-decimal-float \
 			--enable-threads=win32 --enable-sjlj-exceptions
-		make
-		make install
+		make -j"$cpucount"
+		make -j"$cpucount" install
 		;;
 
 	$title_djgcc-build-native-to-dos-full)
@@ -418,8 +418,8 @@ do_build() {
 			--disable-libssp --disable-libquadmath \
 			--disable-libmudflap --disable-libgomp --disable-libatomic \
 			--disable-decimal-float
-		make
-		make install
+		make -j"$cpucount"
+		make -j"$cpucount" install
 		;;
 
 	$title_gcc-build-win32-to-win32)
@@ -484,10 +484,10 @@ do_build() {
 		echo "  CFLAGS += -I\"$install_win64/lib/$title_libffi/include\"" >> config.mk
 		echo 'endif'                                                  >> config.mk
 		echo "prefix := $install_native"                              >> config.mk
-		make -f ../$title_fbc/makefile compiler install-compiler install-includes
-		make -f ../$title_fbc/makefile TARGET=i686-w64-mingw32   rtlib gfxlib2 install-rtlib install-gfxlib2
-		make -f ../$title_fbc/makefile TARGET=x86_64-w64-mingw32 rtlib gfxlib2 install-rtlib install-gfxlib2
-		make -f ../$title_fbc/makefile TARGET=i586-pc-msdosdjgpp rtlib gfxlib2 install-rtlib install-gfxlib2
+		make -j"$cpucount" -f ../$title_fbc/makefile compiler install-compiler install-includes
+		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=i686-w64-mingw32   rtlib gfxlib2 install-rtlib install-gfxlib2
+		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=x86_64-w64-mingw32 rtlib gfxlib2 install-rtlib install-gfxlib2
+		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=i586-pc-msdosdjgpp rtlib gfxlib2 install-rtlib install-gfxlib2
 		;;
 
 	fbc-*-build-win32)
@@ -496,7 +496,7 @@ do_build() {
 		echo 'TARGET := i686-w64-mingw32'                           >> config.mk
 		echo "CFLAGS += -I\"$install_win32/lib/$title_libffi/include\"" >> config.mk
 		echo "prefix :="                                            >> config.mk
-		make -f ../$title_fbc/makefile all install DESTDIR="$install_win32"
+		make -j"$cpucount" -f ../$title_fbc/makefile all install DESTDIR="$install_win32"
 		;;
 
 	fbc-*-build-win64)
@@ -505,7 +505,7 @@ do_build() {
 		echo 'TARGET := x86_64-w64-mingw32'                         >> config.mk
 		echo "CFLAGS += -I\"$install_win64/lib/$title_libffi/include\"" >> config.mk
 		echo "prefix :="                                            >> config.mk
-		make -f ../$title_fbc/makefile all install DESTDIR="$install_win64"
+		make -j"$cpucount" -f ../$title_fbc/makefile all install DESTDIR="$install_win64"
 		;;
 
 	fbc-*-build-dos)
@@ -513,7 +513,7 @@ do_build() {
 		echo 'V := 1'                                               >> config.mk
 		echo 'TARGET := i586-pc-msdosdjgpp'                         >> config.mk
 		echo "prefix :="                                            >> config.mk
-		make -f ../$title_fbc/makefile all install DESTDIR="$install_dos"
+		make -j"$cpucount" -f ../$title_fbc/makefile all install DESTDIR="$install_dos"
 		;;
 
 	fbc-*-build-win32-standalone)
@@ -522,7 +522,7 @@ do_build() {
 		echo 'TARGET := i686-w64-mingw32'                             >> config.mk
 		echo "CFLAGS += -I\"$install_win32/lib/$title_libffi/include\"" >> config.mk
 		echo 'ENABLE_STANDALONE := 1'                                 >> config.mk
-		make -f ../$title_fbc/makefile
+		make -j"$cpucount" -f ../$title_fbc/makefile
 		;;
 
 	fbc-*-build-win64-standalone)
@@ -531,7 +531,7 @@ do_build() {
 		echo 'TARGET := x86_64-w64-mingw32'                           >> config.mk
 		echo "CFLAGS += -I\"$install_win64/lib/$title_libffi/include\"" >> config.mk
 		echo 'ENABLE_STANDALONE := 1'                                 >> config.mk
-		make -f ../$title_fbc/makefile
+		make -j"$cpucount" -f ../$title_fbc/makefile
 		;;
 
 	fbc-*-build-dos-standalone)
@@ -539,7 +539,7 @@ do_build() {
 		echo 'V := 1'                                                 >> config.mk
 		echo 'TARGET := i586-pc-msdosdjgpp'                           >> config.mk
 		echo 'ENABLE_STANDALONE := 1'                                 >> config.mk
-		make -f ../$title_fbc/makefile
+		make -j"$cpucount" -f ../$title_fbc/makefile
 		;;
 
 	$title_gmp-build-native)  do_build_autotools_native $title_gmp;;
