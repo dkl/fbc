@@ -156,14 +156,7 @@ maybe_do_patch() {
 	if [ ! -f "$srcdirname/patch-done.stamp" ]; then
 		echo "patch: $srcdirname"
 		cd "$srcdirname"
-
-		if do_patch "$srcdirname" > patch-log.txt 2>&1; then
-			:
-		else
-			echo "failed"
-			exit 1
-		fi
-
+		do_patch "$srcdirname" > patch-log.txt 2>&1
 		touch patch-done.stamp
 		cd ..
 	fi
@@ -583,15 +576,8 @@ maybe_do_build() {
 		rm -rf "$buildname"
 		mkdir "$buildname"
 		cd "$buildname"
-
-		if do_build "$buildname" > build-log.txt 2>&1; then
-			:
-		else
-			echo "failed"
-			exit 1
-		fi
+		do_build "$buildname" > build-log.txt 2>&1
 		remove_la_files_in_dirs "$install_native"
-
 		cd ..
 		touch "$buildname/build-done.stamp"
 	fi
@@ -642,3 +628,5 @@ maybe_do_build fbc-$version_fbc-build-dos
 maybe_do_build fbc-$version_fbc-build-win32-standalone
 maybe_do_build fbc-$version_fbc-build-win64-standalone
 maybe_do_build fbc-$version_fbc-build-dos
+
+echo "ok"
