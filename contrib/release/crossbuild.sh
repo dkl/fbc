@@ -1,4 +1,11 @@
 #!/bin/bash
+#
+# Requirements:
+#  wget, unzip, xz-utils, lzip
+#  gcc, g++, bison, flex, texinfo (makeinfo),
+#  zlib-dev
+#
+
 set -e
 
 . common.sh
