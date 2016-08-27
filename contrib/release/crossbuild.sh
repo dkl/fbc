@@ -596,6 +596,29 @@ do_build() {
 	$title_gmp-build-dos)    do_build_autotools_dos $title_gmp;;
 	$title_mpfr-build-dos)   do_build_autotools_dos $title_mpfr --with-gmp="$sysroot_dos";;
 	$title_mpc-build-dos)    do_build_autotools_dos $title_mpc  --with-gmp="$sysroot_dos" --with-mpfr="$sysroot_dos";;
+
+	$title_zlib-build-win32)
+		cp -R ../$title_zlib/. .
+		make -f win32/Makefile.gcc \
+			libz.a install \
+			PREFIX=i686-w64-mingw32- \
+			BINARY_PATH=/bin \
+			INCLUDE_PATH=/include \
+			LIBRARY_PATH=/lib \
+			DESTDIR="$sysroot_win32"
+		;;
+
+	$title_zlib-build-win64)
+		cp -R ../$title_zlib/. .
+		make -f win32/Makefile.gcc \
+			libz.a install \
+			PREFIX=x86_64-w64-mingw32- \
+			BINARY_PATH=/bin \
+			INCLUDE_PATH=/include \
+			LIBRARY_PATH=/lib \
+			DESTDIR="$sysroot_win64"
+		;;
+
 	$title_zlib-build-dos)
 		cp -R ../$title_zlib/. .
 		CHOST=i586-pc-msdosdjgpp ./configure --static --prefix=
@@ -659,6 +682,8 @@ maybe_do_build $title_mpfr-build-dos
 maybe_do_build $title_mpc-build-win32
 maybe_do_build $title_mpc-build-win64
 maybe_do_build $title_mpc-build-dos
+maybe_do_build $title_zlib-build-win32
+maybe_do_build $title_zlib-build-win64
 maybe_do_build $title_zlib-build-dos
 
 maybe_do_build $title_binutils-build-win32-to-win32
