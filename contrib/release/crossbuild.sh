@@ -517,6 +517,9 @@ do_build() {
 		;;
 
 	fbc-*-build-native)
+		rm -f  "$prefix_native"/bin/fbc
+		rm -rf "$prefix_native"/include/freebasic
+		rm -rf "$prefix_native"/lib/freebasic
 		rm -f config.mk
 		echo 'ifeq ($(TARGET),i686-w64-mingw32)'                      >> config.mk
 		echo "  CFLAGS += -I\"$sysroot_win32/lib/$title_libffi/include\"" >> config.mk
@@ -529,10 +532,13 @@ do_build() {
 		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=i686-w64-mingw32   rtlib gfxlib2 install-rtlib install-gfxlib2
 		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=x86_64-w64-mingw32 rtlib gfxlib2 install-rtlib install-gfxlib2
 		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=i586-pc-msdosdjgpp rtlib gfxlib2 install-rtlib install-gfxlib2
-		mv "$prefix_native"/lib/freebas/* "$prefix_native"/lib/freebasic
+		mv "$prefix_native"/lib/freebas/dos "$prefix_native"/lib/freebasic
 		;;
 
 	fbc-*-build-win32)
+		rm -f  "$sysroot_win32"/bin/fbc.exe
+		rm -rf "$sysroot_win32"/include/freebasic
+		rm -rf "$sysroot_win32"/lib/freebasic
 		rm -f config.mk
 		echo 'TARGET := i686-w64-mingw32'                           >> config.mk
 		echo "CFLAGS += -I\"$sysroot_win32/lib/$title_libffi/include\"" >> config.mk
@@ -541,6 +547,9 @@ do_build() {
 		;;
 
 	fbc-*-build-win64)
+		rm -f  "$sysroot_win64"/bin/fbc.exe
+		rm -rf "$sysroot_win64"/include/freebasic
+		rm -rf "$sysroot_win64"/lib/freebasic
 		rm -f config.mk
 		echo 'TARGET := x86_64-w64-mingw32'                         >> config.mk
 		echo "CFLAGS += -I\"$sysroot_win64/lib/$title_libffi/include\"" >> config.mk
@@ -549,11 +558,14 @@ do_build() {
 		;;
 
 	fbc-*-build-dos)
+		rm -f  "$sysroot_dos"/bin/fbc.exe
+		rm -rf "$sysroot_dos"/include/freebasic
+		rm -rf "$sysroot_dos"/lib/freebasic
 		rm -f config.mk
 		echo 'TARGET := i586-pc-msdosdjgpp'                         >> config.mk
 		echo "prefix :="                                            >> config.mk
 		make -j"$cpucount" -f ../$title_fbc/makefile all install DESTDIR="$sysroot_dos"
-		mv "$sysroot_dos"/lib/freebas "$sysroot_dos"/lib/freebasic
+		mv "$sysroot_dos"/lib/freebas/dos "$sysroot_dos"/lib/freebasic
 		;;
 
 	fbc-*-build-win32-standalone)
