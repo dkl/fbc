@@ -24,6 +24,7 @@ version_mingww64=4.0.6
 version_mpc=1.0.3
 version_mpfr=3.1.4
 version_musl=1.1.15
+version_ncurses=6.0
 version_zlib=1.2.8
 
 title_binutils=binutils-$version_binutils
@@ -39,6 +40,7 @@ title_mingww64=mingw-w64-v$version_mingww64
 title_mpc=mpc-$version_mpc
 title_mpfr=mpfr-$version_mpfr
 title_musl=musl-$version_musl
+title_ncurses=ncurses-$version_ncurses
 title_zlib=zlib-$version_zlib
 
 tarball_binutils=$title_binutils.tar.bz2
@@ -54,6 +56,7 @@ tarball_mingww64=$title_mingww64.tar.bz2
 tarball_mpc=$title_mpc.tar.gz
 tarball_mpfr=$title_mpfr.tar.xz
 tarball_musl=$title_musl.tar.gz
+tarball_ncurses=$title_ncurses.tar.gz
 tarball_zlib=$title_zlib.tar.xz
 
 my_fetch $tarball_binutils "http://ftpmirror.gnu.org/binutils/$tarball_binutils"
@@ -69,6 +72,7 @@ my_fetch $tarball_mingww64 "https://sourceforge.net/projects/mingw-w64/files/min
 my_fetch $tarball_mpc      "ftp://ftp.gnu.org/gnu/mpc/$tarball_mpc"
 my_fetch $tarball_mpfr     "http://www.mpfr.org/mpfr-current/$tarball_mpfr"
 my_fetch $tarball_musl     "https://www.musl-libc.org/releases/$tarball_musl"
+my_fetch $tarball_ncurses  "http://ftp.gnu.org/gnu/ncurses/$tarball_ncurses"
 my_fetch $tarball_zlib     "http://zlib.net/$tarball_zlib"
 
 if [ "$version_fbc_git" = "yes" ]; then
@@ -100,6 +104,7 @@ my_extract $title_mingww64 $tarball_mingww64
 my_extract $title_mpc      $tarball_mpc
 my_extract $title_mpfr     $tarball_mpfr
 my_extract $title_musl     $tarball_musl
+my_extract $title_ncurses  $tarball_ncurses
 my_extract $title_zlib     $tarball_zlib
 
 ################################################################################
@@ -725,6 +730,9 @@ do_build() {
 	$title_libffi-build-linux-x86)    do_build_autotools_linux_x86    $title_libffi;;
 	$title_libffi-build-linux-x86_64) do_build_autotools_linux_x86_64 $title_libffi;;
 
+	$title_ncurses-build-linux-x86)    do_build_autotools_linux_x86    $title_ncurses;;
+	$title_ncurses-build-linux-x86_64) do_build_autotools_linux_x86_64 $title_ncurses;;
+
 	$title_gmp-build-win32)    do_build_autotools_win32 $title_gmp;;
 	$title_mpfr-build-win32)   do_build_autotools_win32 $title_mpfr --with-gmp="$sysroot_win32";;
 	$title_mpc-build-win32)    do_build_autotools_win32 $title_mpc  --with-gmp="$sysroot_win32" --with-mpfr="$sysroot_win32";;
@@ -829,6 +837,9 @@ maybe_do_build $title_libffi-build-linux-x86
 maybe_do_build $title_libffi-build-linux-x86_64
 maybe_do_build $title_libffi-build-win32
 maybe_do_build $title_libffi-build-win64
+
+maybe_do_build $title_ncurses-build-linux-x86
+maybe_do_build $title_ncurses-build-linux-x86_64
 
 maybe_do_build fbc-$version_fbc-build-native
 
