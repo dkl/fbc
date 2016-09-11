@@ -621,10 +621,26 @@ do_build() {
 		echo 'endif'                                                  >> config.mk
 		echo "prefix := $prefix_native"                              >> config.mk
 		make -j"$cpucount" -f ../$title_fbc/makefile compiler install-compiler install-includes
-		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=i686-w64-mingw32   rtlib gfxlib2 install-rtlib install-gfxlib2
-		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=x86_64-w64-mingw32 rtlib gfxlib2 install-rtlib install-gfxlib2
-		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=i586-pc-msdosdjgpp rtlib gfxlib2 install-rtlib install-gfxlib2
+		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=i686-pc-linux-musl   rtlib gfxlib2 install-rtlib install-gfxlib2
+		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=x86_64-pc-linux-musl rtlib gfxlib2 install-rtlib install-gfxlib2
+		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=i686-w64-mingw32     rtlib gfxlib2 install-rtlib install-gfxlib2
+		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=x86_64-w64-mingw32   rtlib gfxlib2 install-rtlib install-gfxlib2
+		make -j"$cpucount" -f ../$title_fbc/makefile TARGET=i586-pc-msdosdjgpp   rtlib gfxlib2 install-rtlib install-gfxlib2
 		mv "$prefix_native"/lib/freebas/dos "$prefix_native"/lib/freebasic
+		;;
+
+	fbc-*-build-linux-x86)
+		rm -f config.mk
+		echo 'TARGET := i686-pc-linux-musl'                                 >> config.mk
+		echo "CFLAGS += -I\"$sysroot_linux_x86/lib/$title_libffi/include\"" >> config.mk
+		make -j"$cpucount" -f ../$title_fbc/makefile all install DESTDIR="$sysroot_linux_x86"
+		;;
+
+	fbc-*-build-linux-x86_64)
+		rm -f config.mk
+		echo 'TARGET := x86_64-pc-linux-musl'                                  >> config.mk
+		echo "CFLAGS += -I\"$sysroot_linux_x86_64/lib/$title_libffi/include\"" >> config.mk
+		make -j"$cpucount" -f ../$title_fbc/makefile all install DESTDIR="$sysroot_linux_x86_64"
 		;;
 
 	fbc-*-build-win32)
@@ -634,7 +650,6 @@ do_build() {
 		rm -f config.mk
 		echo 'TARGET := i686-w64-mingw32'                           >> config.mk
 		echo "CFLAGS += -I\"$sysroot_win32/lib/$title_libffi/include\"" >> config.mk
-		echo "prefix :="                                            >> config.mk
 		make -j"$cpucount" -f ../$title_fbc/makefile all install DESTDIR="$sysroot_win32"
 		;;
 
@@ -645,7 +660,6 @@ do_build() {
 		rm -f config.mk
 		echo 'TARGET := x86_64-w64-mingw32'                         >> config.mk
 		echo "CFLAGS += -I\"$sysroot_win64/lib/$title_libffi/include\"" >> config.mk
-		echo "prefix :="                                            >> config.mk
 		make -j"$cpucount" -f ../$title_fbc/makefile all install DESTDIR="$sysroot_win64"
 		;;
 
@@ -655,7 +669,6 @@ do_build() {
 		rm -rf "$sysroot_dos"/lib/freebasic
 		rm -f config.mk
 		echo 'TARGET := i586-pc-msdosdjgpp'                         >> config.mk
-		echo "prefix :="                                            >> config.mk
 		make -j"$cpucount" -f ../$title_fbc/makefile all install DESTDIR="$sysroot_dos"
 		mv "$sysroot_dos"/lib/freebas/dos "$sysroot_dos"/lib/freebasic
 		;;
@@ -794,12 +807,15 @@ maybe_do_build fbc-$version_fbc-build-native
 maybe_do_build $title_gmp-build-win32
 maybe_do_build $title_gmp-build-win64
 maybe_do_build $title_gmp-build-dos
+
 maybe_do_build $title_mpfr-build-win32
 maybe_do_build $title_mpfr-build-win64
 maybe_do_build $title_mpfr-build-dos
+
 maybe_do_build $title_mpc-build-win32
 maybe_do_build $title_mpc-build-win64
 maybe_do_build $title_mpc-build-dos
+
 maybe_do_build $title_zlib-build-win32
 maybe_do_build $title_zlib-build-win64
 maybe_do_build $title_zlib-build-dos
@@ -807,9 +823,13 @@ maybe_do_build $title_zlib-build-dos
 maybe_do_build $title_binutils-build-win32-to-win32
 maybe_do_build $title_binutils-build-win64-to-win64
 maybe_do_build $title_djbnu-build-dos-to-dos
+
 maybe_do_build $title_gcc-build-win32-to-win32
 maybe_do_build $title_gcc-build-win64-to-win64
 maybe_do_build $title_djgcc-build-dos-to-dos
+
+maybe_do_build fbc-$version_fbc-build-linux-x86
+maybe_do_build fbc-$version_fbc-build-linux-x86_64
 maybe_do_build fbc-$version_fbc-build-win32
 maybe_do_build fbc-$version_fbc-build-win64
 maybe_do_build fbc-$version_fbc-build-dos
