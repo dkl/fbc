@@ -19,9 +19,11 @@ version_fbc_git=yes
 version_gcc=6.2.0
 version_gmp=6.1.1
 version_libffi=3.2.1
+version_linux=4.7.3
 version_mingww64=4.0.6
 version_mpc=1.0.3
 version_mpfr=3.1.4
+version_musl=1.1.15
 version_zlib=1.2.8
 
 title_binutils=binutils-$version_binutils
@@ -32,9 +34,11 @@ title_djlsr=djlsr205
 title_gcc=gcc-$version_gcc
 title_gmp=gmp-$version_gmp
 title_libffi=libffi-$version_libffi
+title_linux=linux-$version_linux
 title_mingww64=mingw-w64-v$version_mingww64
 title_mpc=mpc-$version_mpc
 title_mpfr=mpfr-$version_mpfr
+title_musl=musl-$version_musl
 title_zlib=zlib-$version_zlib
 
 tarball_binutils=$title_binutils.tar.bz2
@@ -45,9 +49,11 @@ tarball_djlsr=$title_djlsr.zip
 tarball_gcc=$title_gcc.tar.bz2
 tarball_gmp=$title_gmp.tar.lz
 tarball_libffi=$title_libffi.tar.gz
+tarball_linux=$title_linux.tar.xz
 tarball_mingww64=$title_mingww64.tar.bz2
 tarball_mpc=$title_mpc.tar.gz
 tarball_mpfr=$title_mpfr.tar.xz
+tarball_musl=$title_musl.tar.gz
 tarball_zlib=$title_zlib.tar.xz
 
 my_fetch $tarball_binutils "http://ftpmirror.gnu.org/binutils/$tarball_binutils"
@@ -58,9 +64,11 @@ my_fetch $tarball_djlsr    "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2
 my_fetch $tarball_gcc      "http://ftpmirror.gnu.org/gcc/$title_gcc/$tarball_gcc"
 my_fetch $tarball_gmp      "https://gmplib.org/download/gmp/$tarball_gmp"
 my_fetch $tarball_libffi   "ftp://sourceware.org/pub/libffi/$tarball_libffi"
+my_fetch $tarball_linux    "https://cdn.kernel.org/pub/linux/kernel/v4.x/$tarball_linux"
 my_fetch $tarball_mingww64 "https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/$tarball_mingww64/download"
 my_fetch $tarball_mpc      "ftp://ftp.gnu.org/gnu/mpc/$tarball_mpc"
 my_fetch $tarball_mpfr     "http://www.mpfr.org/mpfr-current/$tarball_mpfr"
+my_fetch $tarball_musl     "https://www.musl-libc.org/releases/$tarball_musl"
 my_fetch $tarball_zlib     "http://zlib.net/$tarball_zlib"
 
 if [ "$version_fbc_git" = "yes" ]; then
@@ -87,20 +95,26 @@ my_extract $title_fbc      $tarball_fbc
 my_extract $title_gcc      $tarball_gcc
 my_extract $title_gmp      $tarball_gmp
 my_extract $title_libffi   $tarball_libffi
+my_extract $title_linux    $tarball_linux
 my_extract $title_mingww64 $tarball_mingww64
 my_extract $title_mpc      $tarball_mpc
 my_extract $title_mpfr     $tarball_mpfr
+my_extract $title_musl     $tarball_musl
 my_extract $title_zlib     $tarball_zlib
 
 ################################################################################
 
 prefix_native="$PWD/native"
+sysroot_linux_x86="$PWD/sysroot-linux-x86"
+sysroot_linux_x86_64="$PWD/sysroot-linux-x86_64"
 sysroot_win32="$PWD/sysroot-win32"
 sysroot_win64="$PWD/sysroot-win64"
 sysroot_dos="$PWD/sysroot-dos"
-mkdir -p "$sysroot_win32"; cd "$sysroot_win32"; mkdir -p bin include lib; cd ..
-mkdir -p "$sysroot_win64"; cd "$sysroot_win64"; mkdir -p bin include lib; cd ..
-mkdir -p "$sysroot_dos"  ; cd "$sysroot_dos"  ; mkdir -p bin include lib; cd ..
+mkdir -p "$sysroot_linux_x86"   ; cd "$sysroot_linux_x86"   ; mkdir -p bin include lib usr/bin usr/include usr/lib; cd ..
+mkdir -p "$sysroot_linux_x86_64"; cd "$sysroot_linux_x86_64"; mkdir -p bin include lib usr/bin usr/include usr/lib; cd ..
+mkdir -p "$sysroot_win32"       ; cd "$sysroot_win32"       ; mkdir -p bin include lib; cd ..
+mkdir -p "$sysroot_win64"       ; cd "$sysroot_win64"       ; mkdir -p bin include lib; cd ..
+mkdir -p "$sysroot_dos"         ; cd "$sysroot_dos"         ; mkdir -p bin include lib; cd ..
 if [ ! -e "$sysroot_win32/mingw" ]; then
 	ln -s "$sysroot_win32" "$sysroot_win32/mingw"
 fi
@@ -216,10 +230,39 @@ do_build_autotools_dos() {
 	make -j"$cpucount" install DESTDIR="$sysroot_dos"
 }
 
+gcc_conf_disables=" \
+	--disable-bootstrap \
+	--disable-decimal-float \
+	--disable-libatomic \
+	--disable-libgomp \
+	--disable-libmpx \
+	--disable-libmudflap \
+	--disable-libquadmath \
+	--disable-libsanitizer \
+	--disable-libssp \
+	--disable-lto \
+	--disable-lto-plugin \
+	--disable-multilib \
+	--disable-nls \
+	--disable-win32-registry \
+"
+
 do_build() {
 	local buildname="$1"
 
 	case "$buildname" in
+
+	$title_binutils-build-native-to-linux-x86)
+		do_build_autotools_native $title_binutils \
+			--target=i686-pc-linux-musl --with-sysroot="$sysroot_linux_x86" \
+			--disable-nls --disable-multilib --disable-werror
+		;;
+
+	$title_binutils-build-native-to-linux-x86_64)
+		do_build_autotools_native $title_binutils \
+			--target=x86_64-pc-linux-musl --with-sysroot="$sysroot_linux_x86_64" \
+			--disable-nls --disable-multilib --disable-werror
+		;;
 
 	$title_binutils-build-native-to-win32)
 		do_build_autotools_native $title_binutils \
@@ -257,6 +300,18 @@ do_build() {
 			--disable-nls --disable-multilib --disable-werror
 		;;
 
+	$title_linux-build-linux-x86-headers)
+		cd ../$title_linux
+		make O=../$title_linux-build-linux-x86-headers ARCH=i386 INSTALL_HDR_PATH="$sysroot_linux_x86"/usr defconfig headers_install
+		cd ../$title_linux-build-linux-x86-headers
+		;;
+
+	$title_linux-build-linux-x86_64-headers)
+		cd ../$title_linux
+		make O=../$title_linux-build-linux-x86_64-headers ARCH=x86_64 INSTALL_HDR_PATH="$sysroot_linux_x86_64"/usr defconfig headers_install
+		cd ../$title_linux-build-linux-x86_64-headers
+		;;
+
 	$title_mingww64-build-win32-headers)
 		../$title_mingww64/mingw-w64-headers/configure \
 			--build=$build_triplet --host=i686-w64-mingw32 \
@@ -278,6 +333,22 @@ do_build() {
 		cp -R ../$title_djlsr/. .
 		find . -type f -name "*.o" -or -name "*.a" | xargs rm
 		cp -R include/. "$sysroot_dos"/include
+		;;
+
+	$title_musl-build-linux-x86)
+		../$title_musl/configure \
+			--build=$build_triplet --target=i686-pc-linux-musl \
+			--prefix=/usr --enable-optimize --disable-shared --disable-wrapper
+		make -j"$cpucount"
+		make -j"$cpucount" install DESTDIR="$sysroot_linux_x86"
+		;;
+
+	$title_musl-build-linux-x86_64)
+		../$title_musl/configure \
+			--build=$build_triplet --target=x86_64-pc-linux-musl \
+			--prefix=/usr --enable-optimize --disable-shared --disable-wrapper
+		make -j"$cpucount"
+		make -j"$cpucount" install DESTDIR="$sysroot_linux_x86_64"
 		;;
 
 	$title_mingww64-build-win32-crt)
@@ -344,6 +415,36 @@ do_build() {
 		cp bin/*.exe "$sysroot_dos"/bin
 		;;
 
+	$title_gcc-build-native-to-linux-x86-gcc)
+		../$title_gcc/configure \
+			--build=$build_triplet --host=$build_triplet --target=i686-pc-linux-musl \
+			--prefix="$prefix_native" \
+			--with-sysroot="$sysroot_linux_x86" \
+			--with-gmp="$prefix_native" \
+			--with-mpfr="$prefix_native" \
+			--with-mpc="$prefix_native" \
+			--enable-static --disable-shared \
+			--enable-languages=c \
+			$gcc_conf_disables
+		make -j"$cpucount" all-gcc
+		make -j"$cpucount" install-gcc
+		;;
+
+	$title_gcc-build-native-to-linux-x86_64-gcc)
+		../$title_gcc/configure \
+			--build=$build_triplet --host=$build_triplet --target=x86_64-pc-linux-musl \
+			--prefix="$prefix_native" \
+			--with-sysroot="$sysroot_linux_x86_64" \
+			--with-gmp="$prefix_native" \
+			--with-mpfr="$prefix_native" \
+			--with-mpc="$prefix_native" \
+			--enable-static --disable-shared \
+			--enable-languages=c \
+			$gcc_conf_disables
+		make -j"$cpucount" all-gcc
+		make -j"$cpucount" install-gcc
+		;;
+
 	$title_gcc-build-native-to-win32-gcc)
 		../$title_gcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=i686-w64-mingw32 \
@@ -353,16 +454,11 @@ do_build() {
 			--with-mpfr="$prefix_native" \
 			--with-mpc="$prefix_native" \
 			--enable-static --disable-shared \
-			--disable-bootstrap --enable-languages=c \
-			--disable-nls --disable-multilib \
-			--disable-lto --disable-lto-plugin \
-			--disable-libssp --disable-libquadmath \
-			--disable-libmudflap --disable-libgomp --disable-libatomic \
-			--disable-decimal-float \
+			--enable-languages=c \
+			$gcc_conf_disables \
 			--enable-threads=win32 --enable-sjlj-exceptions
 		make -j"$cpucount" all-gcc
 		make -j"$cpucount" install-gcc
-		rm -f "$prefix_native"/lib/gcc/i586-pc-msdosdjgpp/?.?.?/include-fixed/*
 		;;
 
 	$title_gcc-build-native-to-win64-gcc)
@@ -374,12 +470,8 @@ do_build() {
 			--with-mpfr="$prefix_native" \
 			--with-mpc="$prefix_native" \
 			--enable-static --disable-shared \
-			--disable-bootstrap --enable-languages=c \
-			--disable-nls --disable-multilib \
-			--disable-lto --disable-lto-plugin \
-			--disable-libssp --disable-libquadmath \
-			--disable-libmudflap --disable-libgomp --disable-libatomic \
-			--disable-decimal-float \
+			--enable-languages=c \
+			$gcc_conf_disables \
 			--enable-threads=win32 --enable-sjlj-exceptions
 		make -j"$cpucount" all-gcc
 		make -j"$cpucount" install-gcc
@@ -394,14 +486,40 @@ do_build() {
 			--with-mpfr="$prefix_native" \
 			--with-mpc="$prefix_native" \
 			--enable-static --disable-shared \
-			--disable-bootstrap --enable-languages=c \
-			--disable-nls --disable-multilib \
-			--disable-lto --disable-lto-plugin \
-			--disable-libssp --disable-libquadmath \
-			--disable-libmudflap --disable-libgomp --disable-libatomic \
-			--disable-decimal-float
+			--enable-languages=c \
+			$gcc_conf_disables
 		make -j"$cpucount" all-gcc
 		make -j"$cpucount" install-gcc
+		;;
+
+	$title_gcc-build-native-to-linux-x86-full)
+		../$title_gcc/configure \
+			--build=$build_triplet --host=$build_triplet --target=i686-pc-linux-musl \
+			--prefix="$prefix_native" \
+			--with-sysroot="$sysroot_linux_x86" \
+			--with-gmp="$prefix_native" \
+			--with-mpfr="$prefix_native" \
+			--with-mpc="$prefix_native" \
+			--enable-static --disable-shared \
+			--enable-languages=c,c++ \
+			$gcc_conf_disables
+		make -j"$cpucount"
+		make -j"$cpucount" install
+		;;
+
+	$title_gcc-build-native-to-linux-x86_64-full)
+		../$title_gcc/configure \
+			--build=$build_triplet --host=$build_triplet --target=x86_64-pc-linux-musl \
+			--prefix="$prefix_native" \
+			--with-sysroot="$sysroot_linux_x86_64" \
+			--with-gmp="$prefix_native" \
+			--with-mpfr="$prefix_native" \
+			--with-mpc="$prefix_native" \
+			--enable-static --disable-shared \
+			--enable-languages=c,c++ \
+			$gcc_conf_disables
+		make -j"$cpucount"
+		make -j"$cpucount" install
 		;;
 
 	$title_gcc-build-native-to-win32-full)
@@ -413,12 +531,8 @@ do_build() {
 			--with-mpfr="$prefix_native" \
 			--with-mpc="$prefix_native" \
 			--enable-static --disable-shared \
-			--disable-bootstrap --enable-languages=c,c++ \
-			--disable-nls --disable-multilib \
-			--disable-lto --disable-lto-plugin \
-			--disable-libssp --disable-libquadmath \
-			--disable-libmudflap --disable-libgomp --disable-libatomic \
-			--disable-decimal-float \
+			--enable-languages=c,c++ \
+			$gcc_conf_disables \
 			--enable-threads=win32 --enable-sjlj-exceptions
 		make -j"$cpucount"
 		make -j"$cpucount" install
@@ -433,12 +547,8 @@ do_build() {
 			--with-mpfr="$prefix_native" \
 			--with-mpc="$prefix_native" \
 			--enable-static --disable-shared \
-			--disable-bootstrap --enable-languages=c,c++ \
-			--disable-nls --disable-multilib \
-			--disable-lto --disable-lto-plugin \
-			--disable-libssp --disable-libquadmath \
-			--disable-libmudflap --disable-libgomp --disable-libatomic \
-			--disable-decimal-float \
+			--enable-languages=c,c++ \
+			$gcc_conf_disables \
 			--enable-threads=win32 --enable-sjlj-exceptions
 		make -j"$cpucount"
 		make -j"$cpucount" install
@@ -453,12 +563,8 @@ do_build() {
 			--with-mpfr="$prefix_native" \
 			--with-mpc="$prefix_native" \
 			--enable-static --disable-shared \
-			--disable-bootstrap --enable-languages=c,c++ \
-			--disable-nls --disable-multilib \
-			--disable-lto --disable-lto-plugin \
-			--disable-libssp --disable-libquadmath \
-			--disable-libmudflap --disable-libgomp --disable-libatomic \
-			--disable-decimal-float
+			--enable-languages=c,c++ \
+			$gcc_conf_disables
 		make -j"$cpucount"
 		make -j"$cpucount" install
 		;;
@@ -471,14 +577,9 @@ do_build() {
 			--with-gmp="$sysroot_win32" \
 			--with-mpfr="$sysroot_win32" \
 			--with-mpc="$sysroot_win32" \
-			--disable-bootstrap --enable-languages=c,c++ \
-			--disable-nls --disable-multilib \
-			--disable-lto --disable-lto-plugin \
-			--disable-libssp --disable-libquadmath \
-			--disable-libmudflap --disable-libgomp --disable-libatomic \
-			--disable-decimal-float \
-			--enable-threads=win32 --enable-sjlj-exceptions \
-			--disable-win32-registry
+			--enable-languages=c,c++ \
+			$gcc_conf_disables \
+			--enable-threads=win32 --enable-sjlj-exceptions
 		;;
 
 	$title_gcc-build-win64-to-win64)
@@ -489,14 +590,9 @@ do_build() {
 			--with-gmp="$sysroot_win64" \
 			--with-mpfr="$sysroot_win64" \
 			--with-mpc="$sysroot_win64" \
-			--disable-bootstrap --enable-languages=c,c++ \
-			--disable-nls --disable-multilib \
-			--disable-lto --disable-lto-plugin \
-			--disable-libssp --disable-libquadmath \
-			--disable-libmudflap --disable-libgomp --disable-libatomic \
-			--disable-decimal-float \
-			--enable-threads=win32 --enable-sjlj-exceptions \
-			--disable-win32-registry
+			--enable-languages=c,c++ \
+			$gcc_conf_disables \
+			--enable-threads=win32 --enable-sjlj-exceptions
 		;;
 
 	$title_djgcc-build-dos-to-dos)
@@ -508,12 +604,8 @@ do_build() {
 			--with-gmp="$sysroot_dos" \
 			--with-mpfr="$sysroot_dos" \
 			--with-mpc="$sysroot_dos" \
-			--disable-bootstrap --enable-languages=c,c++ \
-			--disable-nls --disable-multilib \
-			--disable-lto --disable-lto-plugin \
-			--disable-libssp --disable-libquadmath \
-			--disable-libmudflap --disable-libgomp --disable-libatomic \
-			--disable-decimal-float
+			--enable-languages=c,c++ \
+			$gcc_conf_disables
 		;;
 
 	fbc-*-build-native)
@@ -660,31 +752,45 @@ maybe_do_build() {
 	fi
 }
 
-# cross toolchain and needed target libs
+maybe_do_build $title_binutils-build-native-to-linux-x86
+maybe_do_build $title_binutils-build-native-to-linux-x86_64
 maybe_do_build $title_binutils-build-native-to-win32
 maybe_do_build $title_binutils-build-native-to-win64
 maybe_do_build $title_djbnu-build-native-to-dos
+
 maybe_do_build $title_gmp-build-native
 maybe_do_build $title_mpfr-build-native
 maybe_do_build $title_mpc-build-native
+
 maybe_do_build $title_mingww64-build-win32-headers
 maybe_do_build $title_mingww64-build-win64-headers
 maybe_do_build $title_djcrx-build-dos-headers
+
+maybe_do_build $title_gcc-build-native-to-linux-x86-gcc
+maybe_do_build $title_gcc-build-native-to-linux-x86_64-gcc
 maybe_do_build $title_gcc-build-native-to-win32-gcc
 maybe_do_build $title_gcc-build-native-to-win64-gcc
 maybe_do_build $title_djgcc-build-native-to-dos-gcc
+
+maybe_do_build $title_linux-build-linux-x86-headers
+maybe_do_build $title_linux-build-linux-x86_64-headers
+maybe_do_build $title_musl-build-linux-x86
+maybe_do_build $title_musl-build-linux-x86_64
 maybe_do_build $title_mingww64-build-win32-crt
 maybe_do_build $title_mingww64-build-win64-crt
 maybe_do_build $title_djcrx-build-dos-crt
+
+maybe_do_build $title_gcc-build-native-to-linux-x86-full
+maybe_do_build $title_gcc-build-native-to-linux-x86_64-full
 maybe_do_build $title_gcc-build-native-to-win32-full
 maybe_do_build $title_gcc-build-native-to-win64-full
 maybe_do_build $title_djgcc-build-native-to-dos-full
 maybe_do_build $title_djcrx-build-dos-full
+
 maybe_do_build $title_libffi-build-win32
 maybe_do_build $title_libffi-build-win64
 maybe_do_build fbc-$version_fbc-build-native
 
-# more target libs
 maybe_do_build $title_gmp-build-win32
 maybe_do_build $title_gmp-build-win64
 maybe_do_build $title_gmp-build-dos
