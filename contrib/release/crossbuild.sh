@@ -274,6 +274,29 @@ gcc_conf_disables=" \
 	--disable-win32-registry \
 "
 
+ncurses_conf=" \
+	--without-debug \
+	--without-profile \
+	--without-cxx \
+	--without-cxx-binding \
+	--without-ada \
+	--without-manpages \
+	--without-progs \
+	--without-tests \
+	--without-pkg-config \
+	--disable-pc-files \
+	--without-shared \
+	--without-cxx-shared \
+	--without-libtool \
+	--with-termlib \
+	--without-gpm \
+	--without-dlsym \
+	--without-sysmouse \
+	--enable-termcap \
+	--without-develop \
+	--enable-const \
+"
+
 do_build() {
 	local buildname="$1"
 
@@ -730,8 +753,17 @@ do_build() {
 	$title_libffi-build-linux-x86)    do_build_autotools_linux_x86    $title_libffi;;
 	$title_libffi-build-linux-x86_64) do_build_autotools_linux_x86_64 $title_libffi;;
 
-	$title_ncurses-build-linux-x86)    do_build_autotools_linux_x86    $title_ncurses;;
-	$title_ncurses-build-linux-x86_64) do_build_autotools_linux_x86_64 $title_ncurses;;
+	$title_ncurses-build-linux-x86)
+		do_build_autotools_linux_x86 $title_ncurses \
+			--with-install-prefix="$sysroot_linux_x86" \
+			$ncurses_conf
+		;;
+
+	$title_ncurses-build-linux-x86_64)
+		do_build_autotools_linux_x86_64 $title_ncurses \
+			--with-install-prefix="$sysroot_linux_x86_64" \
+			$ncurses_conf
+		;;
 
 	$title_gmp-build-win32)    do_build_autotools_win32 $title_gmp;;
 	$title_mpfr-build-win32)   do_build_autotools_win32 $title_mpfr --with-gmp="$sysroot_win32";;
