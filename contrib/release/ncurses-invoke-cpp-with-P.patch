@@ -1,0 +1,37 @@
+From 1075fcd7b7284aeb03d72a82ff29742cb66dd4c0 Mon Sep 17 00:00:00 2001
+From: dkl <daniel.c.klauer@web.de>
+Date: Sun, 11 Sep 2016 17:20:10 +0200
+Subject: [PATCH] invoke cpp with -P
+
+ncurses doesn't expect cpp to produce #line directives, but new cpp does
+just that. ncurses awk scripts don't handle it. -P prevents cpp from
+producing #lines.
+---
+ ncurses/Makefile.in | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/ncurses/Makefile.in b/ncurses/Makefile.in
+index e42c5e3..b3d2cbd 100644
+--- a/ncurses/Makefile.in
++++ b/ncurses/Makefile.in
+@@ -219,7 +219,7 @@ $(DESTDIR)$(libdir) :
+ 	$(SHELL) -e $(tinfo)/MKfallback.sh $(TERMINFO) $(TERMINFO_SRC) $(TIC_PATH) $(FALLBACK_LIST) >$@
+ 
+ ./lib_gen.c : $(base)/MKlib_gen.sh ../include/curses.h
+-	$(SHELL) -e $(base)/MKlib_gen.sh "$(CPP) $(CPPFLAGS)" "$(AWK)" generated <../include/curses.h >$@
++	$(SHELL) -e $(base)/MKlib_gen.sh "$(CPP) $(CPPFLAGS) -P" "$(AWK)" generated <../include/curses.h >$@
+ 
+ init_keytry.h: make_keys$(BUILD_EXEEXT) keys.list
+ 	./make_keys$(BUILD_EXEEXT) keys.list > $@
+@@ -290,7 +290,7 @@ realclean :: distclean
+ test_progs : $(TEST_PROGS)
+ 
+ ./link_test.c : $(base)/MKlib_gen.sh ../include/curses.h
+-	$(SHELL) -e $(base)/MKlib_gen.sh "$(CPP) $(CPPFLAGS)" "$(AWK)" implemented <../include/curses.h >$@
++	$(SHELL) -e $(base)/MKlib_gen.sh "$(CPP) $(CPPFLAGS) -P" "$(AWK)" implemented <../include/curses.h >$@
+ 
+ captoinfo$x : $(tinfo)/captoinfo.c $(TEST_DEPS)
+ 	@ECHO_LD@ $(LIBTOOL_LINK) -o $@ $(CFLAGS_DEFAULT) -DMAIN $(tinfo)/captoinfo.c $(TEST_LDFLAGS)
+-- 
+2.7.4
+

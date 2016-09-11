@@ -171,6 +171,11 @@ do_patch() {
 		sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
 
 		;;
+
+	ncurses-*)
+		patch -p1 < ../../ncurses-invoke-cpp-with-P.patch
+		;;
+
 	esac
 }
 
@@ -188,6 +193,7 @@ maybe_do_patch() {
 maybe_do_patch $title_djbnu
 maybe_do_patch $title_djgcc
 maybe_do_patch $title_gcc
+maybe_do_patch $title_ncurses
 
 ################################################################################
 
