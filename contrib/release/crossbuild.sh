@@ -197,6 +197,28 @@ do_build_autotools_native() {
 	make -j"$cpucount" install
 }
 
+do_build_autotools_linux_x86() {
+	local srcname="$1"
+	shift
+	../"$srcname"/configure \
+		--build=$build_triplet --host=i686-pc-linux-musl \
+		--prefix=/usr \
+		--enable-static --disable-shared "$@"
+	make -j"$cpucount"
+	make -j"$cpucount" install DESTDIR="$sysroot_linux_x86"
+}
+
+do_build_autotools_linux_x86_64() {
+	local srcname="$1"
+	shift
+	../"$srcname"/configure \
+		--build=$build_triplet --host=x86_64-pc-linux-musl \
+		--prefix=/usr \
+		--enable-static --disable-shared "$@"
+	make -j"$cpucount"
+	make -j"$cpucount" install DESTDIR="$sysroot_linux_x86_64"
+}
+
 do_build_autotools_win32() {
 	local srcname="$1"
 	shift
@@ -700,6 +722,9 @@ do_build() {
 	$title_mpfr-build-native) do_build_autotools_native $title_mpfr --with-gmp="$prefix_native";;
 	$title_mpc-build-native)  do_build_autotools_native $title_mpc  --with-gmp="$prefix_native" --with-mpfr="$prefix_native";;
 
+	$title_libffi-build-linux-x86)    do_build_autotools_linux_x86    $title_libffi;;
+	$title_libffi-build-linux-x86_64) do_build_autotools_linux_x86_64 $title_libffi;;
+
 	$title_gmp-build-win32)    do_build_autotools_win32 $title_gmp;;
 	$title_mpfr-build-win32)   do_build_autotools_win32 $title_mpfr --with-gmp="$sysroot_win32";;
 	$title_mpc-build-win32)    do_build_autotools_win32 $title_mpc  --with-gmp="$sysroot_win32" --with-mpfr="$sysroot_win32";;
@@ -800,8 +825,11 @@ maybe_do_build $title_gcc-build-native-to-win64-full
 maybe_do_build $title_djgcc-build-native-to-dos-full
 maybe_do_build $title_djcrx-build-dos-full
 
+maybe_do_build $title_libffi-build-linux-x86
+maybe_do_build $title_libffi-build-linux-x86_64
 maybe_do_build $title_libffi-build-win32
 maybe_do_build $title_libffi-build-win64
+
 maybe_do_build fbc-$version_fbc-build-native
 
 maybe_do_build $title_gmp-build-win32
