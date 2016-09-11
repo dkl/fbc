@@ -815,6 +815,6 @@ maybe_do_build fbc-$version_fbc-build-win64
 maybe_do_build fbc-$version_fbc-build-dos
 maybe_do_build fbc-$version_fbc-build-win32-standalone
 maybe_do_build fbc-$version_fbc-build-win64-standalone
-maybe_do_build fbc-$version_fbc-build-dos
+maybe_do_build fbc-$version_fbc-build-dos-standalone
 
 echo "ok"
