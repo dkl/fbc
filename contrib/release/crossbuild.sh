@@ -18,6 +18,7 @@ version_fbc=cc2711596a2953d028f5df21dccb92c88a2d879d
 version_fbc_git=yes
 version_gcc=6.2.0
 version_gmp=6.1.1
+version_gpm=1.99.7
 version_libffi=3.2.1
 version_linux=4.7.3
 version_mingww64=4.0.6
@@ -34,6 +35,7 @@ title_djgcc=gcc620s
 title_djlsr=djlsr205
 title_gcc=gcc-$version_gcc
 title_gmp=gmp-$version_gmp
+title_gpm=gpm-$version_gpm
 title_libffi=libffi-$version_libffi
 title_linux=linux-$version_linux
 title_mingww64=mingw-w64-v$version_mingww64
@@ -50,6 +52,7 @@ tarball_djgcc=$title_djgcc.zip
 tarball_djlsr=$title_djlsr.zip
 tarball_gcc=$title_gcc.tar.bz2
 tarball_gmp=$title_gmp.tar.lz
+tarball_gpm=$title_gpm.tar.lzma
 tarball_libffi=$title_libffi.tar.gz
 tarball_linux=$title_linux.tar.xz
 tarball_mingww64=$title_mingww64.tar.bz2
@@ -66,6 +69,7 @@ my_fetch $tarball_djgcc    "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2
 my_fetch $tarball_djlsr    "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2/$tarball_djlsr"
 my_fetch $tarball_gcc      "http://ftpmirror.gnu.org/gcc/$title_gcc/$tarball_gcc"
 my_fetch $tarball_gmp      "https://gmplib.org/download/gmp/$tarball_gmp"
+my_fetch $tarball_gpm      "http://www.nico.schottelius.org/software/gpm/archives/$tarball_gpm"
 my_fetch $tarball_libffi   "ftp://sourceware.org/pub/libffi/$tarball_libffi"
 my_fetch $tarball_linux    "https://cdn.kernel.org/pub/linux/kernel/v4.x/$tarball_linux"
 my_fetch $tarball_mingww64 "https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/$tarball_mingww64/download"
@@ -98,6 +102,7 @@ my_extract $title_djlsr    $tarball_djlsr
 my_extract $title_fbc      $tarball_fbc
 my_extract $title_gcc      $tarball_gcc
 my_extract $title_gmp      $tarball_gmp
+my_extract $title_gpm      $tarball_gpm
 my_extract $title_libffi   $tarball_libffi
 my_extract $title_linux    $tarball_linux
 my_extract $title_mingww64 $tarball_mingww64
@@ -771,6 +776,11 @@ do_build() {
 			$ncurses_conf
 		;;
 
+	$title_gpm-build-header)
+		cp ../$title_gpm/src/headers/gpm.h "$sysroot_linux_x86"/usr/include
+		cp ../$title_gpm/src/headers/gpm.h "$sysroot_linux_x86_64"/usr/include
+		;;
+
 	$title_gmp-build-win32)    do_build_autotools_win32 $title_gmp;;
 	$title_mpfr-build-win32)   do_build_autotools_win32 $title_mpfr --with-gmp="$sysroot_win32";;
 	$title_mpc-build-win32)    do_build_autotools_win32 $title_mpc  --with-gmp="$sysroot_win32" --with-mpfr="$sysroot_win32";;
@@ -836,6 +846,10 @@ maybe_do_build() {
 	fi
 }
 
+#
+# gcc cross-toolchains + target libc
+#
+
 maybe_do_build $title_binutils-build-native-to-linux-x86
 maybe_do_build $title_binutils-build-native-to-linux-x86_64
 maybe_do_build $title_binutils-build-native-to-win32
@@ -871,6 +885,10 @@ maybe_do_build $title_gcc-build-native-to-win64-full
 maybe_do_build $title_djgcc-build-native-to-dos-full
 maybe_do_build $title_djcrx-build-dos-full
 
+#
+# target libraries
+#
+
 maybe_do_build $title_libffi-build-linux-x86
 maybe_do_build $title_libffi-build-linux-x86_64
 maybe_do_build $title_libffi-build-win32
@@ -879,7 +897,7 @@ maybe_do_build $title_libffi-build-win64
 maybe_do_build $title_ncurses-build-linux-x86
 maybe_do_build $title_ncurses-build-linux-x86_64
 
-maybe_do_build fbc-$version_fbc-build-native
+maybe_do_build $title_gpm-build-header
 
 maybe_do_build $title_gmp-build-win32
 maybe_do_build $title_gmp-build-win64
@@ -896,6 +914,12 @@ maybe_do_build $title_mpc-build-dos
 maybe_do_build $title_zlib-build-win32
 maybe_do_build $title_zlib-build-win64
 maybe_do_build $title_zlib-build-dos
+
+#
+# fbc cross-compiler & target programs
+#
+
+maybe_do_build fbc-$version_fbc-build-native
 
 maybe_do_build $title_binutils-build-win32-to-win32
 maybe_do_build $title_binutils-build-win64-to-win64
