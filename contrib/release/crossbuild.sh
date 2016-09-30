@@ -618,11 +618,11 @@ do_build() {
 	fbc-build-win32-standalone) make -j"$cpucount" -f ../fbc/makefile TARGET=i686-w64-mingw32   ENABLE_STANDALONE=1;;
 	fbc-build-win64-standalone) make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-w64-mingw32 ENABLE_STANDALONE=1;;
 	fbc-build-dos-standalone  ) make -j"$cpucount" -f ../fbc/makefile TARGET=i586-pc-msdosdjgpp ENABLE_STANDALONE=1;;
-	fbc-build-linux-x86       ) make -j"$cpucount" -f ../fbc/makefile TARGET=i686-pc-linux-musl   DESTDIR="$sysroot_linux_x86"    compiler rtlib install-compiler install-includes install-rtlib;;
-	fbc-build-linux-x86_64    ) make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-pc-linux-musl DESTDIR="$sysroot_linux_x86_64" compiler rtlib install-compiler install-includes install-rtlib;;
-	fbc-build-win32           ) make -j"$cpucount" -f ../fbc/makefile TARGET=i686-w64-mingw32     DESTDIR="$sysroot_win32" all install;;
-	fbc-build-win64           ) make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-w64-mingw32   DESTDIR="$sysroot_win64" all install;;
-	fbc-build-dos             ) make -j"$cpucount" -f ../fbc/makefile TARGET=i586-pc-msdosdjgpp   DESTDIR="$sysroot_dos"   all install
+	fbc-build-linux-x86       ) make -j"$cpucount" -f ../fbc/makefile TARGET=i686-pc-linux-musl   DESTDIR="$sysroot_linux_x86"    prefix=/usr compiler rtlib install-compiler install-includes install-rtlib;;
+	fbc-build-linux-x86_64    ) make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-pc-linux-musl DESTDIR="$sysroot_linux_x86_64" prefix=/usr compiler rtlib install-compiler install-includes install-rtlib;;
+	fbc-build-win32           ) make -j"$cpucount" -f ../fbc/makefile TARGET=i686-w64-mingw32     DESTDIR="$sysroot_win32" prefix= all install;;
+	fbc-build-win64           ) make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-w64-mingw32   DESTDIR="$sysroot_win64" prefix= all install;;
+	fbc-build-dos             ) make -j"$cpucount" -f ../fbc/makefile TARGET=i586-pc-msdosdjgpp   DESTDIR="$sysroot_dos"   prefix= all install
 		mv "$sysroot_dos"/lib/freebas/dos "$sysroot_dos"/lib/freebasic
 		;;
 
