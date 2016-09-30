@@ -1,0 +1,30 @@
+#!/bin/sh
+
+variable=""
+for arg in "$@"; do
+    case "$arg" in
+    --variable=*)
+        test -n "$variable" && echo "$0: multiple --variable options given" && exit 1
+        variable=`echo "$arg" | sed -e "s/--variable=//g"`
+        ;;
+    esac
+done
+
+# Reset PATH to original without this script's parent dir in it
+export PATH="@nativepath@"
+
+sysroot="@targetsysroot@"
+
+# Prevent pkg-config from looking in host system's dirs
+export PKG_CONFIG_DIR=
+export PKG_CONFIG_PATH="$sysroot/usr/lib/pkgconfig:$sysroot/usr/share/pkgconfig"
+export PKG_CONFIG_LIBDIR="$sysroot/usr/lib"
+
+# Let pkg-config prepend the sysroot path to most returned paths
+export PKG_CONFIG_SYSROOT_DIR="$sysroot"
+
+if [ -n "$variable" ]; then
+    echo "$sysroot$(pkg-config "$@" | sed -e 's:^$sysroot::g')"
+else
+    pkg-config "$@"
+fi

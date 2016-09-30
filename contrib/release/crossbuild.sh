@@ -2,7 +2,7 @@
 #
 # Requirements:
 #  wget, unzip, xz-utils, lzip
-#  gcc, g++, bison, flex, texinfo (makeinfo),
+#  gcc, g++, bison, flex, texinfo (makeinfo), pkg-config
 #  zlib-dev
 #
 
@@ -19,6 +19,11 @@ fetch_extract_custom fbc fbc-246172c59e6db0bb77811e10b70c2963237f2ee6 tar.gz "ht
 if [ ! -f ../downloads/config.guess ]; then
 	wget -O ../downloads/config.guess 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD'
 	chmod +x ../downloads/config.guess
+fi
+
+if [ ! -f ../downloads/config.sub ]; then
+	wget -O ../downloads/config.sub 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD'
+	chmod +x ../downloads/config.sub
 fi
 
 # gcc toolchains
@@ -40,6 +45,19 @@ fetch_extract gpm     1.99.7 tar.lzma "http://www.nico.schottelius.org/software/
 fetch_extract libffi  3.2.1  tar.gz   "ftp://sourceware.org/pub/libffi/%s"
 fetch_extract zlib    1.2.8  tar.xz   "http://zlib.net/%s"
 fetch_extract ncurses 6.0    tar.gz   "http://ftp.gnu.org/gnu/ncurses/%s"
+
+# X11
+fetch_extract inputproto       2.3.2  tar.bz2 "https://www.x.org/releases/individual/proto/%s"
+fetch_extract kbproto          1.0.7  tar.bz2 "https://www.x.org/releases/individual/proto/%s"
+fetch_extract libpthread-stubs 0.3    tar.bz2 "https://xcb.freedesktop.org/dist/%s"
+fetch_extract libX11           1.6.3  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libXau           1.0.8  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libxcb           1.12   tar.bz2 "https://xcb.freedesktop.org/dist/%s"
+fetch_extract util-macros      1.19.0 tar.bz2 "https://www.x.org/releases/individual/util/%s"
+fetch_extract xcb-proto        1.12   tar.bz2 "https://xcb.freedesktop.org/dist/%s"
+fetch_extract xextproto        7.3.0  tar.bz2 "https://www.x.org/releases/individual/proto/%s"
+fetch_extract xproto           7.0.31 tar.bz2 "https://www.x.org/releases/individual/proto/%s"
+fetch_extract xtrans           1.3.5  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
 
 ################################################################################
 
@@ -85,6 +103,10 @@ do_patch() {
 		patch -p1 < ../../patches/ncurses-invoke-cpp-with-P.patch
 		;;
 
+	*proto|libpthread-stubs)
+		cp ../../downloads/config.guess ../../downloads/config.sub .
+		;;
+
 	esac
 }
 
@@ -103,6 +125,12 @@ maybe_do_patch djbnu
 maybe_do_patch djgcc
 maybe_do_patch gcc
 maybe_do_patch ncurses
+
+maybe_do_patch       inputproto
+maybe_do_patch          kbproto
+maybe_do_patch        xextproto
+maybe_do_patch           xproto
+maybe_do_patch libpthread-stubs
 
 ################################################################################
 
@@ -130,6 +158,10 @@ if [ ! -e "$sysroot_dos"/sys-include ]; then
 	ln -s "$sysroot_dos"/include "$sysroot_dos"/sys-include
 fi
 
+sed -e "s|@nativepath@|$PATH|g" -e "s|@targetsysroot@|$sysroot_linux_x86|g"    < ../patches/pkg-config-wrapper > "$prefix_native/bin/i686-pc-linux-musl-pkg-config"
+sed -e "s|@nativepath@|$PATH|g" -e "s|@targetsysroot@|$sysroot_linux_x86_64|g" < ../patches/pkg-config-wrapper > "$prefix_native/bin/x86_64-pc-linux-musl-pkg-config"
+chmod +x "$prefix_native"/bin/*-pkg-config
+
 export PATH="$prefix_native/bin:$PATH"
 
 ################################################################################
@@ -148,6 +180,7 @@ do_build_autotools_native() {
 do_build_autotools_linux_x86() {
 	local srcname="$1"
 	shift
+	PKG_CONFIG=i686-pc-linux-musl-pkg-config \
 	../"$srcname"/configure \
 		--build=$build_triplet --host=i686-pc-linux-musl \
 		--prefix=/usr \
@@ -159,6 +192,7 @@ do_build_autotools_linux_x86() {
 do_build_autotools_linux_x86_64() {
 	local srcname="$1"
 	shift
+	PKG_CONFIG=x86_64-pc-linux-musl-pkg-config \
 	../"$srcname"/configure \
 		--build=$build_triplet --host=x86_64-pc-linux-musl \
 		--prefix=/usr \
@@ -170,6 +204,7 @@ do_build_autotools_linux_x86_64() {
 do_build_autotools_win32() {
 	local srcname="$1"
 	shift
+	PKG_CONFIG=i686-w64-mingw32-pkg-config \
 	../"$srcname"/configure \
 		--build=$build_triplet --host=i686-w64-mingw32 \
 		--prefix= \
@@ -181,6 +216,7 @@ do_build_autotools_win32() {
 do_build_autotools_win64() {
 	local srcname="$1"
 	shift
+	PKG_CONFIG=x86_64-w64-mingw32-pkg-config \
 	../"$srcname"/configure \
 		--build=$build_triplet --host=x86_64-w64-mingw32 \
 		--prefix= \
@@ -192,6 +228,7 @@ do_build_autotools_win64() {
 do_build_autotools_dos() {
 	local srcname="$1"
 	shift
+	PKG_CONFIG=i586-pc-msdosdjgpp-pkg-config \
 	../"$srcname"/configure \
 		--build=$build_triplet --host=i586-pc-msdosdjgpp \
 		--prefix= \
@@ -607,6 +644,11 @@ do_build() {
 		cp ../gpm/src/headers/gpm.h "$sysroot_linux_x86_64"/usr/include
 		;;
 
+	libffi-build-linux-x86   ) do_build_autotools_linux_x86    libffi; mv    "$sysroot_linux_x86"/usr/lib/libffi-*/include/*    "$sysroot_linux_x86"/usr/include;;
+	libffi-build-linux-x86_64) do_build_autotools_linux_x86_64 libffi; mv "$sysroot_linux_x86_64"/usr/lib/libffi-*/include/* "$sysroot_linux_x86_64"/usr/include;;
+	libffi-build-win32       ) do_build_autotools_win32        libffi; mv "$sysroot_win32"/lib/libffi-*/include/* "$sysroot_win32"/include;;
+	libffi-build-win64       ) do_build_autotools_win64        libffi; mv "$sysroot_win64"/lib/libffi-*/include/* "$sysroot_win64"/include;;
+
 	zlib-build-win32)
 		cp -R ../zlib/. .
 		make -f win32/Makefile.gcc \
@@ -634,6 +676,25 @@ do_build() {
 		CHOST=i586-pc-msdosdjgpp ./configure --static --prefix=
 		make
 		make install DESTDIR="$sysroot_dos"
+		;;
+
+	libX11-build-linux-x86   ) do_build_autotools_linux_x86    libX11 --disable-malloc0returnsnull;;
+	libX11-build-linux-x86_64) do_build_autotools_linux_x86_64 libX11 --disable-malloc0returnsnull;;
+
+	*proto-build-linux-x86   )
+		PKG_CONFIG=i686-pc-linux-musl-pkg-config \
+		../"${buildname%-build-linux-x86}"/configure \
+			--build=$build_triplet --host=i686-pc-linux-musl --prefix=/usr "$@"
+		make -j"$cpucount"
+		make -j"$cpucount" install DESTDIR="$sysroot_linux_x86"
+		;;
+
+	*proto-build-linux-x86_64)
+		PKG_CONFIG=x86_64-pc-linux-musl-pkg-config \
+		../"${buildname%-build-linux-x86_64}"/configure \
+			--build=$build_triplet --host=x86_64-pc-linux-musl --prefix=/usr "$@"
+		make -j"$cpucount"
+		make -j"$cpucount" install DESTDIR="$sysroot_linux_x86_64"
 		;;
 
 	*-build-native      ) do_build_autotools_native       ${buildname%-build-native}      ;;
@@ -664,6 +725,9 @@ maybe_do_build() {
 		# Remove libtool stuff, it's not needed. Otherwise we'd have to fix paths
 		# in the *.la files to support cross-compilation with sysroot.
 		remove_la_files_in_dirs "$prefix_native" "$sysroot_linux_x86" "$sysroot_linux_x86_64" "$sysroot_win32" "$sysroot_win64" "$sysroot_dos"
+
+		# Leave .pc files. Some packages' build systems require pkg-config.
+		# We rely on our pkg-config-wrapper to fix up the paths dynamically.
 
 		cd ..
 		touch "$buildname/build-done.stamp"
@@ -737,6 +801,32 @@ maybe_do_build mpc-build-dos
 maybe_do_build zlib-build-win32
 maybe_do_build zlib-build-win64
 maybe_do_build zlib-build-dos
+
+maybe_do_build       inputproto-build-linux-x86
+maybe_do_build          kbproto-build-linux-x86
+maybe_do_build        xcb-proto-build-linux-x86
+maybe_do_build        xextproto-build-linux-x86
+maybe_do_build           xproto-build-linux-x86
+maybe_do_build libpthread-stubs-build-linux-x86
+maybe_do_build      util-macros-build-linux-x86
+maybe_do_build           xtrans-build-linux-x86
+
+maybe_do_build       inputproto-build-linux-x86_64
+maybe_do_build          kbproto-build-linux-x86_64
+maybe_do_build        xcb-proto-build-linux-x86_64
+maybe_do_build        xextproto-build-linux-x86_64
+maybe_do_build           xproto-build-linux-x86_64
+maybe_do_build libpthread-stubs-build-linux-x86_64
+maybe_do_build      util-macros-build-linux-x86_64
+maybe_do_build           xtrans-build-linux-x86_64
+
+maybe_do_build libXau-build-linux-x86
+maybe_do_build libxcb-build-linux-x86
+maybe_do_build libX11-build-linux-x86
+
+maybe_do_build libXau-build-linux-x86_64
+maybe_do_build libxcb-build-linux-x86_64
+maybe_do_build libX11-build-linux-x86_64
 
 #
 # fbc cross-compiler & target programs
