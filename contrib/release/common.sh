@@ -78,33 +78,28 @@ my_extract() {
 	fi
 }
 
-#
-# Fix paths in *.la files and also all the *-config scripts
-#
-# We cross-compile stuff with a certain --prefix=... which is where it should be
-# installed on the target system, and install it into our sysroot with "make
-# install DESTDIR=$sysroot" so that it is available to following builds during
-# the cross-compilation.
-#
-# libtool stores the prefix into the installed *.la files, because they are
-# intended for the target system. We need to adjust them to work in the sysroot.
-#
-# Alternative: use libtool's sysroot support?
-#
-fix_la_files_and_config_scripts() {
-	installdir="$1"
+fetch_extract_custom() {
+	finaldir=$1
+	title=$2
+	tarballext=$3
+	urlpattern="$4"
 
-	for f in `find $installdir -type f -name "*.la"` \
-			 `find $installdir/bin -type f -name "*-config"`; do
+	tarball=$title.$tarballext
+	url="$(printf "$urlpattern" $tarball)"
 
-		sed -e "s:/usr:$prefix:g" < $f > $f.tmp
+	my_fetch $tarball "$url"
+	my_extract $finaldir $tarball
+}
 
-		# Overwrite original with temp file, preserve executable bit
-		if [ -x "$f" ]; then
-			chmod +x $f.tmp
-		fi
-		mv $f.tmp $f
-	done
+fetch_extract() {
+	name=$1
+	version=$2
+	tarballext=$3
+	urlpattern="$4"
+
+	title=$name-$version
+
+	fetch_extract_custom $name $title $tarballext "$urlpattern"
 }
 
 remove_la_files_in_dirs() {
