@@ -564,62 +564,29 @@ do_build() {
 			$gcc_conf_disables
 		;;
 
-	fbc-*-build-native)
+	fbc-build-native)
 		rm -f  "$prefix_native"/bin/fbc
 		rm -rf "$prefix_native"/include/freebasic
 		rm -rf "$prefix_native"/lib/freebasic
 		echo "prefix := $prefix_native" > config.mk
 		make -j"$cpucount" -f ../fbc/makefile compiler install-compiler install-includes
-		make -j"$cpucount" -f ../fbc/makefile TARGET=i686-pc-linux-musl   rtlib gfxlib2 install-rtlib install-gfxlib2
-		make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-pc-linux-musl rtlib gfxlib2 install-rtlib install-gfxlib2
+		make -j"$cpucount" -f ../fbc/makefile TARGET=i686-pc-linux-musl   rtlib         install-rtlib
+		make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-pc-linux-musl rtlib         install-rtlib
 		make -j"$cpucount" -f ../fbc/makefile TARGET=i686-w64-mingw32     rtlib gfxlib2 install-rtlib install-gfxlib2
 		make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-w64-mingw32   rtlib gfxlib2 install-rtlib install-gfxlib2
 		make -j"$cpucount" -f ../fbc/makefile TARGET=i586-pc-msdosdjgpp   rtlib gfxlib2 install-rtlib install-gfxlib2
 		mv "$prefix_native"/lib/freebas/dos "$prefix_native"/lib/freebasic
 		;;
 
-	fbc-*-build-linux-x86)
-		echo 'TARGET := i686-pc-linux-musl' > config.mk
-		make -j"$cpucount" -f ../fbc/makefile all install DESTDIR="$sysroot_linux_x86"
-		;;
-
-	fbc-*-build-linux-x86_64)
-		echo 'TARGET := x86_64-pc-linux-musl' > config.mk
-		make -j"$cpucount" -f ../fbc/makefile all install DESTDIR="$sysroot_linux_x86_64"
-		;;
-
-	fbc-*-build-win32)
-		echo 'TARGET := i686-w64-mingw32' > config.mk
-		make -j"$cpucount" -f ../fbc/makefile all install DESTDIR="$sysroot_win32"
-		;;
-
-	fbc-*-build-win64)
-		echo 'TARGET := x86_64-w64-mingw32' > config.mk
-		make -j"$cpucount" -f ../fbc/makefile all install DESTDIR="$sysroot_win64"
-		;;
-
-	fbc-*-build-dos)
-		echo 'TARGET := i586-pc-msdosdjgpp' > config.mk
-		make -j"$cpucount" -f ../fbc/makefile all install DESTDIR="$sysroot_dos"
+	fbc-build-win32-standalone) make -j"$cpucount" -f ../fbc/makefile TARGET=i686-w64-mingw32   ENABLE_STANDALONE=1;;
+	fbc-build-win64-standalone) make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-w64-mingw32 ENABLE_STANDALONE=1;;
+	fbc-build-dos-standalone  ) make -j"$cpucount" -f ../fbc/makefile TARGET=i586-pc-msdosdjgpp ENABLE_STANDALONE=1;;
+	fbc-build-linux-x86       ) make -j"$cpucount" -f ../fbc/makefile TARGET=i686-pc-linux-musl   DESTDIR="$sysroot_linux_x86"    compiler rtlib install-compiler install-includes install-rtlib;;
+	fbc-build-linux-x86_64    ) make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-pc-linux-musl DESTDIR="$sysroot_linux_x86_64" compiler rtlib install-compiler install-includes install-rtlib;;
+	fbc-build-win32           ) make -j"$cpucount" -f ../fbc/makefile TARGET=i686-w64-mingw32     DESTDIR="$sysroot_win32" all install;;
+	fbc-build-win64           ) make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-w64-mingw32   DESTDIR="$sysroot_win64" all install;;
+	fbc-build-dos             ) make -j"$cpucount" -f ../fbc/makefile TARGET=i586-pc-msdosdjgpp   DESTDIR="$sysroot_dos"   all install
 		mv "$sysroot_dos"/lib/freebas/dos "$sysroot_dos"/lib/freebasic
-		;;
-
-	fbc-*-build-win32-standalone)
-		echo 'TARGET := i686-w64-mingw32' > config.mk
-		echo 'ENABLE_STANDALONE := 1'    >> config.mk
-		make -j"$cpucount" -f ../fbc/makefile
-		;;
-
-	fbc-*-build-win64-standalone)
-		echo 'TARGET := x86_64-w64-mingw32' > config.mk
-		echo 'ENABLE_STANDALONE := 1'      >> config.mk
-		make -j"$cpucount" -f ../fbc/makefile
-		;;
-
-	fbc-*-build-dos-standalone)
-		echo 'TARGET := i586-pc-msdosdjgpp' > config.mk
-		echo 'ENABLE_STANDALONE := 1'      >> config.mk
-		make -j"$cpucount" -f ../fbc/makefile
 		;;
 
 	mpfr-build-native) do_build_autotools_native mpfr --with-gmp="$prefix_native";;
