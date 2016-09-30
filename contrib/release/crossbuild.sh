@@ -66,7 +66,7 @@ do_patch() {
 		chmod +x configure
 
 		# Fix precheck for fixincludes
-		patch -p1 < ../../gcc-fixincludes-with-build-sysroot.patch
+		patch -p1 < ../../patches/gcc-fixincludes-with-build-sysroot.patch
 
 		# Disable fixincludes
 		sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
@@ -74,7 +74,7 @@ do_patch() {
 
 	gcc)
 		# Fix precheck for fixincludes
-		patch -p1 < ../../gcc-fixincludes-with-build-sysroot.patch
+		patch -p1 < ../../patches/gcc-fixincludes-with-build-sysroot.patch
 
 		# Disable fixincludes
 		sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
@@ -82,7 +82,7 @@ do_patch() {
 		;;
 
 	ncurses)
-		patch -p1 < ../../ncurses-invoke-cpp-with-P.patch
+		patch -p1 < ../../patches/ncurses-invoke-cpp-with-P.patch
 		;;
 
 	esac
