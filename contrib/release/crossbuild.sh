@@ -691,8 +691,13 @@ maybe_do_build() {
 		rm -rf "$buildname"
 		mkdir "$buildname"
 		cd "$buildname"
+
 		do_build "$buildname" > build-log.txt 2>&1
-		remove_la_files_in_dirs "$prefix_native" "$sysroot_win32" "$sysroot_win64" "$sysroot_dos"
+
+		# Remove libtool stuff, it's not needed. Otherwise we'd have to fix paths
+		# in the *.la files to support cross-compilation with sysroot.
+		remove_la_files_in_dirs "$prefix_native" "$sysroot_linux_x86" "$sysroot_linux_x86_64" "$sysroot_win32" "$sysroot_win64" "$sysroot_dos"
+
 		cd ..
 		touch "$buildname/build-done.stamp"
 	fi
