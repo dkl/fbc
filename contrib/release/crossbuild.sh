@@ -163,8 +163,6 @@ sed -e "s|@nativepath@|$PATH|g" -e "s|@targetsysroot@|$sysroot_linmus32|g" < ../
 sed -e "s|@nativepath@|$PATH|g" -e "s|@targetsysroot@|$sysroot_linmus64|g" < ../patches/pkg-config-wrapper > "$prefix_native/bin/x86_64-pc-linux-musl-pkg-config"
 chmod +x "$prefix_native"/bin/*-pkg-config
 
-export PATH="$prefix_native/bin:$PATH"
-
 ################################################################################
 
 do_build_autotools_native() {
@@ -282,6 +280,19 @@ ncurses_conf=" \
 
 do_build() {
 	local buildname="$1"
+
+	# Add cross tools to PATH for non-native builds. Ideally it could always be
+	# in the PATH, but the "cross" compilers may overlap with the native tools,
+	# without necessarily being ready for use (e.g. if build system is x86_64-pc-linux-gnu
+	# and we have a native gcc/x86_64-pc-linux-gnu-gcc in $prefix_native/bin, but no glibc yet).
+	export ORIG_PATH="$PATH"
+	case "$buildname" in
+	*-build-native*)
+		;;
+	*)
+		export PATH="$prefix_native/bin:$PATH"
+		;;
+	esac
 
 	case "$buildname" in
 
@@ -710,6 +721,22 @@ do_build() {
 		exit 1
 		;;
 	esac
+
+	# Remove native tools (without target prefix) from $prefix_native/bin.
+	# We build various "cross" compilers, and if one of them happens to match the
+	# build system, it will install native tools too. This can cause problems for
+	# following builds, e.g. if we have a "gcc" that doesn't fully work because
+	# there is no glibc yet.
+	case "$buildname" in
+	gcc-*|binutils-*)
+		(cd "$prefix_native"/bin/ && \
+			rm -f \
+				addr2line ar as c++filt cpp elfedit gcc gcc-ar gcc-nm gcc-ranlib gcov \
+				gcov-tool gprof ld ld.bfd nm objcopy objdump ranlib readelf size strings strip)
+		;;
+	esac
+
+	export PATH="$ORIG_PATH"
 }
 
 maybe_do_build() {
