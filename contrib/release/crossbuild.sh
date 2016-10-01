@@ -62,6 +62,7 @@ fetch_extract xtrans           1.3.5  tar.bz2 "https://www.x.org/releases/indivi
 ################################################################################
 
 prefix_native="$PWD/native"
+mkdir -p "$prefix_native"; cd "$prefix_native"; mkdir -p bin include lib; cd ..
 export CFLAGS="-O2 -g0"
 export CXXFLAGS="-O2 -g0"
 cpucount="$(grep -c '^processor' /proc/cpuinfo)"
