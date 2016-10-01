@@ -135,16 +135,16 @@ maybe_do_patch libpthread-stubs
 
 ################################################################################
 
-sysroot_linux_x86="$PWD/sysroot-linux-x86"
-sysroot_linux_x86_64="$PWD/sysroot-linux-x86_64"
+sysroot_linmus32="$PWD/sysroot-linux-musl-x86"
+sysroot_linmus64="$PWD/sysroot-linux-musl-x86_64"
 sysroot_win32="$PWD/sysroot-win32"
 sysroot_win64="$PWD/sysroot-win64"
 sysroot_dos="$PWD/sysroot-dos"
-mkdir -p "$sysroot_linux_x86"   ; cd "$sysroot_linux_x86"   ; mkdir -p bin include lib usr/bin usr/include usr/lib; cd ..
-mkdir -p "$sysroot_linux_x86_64"; cd "$sysroot_linux_x86_64"; mkdir -p bin include lib usr/bin usr/include usr/lib; cd ..
-mkdir -p "$sysroot_win32"       ; cd "$sysroot_win32"       ; mkdir -p bin include lib; cd ..
-mkdir -p "$sysroot_win64"       ; cd "$sysroot_win64"       ; mkdir -p bin include lib; cd ..
-mkdir -p "$sysroot_dos"         ; cd "$sysroot_dos"         ; mkdir -p bin include lib; cd ..
+mkdir -p "$sysroot_linmus32"; cd "$sysroot_linmus32"; mkdir -p bin include lib usr/bin usr/include usr/lib; cd ..
+mkdir -p "$sysroot_linmus64"; cd "$sysroot_linmus64"; mkdir -p bin include lib usr/bin usr/include usr/lib; cd ..
+mkdir -p "$sysroot_win32"   ; cd "$sysroot_win32"   ; mkdir -p bin include lib; cd ..
+mkdir -p "$sysroot_win64"   ; cd "$sysroot_win64"   ; mkdir -p bin include lib; cd ..
+mkdir -p "$sysroot_dos"     ; cd "$sysroot_dos"     ; mkdir -p bin include lib; cd ..
 if [ ! -e "$sysroot_win32/mingw" ]; then
 	ln -s "$sysroot_win32" "$sysroot_win32/mingw"
 fi
@@ -159,8 +159,8 @@ if [ ! -e "$sysroot_dos"/sys-include ]; then
 	ln -s "$sysroot_dos"/include "$sysroot_dos"/sys-include
 fi
 
-sed -e "s|@nativepath@|$PATH|g" -e "s|@targetsysroot@|$sysroot_linux_x86|g"    < ../patches/pkg-config-wrapper > "$prefix_native/bin/i686-pc-linux-musl-pkg-config"
-sed -e "s|@nativepath@|$PATH|g" -e "s|@targetsysroot@|$sysroot_linux_x86_64|g" < ../patches/pkg-config-wrapper > "$prefix_native/bin/x86_64-pc-linux-musl-pkg-config"
+sed -e "s|@nativepath@|$PATH|g" -e "s|@targetsysroot@|$sysroot_linmus32|g" < ../patches/pkg-config-wrapper > "$prefix_native/bin/i686-pc-linux-musl-pkg-config"
+sed -e "s|@nativepath@|$PATH|g" -e "s|@targetsysroot@|$sysroot_linmus64|g" < ../patches/pkg-config-wrapper > "$prefix_native/bin/x86_64-pc-linux-musl-pkg-config"
 chmod +x "$prefix_native"/bin/*-pkg-config
 
 export PATH="$prefix_native/bin:$PATH"
@@ -178,7 +178,7 @@ do_build_autotools_native() {
 	make -j"$cpucount" install
 }
 
-do_build_autotools_linux_x86() {
+do_build_autotools_linmus32() {
 	local srcname="$1"
 	shift
 	PKG_CONFIG=i686-pc-linux-musl-pkg-config \
@@ -187,10 +187,10 @@ do_build_autotools_linux_x86() {
 		--prefix=/usr \
 		--enable-static --disable-shared "$@"
 	make -j"$cpucount"
-	make -j"$cpucount" install DESTDIR="$sysroot_linux_x86"
+	make -j"$cpucount" install DESTDIR="$sysroot_linmus32"
 }
 
-do_build_autotools_linux_x86_64() {
+do_build_autotools_linmus64() {
 	local srcname="$1"
 	shift
 	PKG_CONFIG=x86_64-pc-linux-musl-pkg-config \
@@ -199,7 +199,7 @@ do_build_autotools_linux_x86_64() {
 		--prefix=/usr \
 		--enable-static --disable-shared "$@"
 	make -j"$cpucount"
-	make -j"$cpucount" install DESTDIR="$sysroot_linux_x86_64"
+	make -j"$cpucount" install DESTDIR="$sysroot_linmus64"
 }
 
 do_build_autotools_win32() {
@@ -285,25 +285,25 @@ do_build() {
 
 	case "$buildname" in
 
-	binutils-build-native-to-linux-x86   ) do_build_autotools_native binutils --target=i686-pc-linux-musl   --with-sysroot="$sysroot_linux_x86"    $binutils_conf;;
-	binutils-build-native-to-linux-x86_64) do_build_autotools_native binutils --target=x86_64-pc-linux-musl --with-sysroot="$sysroot_linux_x86_64" $binutils_conf;;
-	binutils-build-native-to-win32       ) do_build_autotools_native binutils --target=i686-w64-mingw32     --with-sysroot="$sysroot_win32"        $binutils_conf;;
-	binutils-build-native-to-win64       ) do_build_autotools_native binutils --target=x86_64-w64-mingw32   --with-sysroot="$sysroot_win64"        $binutils_conf;;
-	djbnu-build-native-to-dos            ) do_build_autotools_native djbnu    --target=i586-pc-msdosdjgpp   --with-sysroot="$sysroot_dos"          $binutils_conf;;
-	binutils-build-win32-to-win32        ) do_build_autotools_win32  binutils --target=i686-w64-mingw32   $binutils_conf;;
-	binutils-build-win64-to-win64        ) do_build_autotools_win64  binutils --target=x86_64-w64-mingw32 $binutils_conf;;
-	djbnu-build-dos-to-dos               ) do_build_autotools_dos    djbnu    --target=i586-pc-msdosdjgpp $binutils_conf;;
+	binutils-build-native-to-linmus32) do_build_autotools_native binutils --target=i686-pc-linux-musl   --with-sysroot="$sysroot_linmus32" $binutils_conf;;
+	binutils-build-native-to-linmus64) do_build_autotools_native binutils --target=x86_64-pc-linux-musl --with-sysroot="$sysroot_linmus64" $binutils_conf;;
+	binutils-build-native-to-win32   ) do_build_autotools_native binutils --target=i686-w64-mingw32     --with-sysroot="$sysroot_win32"    $binutils_conf;;
+	binutils-build-native-to-win64   ) do_build_autotools_native binutils --target=x86_64-w64-mingw32   --with-sysroot="$sysroot_win64"    $binutils_conf;;
+	djbnu-build-native-to-dos        ) do_build_autotools_native djbnu    --target=i586-pc-msdosdjgpp   --with-sysroot="$sysroot_dos"      $binutils_conf;;
+	binutils-build-win32-to-win32    ) do_build_autotools_win32  binutils --target=i686-w64-mingw32   $binutils_conf;;
+	binutils-build-win64-to-win64    ) do_build_autotools_win64  binutils --target=x86_64-w64-mingw32 $binutils_conf;;
+	djbnu-build-dos-to-dos           ) do_build_autotools_dos    djbnu    --target=i586-pc-msdosdjgpp $binutils_conf;;
 
-	linux-build-linux-x86-headers)
+	linux-build-linmus32-headers)
 		cd ../linux
-		make O=../linux-build-linux-x86-headers ARCH=i386 INSTALL_HDR_PATH="$sysroot_linux_x86"/usr defconfig headers_install
-		cd ../linux-build-linux-x86-headers
+		make O=../linux-build-linmus32-headers ARCH=i386 CROSS_COMPILE=i686-pc-linux-musl- INSTALL_HDR_PATH="$sysroot_linmus32"/usr headers_install
+		cd ../linux-build-linmus32-headers
 		;;
 
-	linux-build-linux-x86_64-headers)
+	linux-build-linmus64-headers)
 		cd ../linux
-		make O=../linux-build-linux-x86_64-headers ARCH=x86_64 INSTALL_HDR_PATH="$sysroot_linux_x86_64"/usr defconfig headers_install
-		cd ../linux-build-linux-x86_64-headers
+		make O=../linux-build-linmus64-headers ARCH=x86_64 CROSS_COMPILE=x86_64-pc-linux-musl- INSTALL_HDR_PATH="$sysroot_linmus64"/usr headers_install
+		cd ../linux-build-linmus64-headers
 		;;
 
 	mingw-w64-build-win32-headers)
@@ -329,20 +329,20 @@ do_build() {
 		cp -R include/. "$sysroot_dos"/include
 		;;
 
-	musl-build-linux-x86)
+	musl-build-linmus32)
 		../musl/configure \
 			--build=$build_triplet --target=i686-pc-linux-musl \
 			--prefix=/usr --enable-optimize --disable-shared --disable-wrapper
 		make -j"$cpucount"
-		make -j"$cpucount" install DESTDIR="$sysroot_linux_x86"
+		make -j"$cpucount" install DESTDIR="$sysroot_linmus32"
 		;;
 
-	musl-build-linux-x86_64)
+	musl-build-linmus64)
 		../musl/configure \
 			--build=$build_triplet --target=x86_64-pc-linux-musl \
 			--prefix=/usr --enable-optimize --disable-shared --disable-wrapper
 		make -j"$cpucount"
-		make -j"$cpucount" install DESTDIR="$sysroot_linux_x86_64"
+		make -j"$cpucount" install DESTDIR="$sysroot_linmus64"
 		;;
 
 	mingw-w64-build-win32-crt)
@@ -409,11 +409,11 @@ do_build() {
 		cp bin/*.exe "$sysroot_dos"/bin
 		;;
 
-	gcc-build-native-to-linux-x86-gcc)
+	gcc-build-native-to-linmus32-gcc)
 		../gcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=i686-pc-linux-musl \
 			--prefix="$prefix_native" \
-			--with-sysroot="$sysroot_linux_x86" \
+			--with-sysroot="$sysroot_linmus32" \
 			--with-gmp="$prefix_native" \
 			--with-mpfr="$prefix_native" \
 			--with-mpc="$prefix_native" \
@@ -424,11 +424,11 @@ do_build() {
 		make -j"$cpucount" install-gcc
 		;;
 
-	gcc-build-native-to-linux-x86_64-gcc)
+	gcc-build-native-to-linmus64-gcc)
 		../gcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=x86_64-pc-linux-musl \
 			--prefix="$prefix_native" \
-			--with-sysroot="$sysroot_linux_x86_64" \
+			--with-sysroot="$sysroot_linmus64" \
 			--with-gmp="$prefix_native" \
 			--with-mpfr="$prefix_native" \
 			--with-mpc="$prefix_native" \
@@ -486,11 +486,11 @@ do_build() {
 		make -j"$cpucount" install-gcc
 		;;
 
-	gcc-build-native-to-linux-x86-full)
+	gcc-build-native-to-linmus32-full)
 		../gcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=i686-pc-linux-musl \
 			--prefix="$prefix_native" \
-			--with-sysroot="$sysroot_linux_x86" \
+			--with-sysroot="$sysroot_linmus32" \
 			--with-gmp="$prefix_native" \
 			--with-mpfr="$prefix_native" \
 			--with-mpc="$prefix_native" \
@@ -501,11 +501,11 @@ do_build() {
 		make -j"$cpucount" install
 		;;
 
-	gcc-build-native-to-linux-x86_64-full)
+	gcc-build-native-to-linmus64-full)
 		../gcc/configure \
 			--build=$build_triplet --host=$build_triplet --target=x86_64-pc-linux-musl \
 			--prefix="$prefix_native" \
-			--with-sysroot="$sysroot_linux_x86_64" \
+			--with-sysroot="$sysroot_linmus64" \
 			--with-gmp="$prefix_native" \
 			--with-mpfr="$prefix_native" \
 			--with-mpc="$prefix_native" \
@@ -619,11 +619,11 @@ do_build() {
 	fbc-build-win32-standalone) make -j"$cpucount" -f ../fbc/makefile TARGET=i686-w64-mingw32   ENABLE_STANDALONE=1;;
 	fbc-build-win64-standalone) make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-w64-mingw32 ENABLE_STANDALONE=1;;
 	fbc-build-dos-standalone  ) make -j"$cpucount" -f ../fbc/makefile TARGET=i586-pc-msdosdjgpp ENABLE_STANDALONE=1;;
-	fbc-build-linux-x86       ) make -j"$cpucount" -f ../fbc/makefile TARGET=i686-pc-linux-musl   DESTDIR="$sysroot_linux_x86"    prefix=/usr compiler rtlib install-compiler install-includes install-rtlib;;
-	fbc-build-linux-x86_64    ) make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-pc-linux-musl DESTDIR="$sysroot_linux_x86_64" prefix=/usr compiler rtlib install-compiler install-includes install-rtlib;;
-	fbc-build-win32           ) make -j"$cpucount" -f ../fbc/makefile TARGET=i686-w64-mingw32     DESTDIR="$sysroot_win32" prefix= all install;;
-	fbc-build-win64           ) make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-w64-mingw32   DESTDIR="$sysroot_win64" prefix= all install;;
-	fbc-build-dos             ) make -j"$cpucount" -f ../fbc/makefile TARGET=i586-pc-msdosdjgpp   DESTDIR="$sysroot_dos"   prefix= all install
+	fbc-build-linmus32) make -j"$cpucount" -f ../fbc/makefile TARGET=i686-pc-linux-musl   DESTDIR="$sysroot_linmus32" prefix=/usr compiler rtlib install-compiler install-includes install-rtlib;;
+	fbc-build-linmus64) make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-pc-linux-musl DESTDIR="$sysroot_linmus64" prefix=/usr compiler rtlib install-compiler install-includes install-rtlib;;
+	fbc-build-win32   ) make -j"$cpucount" -f ../fbc/makefile TARGET=i686-w64-mingw32     DESTDIR="$sysroot_win32"    prefix=     all install;;
+	fbc-build-win64   ) make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-w64-mingw32   DESTDIR="$sysroot_win64"    prefix=     all install;;
+	fbc-build-dos     ) make -j"$cpucount" -f ../fbc/makefile TARGET=i586-pc-msdosdjgpp   DESTDIR="$sysroot_dos"      prefix=     all install
 		mv "$sysroot_dos"/lib/freebas/dos "$sysroot_dos"/lib/freebasic
 		;;
 
@@ -637,18 +637,18 @@ do_build() {
 	mpc-build-win64 ) do_build_autotools_win64  mpc --with-gmp="$sysroot_win64" --with-mpfr="$sysroot_win64";;
 	mpc-build-dos   ) do_build_autotools_dos    mpc --with-gmp="$sysroot_dos"   --with-mpfr="$sysroot_dos"  ;;
 
-	ncurses-build-linux-x86)    do_build_autotools_linux_x86    ncurses --with-install-prefix="$sysroot_linux_x86"    $ncurses_conf;;
-	ncurses-build-linux-x86_64) do_build_autotools_linux_x86_64 ncurses --with-install-prefix="$sysroot_linux_x86_64" $ncurses_conf;;
+	ncurses-build-linmus32) do_build_autotools_linmus32 ncurses --with-install-prefix="$sysroot_linmus32" $ncurses_conf;;
+	ncurses-build-linmus64) do_build_autotools_linmus64 ncurses --with-install-prefix="$sysroot_linmus64" $ncurses_conf;;
 
 	gpm-build-header)
-		cp ../gpm/src/headers/gpm.h "$sysroot_linux_x86"/usr/include
-		cp ../gpm/src/headers/gpm.h "$sysroot_linux_x86_64"/usr/include
+		cp ../gpm/src/headers/gpm.h "$sysroot_linmus32"/usr/include
+		cp ../gpm/src/headers/gpm.h "$sysroot_linmus64"/usr/include
 		;;
 
-	libffi-build-linux-x86   ) do_build_autotools_linux_x86    libffi; mv    "$sysroot_linux_x86"/usr/lib/libffi-*/include/*    "$sysroot_linux_x86"/usr/include;;
-	libffi-build-linux-x86_64) do_build_autotools_linux_x86_64 libffi; mv "$sysroot_linux_x86_64"/usr/lib/libffi-*/include/* "$sysroot_linux_x86_64"/usr/include;;
-	libffi-build-win32       ) do_build_autotools_win32        libffi; mv "$sysroot_win32"/lib/libffi-*/include/* "$sysroot_win32"/include;;
-	libffi-build-win64       ) do_build_autotools_win64        libffi; mv "$sysroot_win64"/lib/libffi-*/include/* "$sysroot_win64"/include;;
+	libffi-build-linmus32) do_build_autotools_linmus32 libffi; mv "$sysroot_linmus32"/usr/lib/libffi-*/include/* "$sysroot_linmus32"/usr/include;;
+	libffi-build-linmus64) do_build_autotools_linmus64 libffi; mv "$sysroot_linmus64"/usr/lib/libffi-*/include/* "$sysroot_linmus64"/usr/include;;
+	libffi-build-win32   ) do_build_autotools_win32    libffi; mv "$sysroot_win32"/lib/libffi-*/include/* "$sysroot_win32"/include;;
+	libffi-build-win64   ) do_build_autotools_win64    libffi; mv "$sysroot_win64"/lib/libffi-*/include/* "$sysroot_win64"/include;;
 
 	zlib-build-win32)
 		cp -R ../zlib/. .
@@ -679,31 +679,31 @@ do_build() {
 		make install DESTDIR="$sysroot_dos"
 		;;
 
-	libX11-build-linux-x86   ) do_build_autotools_linux_x86    libX11 --disable-malloc0returnsnull;;
-	libX11-build-linux-x86_64) do_build_autotools_linux_x86_64 libX11 --disable-malloc0returnsnull;;
+	libX11-build-linmus32) do_build_autotools_linmus32 libX11 --disable-malloc0returnsnull;;
+	libX11-build-linmus64) do_build_autotools_linmus64 libX11 --disable-malloc0returnsnull;;
 
-	*proto-build-linux-x86   )
+	*proto-build-linmus32)
 		PKG_CONFIG=i686-pc-linux-musl-pkg-config \
-		../"${buildname%-build-linux-x86}"/configure \
+		../"${buildname%-build-linmus32}"/configure \
 			--build=$build_triplet --host=i686-pc-linux-musl --prefix=/usr "$@"
 		make -j"$cpucount"
-		make -j"$cpucount" install DESTDIR="$sysroot_linux_x86"
+		make -j"$cpucount" install DESTDIR="$sysroot_linmus32"
 		;;
 
-	*proto-build-linux-x86_64)
+	*proto-build-linmus64)
 		PKG_CONFIG=x86_64-pc-linux-musl-pkg-config \
-		../"${buildname%-build-linux-x86_64}"/configure \
+		../"${buildname%-build-linmus64}"/configure \
 			--build=$build_triplet --host=x86_64-pc-linux-musl --prefix=/usr "$@"
 		make -j"$cpucount"
-		make -j"$cpucount" install DESTDIR="$sysroot_linux_x86_64"
+		make -j"$cpucount" install DESTDIR="$sysroot_linmus64"
 		;;
 
-	*-build-native      ) do_build_autotools_native       ${buildname%-build-native}      ;;
-	*-build-linux-x86   ) do_build_autotools_linux_x86    ${buildname%-build-linux-x86}   ;;
-	*-build-linux-x86_64) do_build_autotools_linux_x86_64 ${buildname%-build-linux-x86_64};;
-	*-build-win32       ) do_build_autotools_win32        ${buildname%-build-win32}       ;;
-	*-build-win64       ) do_build_autotools_win64        ${buildname%-build-win64}       ;;
-	*-build-dos         ) do_build_autotools_dos          ${buildname%-build-dos}         ;;
+	*-build-native  ) do_build_autotools_native   ${buildname%-build-native}  ;;
+	*-build-linmus32) do_build_autotools_linmus32 ${buildname%-build-linmus32};;
+	*-build-linmus64) do_build_autotools_linmus64 ${buildname%-build-linmus64};;
+	*-build-win32   ) do_build_autotools_win32    ${buildname%-build-win32}   ;;
+	*-build-win64   ) do_build_autotools_win64    ${buildname%-build-win64}   ;;
+	*-build-dos     ) do_build_autotools_dos      ${buildname%-build-dos}     ;;
 
 	*)
 		echo "TODO: build $buildname"
@@ -725,7 +725,13 @@ maybe_do_build() {
 
 		# Remove libtool stuff, it's not needed. Otherwise we'd have to fix paths
 		# in the *.la files to support cross-compilation with sysroot.
-		remove_la_files_in_dirs "$prefix_native" "$sysroot_linux_x86" "$sysroot_linux_x86_64" "$sysroot_win32" "$sysroot_win64" "$sysroot_dos"
+		remove_la_files_in_dirs \
+			"$prefix_native" \
+			"$sysroot_linmus32" \
+			"$sysroot_linmus64" \
+			"$sysroot_win32" \
+			"$sysroot_win64" \
+			"$sysroot_dos"
 
 		# Leave .pc files. Some packages' build systems require pkg-config.
 		# We rely on our pkg-config-wrapper to fix up the paths dynamically.
@@ -739,8 +745,8 @@ maybe_do_build() {
 # gcc cross-toolchains + target libc
 #
 
-maybe_do_build binutils-build-native-to-linux-x86
-maybe_do_build binutils-build-native-to-linux-x86_64
+maybe_do_build binutils-build-native-to-linmus32
+maybe_do_build binutils-build-native-to-linmus64
 maybe_do_build binutils-build-native-to-win32
 maybe_do_build binutils-build-native-to-win64
 maybe_do_build djbnu-build-native-to-dos
@@ -753,22 +759,22 @@ maybe_do_build mingw-w64-build-win32-headers
 maybe_do_build mingw-w64-build-win64-headers
 maybe_do_build djcrx-build-dos-headers
 
-maybe_do_build gcc-build-native-to-linux-x86-gcc
-maybe_do_build gcc-build-native-to-linux-x86_64-gcc
+maybe_do_build gcc-build-native-to-linmus32-gcc
+maybe_do_build gcc-build-native-to-linmus64-gcc
 maybe_do_build gcc-build-native-to-win32-gcc
 maybe_do_build gcc-build-native-to-win64-gcc
 maybe_do_build djgcc-build-native-to-dos-gcc
 
-maybe_do_build linux-build-linux-x86-headers
-maybe_do_build linux-build-linux-x86_64-headers
-maybe_do_build musl-build-linux-x86
-maybe_do_build musl-build-linux-x86_64
+maybe_do_build linux-build-linmus32-headers
+maybe_do_build linux-build-linmus64-headers
+maybe_do_build musl-build-linmus32
+maybe_do_build musl-build-linmus64
 maybe_do_build mingw-w64-build-win32-crt
 maybe_do_build mingw-w64-build-win64-crt
 maybe_do_build djcrx-build-dos-crt
 
-maybe_do_build gcc-build-native-to-linux-x86-full
-maybe_do_build gcc-build-native-to-linux-x86_64-full
+maybe_do_build gcc-build-native-to-linmus32-full
+maybe_do_build gcc-build-native-to-linmus64-full
 maybe_do_build gcc-build-native-to-win32-full
 maybe_do_build gcc-build-native-to-win64-full
 maybe_do_build djgcc-build-native-to-dos-full
@@ -778,13 +784,13 @@ maybe_do_build djcrx-build-dos-full
 # target libraries
 #
 
-maybe_do_build libffi-build-linux-x86
-maybe_do_build libffi-build-linux-x86_64
+maybe_do_build libffi-build-linmus32
+maybe_do_build libffi-build-linmus64
 maybe_do_build libffi-build-win32
 maybe_do_build libffi-build-win64
 
-maybe_do_build ncurses-build-linux-x86
-maybe_do_build ncurses-build-linux-x86_64
+maybe_do_build ncurses-build-linmus32
+maybe_do_build ncurses-build-linmus64
 maybe_do_build gpm-build-header
 
 maybe_do_build gmp-build-win32
@@ -803,31 +809,31 @@ maybe_do_build zlib-build-win32
 maybe_do_build zlib-build-win64
 maybe_do_build zlib-build-dos
 
-maybe_do_build       inputproto-build-linux-x86
-maybe_do_build          kbproto-build-linux-x86
-maybe_do_build        xcb-proto-build-linux-x86
-maybe_do_build        xextproto-build-linux-x86
-maybe_do_build           xproto-build-linux-x86
-maybe_do_build libpthread-stubs-build-linux-x86
-maybe_do_build      util-macros-build-linux-x86
-maybe_do_build           xtrans-build-linux-x86
+maybe_do_build       inputproto-build-linmus32
+maybe_do_build          kbproto-build-linmus32
+maybe_do_build        xcb-proto-build-linmus32
+maybe_do_build        xextproto-build-linmus32
+maybe_do_build           xproto-build-linmus32
+maybe_do_build libpthread-stubs-build-linmus32
+maybe_do_build      util-macros-build-linmus32
+maybe_do_build           xtrans-build-linmus32
 
-maybe_do_build       inputproto-build-linux-x86_64
-maybe_do_build          kbproto-build-linux-x86_64
-maybe_do_build        xcb-proto-build-linux-x86_64
-maybe_do_build        xextproto-build-linux-x86_64
-maybe_do_build           xproto-build-linux-x86_64
-maybe_do_build libpthread-stubs-build-linux-x86_64
-maybe_do_build      util-macros-build-linux-x86_64
-maybe_do_build           xtrans-build-linux-x86_64
+maybe_do_build       inputproto-build-linmus64
+maybe_do_build          kbproto-build-linmus64
+maybe_do_build        xcb-proto-build-linmus64
+maybe_do_build        xextproto-build-linmus64
+maybe_do_build           xproto-build-linmus64
+maybe_do_build libpthread-stubs-build-linmus64
+maybe_do_build      util-macros-build-linmus64
+maybe_do_build           xtrans-build-linmus64
 
-maybe_do_build libXau-build-linux-x86
-maybe_do_build libxcb-build-linux-x86
-maybe_do_build libX11-build-linux-x86
+maybe_do_build libXau-build-linmus32
+maybe_do_build libxcb-build-linmus32
+maybe_do_build libX11-build-linmus32
 
-maybe_do_build libXau-build-linux-x86_64
-maybe_do_build libxcb-build-linux-x86_64
-maybe_do_build libX11-build-linux-x86_64
+maybe_do_build libXau-build-linmus64
+maybe_do_build libxcb-build-linmus64
+maybe_do_build libX11-build-linmus64
 
 #
 # fbc cross-compiler & target programs
@@ -843,8 +849,8 @@ maybe_do_build gcc-build-win32-to-win32
 maybe_do_build gcc-build-win64-to-win64
 maybe_do_build djgcc-build-dos-to-dos
 
-maybe_do_build fbc-build-linux-x86
-maybe_do_build fbc-build-linux-x86_64
+maybe_do_build fbc-build-linmus32
+maybe_do_build fbc-build-linmus64
 maybe_do_build fbc-build-win32
 maybe_do_build fbc-build-win64
 maybe_do_build fbc-build-dos
