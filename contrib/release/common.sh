@@ -7,7 +7,7 @@ my_fetch() {
 		echo "download: $tarball"
 		mkdir -p "../downloads"
 		if wget "$url" -O "../downloads/$tarball" > "../downloads/$tarball.log" 2>&1; then
-			:
+			chmod -w "../downloads/$tarball"
 		else
 			rm -f "../downloads/$tarball"
 			echo
