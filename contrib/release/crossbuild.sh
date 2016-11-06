@@ -93,7 +93,7 @@ do_patch() {
 	djbnu)
 		cp -R gnu/binutils-*/. .
 		rm -rf gnu manifest
-		chmod +x configure
+		chmod +x configure missing install-sh
 		;;
 
 	djgcc)
@@ -627,9 +627,25 @@ do_build() {
 	binutils-build-native-to-linmus64) do_build_autotools_native binutils --target=x86_64-pc-linux-musl --program-prefix=x86_64-pc-linux-musl- --prefix="$prefix_cross_linmus64" --with-sysroot="$sysroot_linmus64" $binutils_conf; remove_non_prefixed_cross_tools;;
 	binutils-build-native-to-win32   ) do_build_autotools_native binutils --target=i686-w64-mingw32     --program-prefix=i686-w64-mingw32-     --prefix="$prefix_cross_win32"    --with-sysroot="$sysroot_win32"    $binutils_conf; remove_non_prefixed_cross_tools;;
 	binutils-build-native-to-win64   ) do_build_autotools_native binutils --target=x86_64-w64-mingw32   --program-prefix=x86_64-w64-mingw32-   --prefix="$prefix_cross_win64"    --with-sysroot="$sysroot_win64"    $binutils_conf; remove_non_prefixed_cross_tools;;
-	djbnu-build-native-to-dos        ) do_build_autotools_native djbnu    --target=i586-pc-msdosdjgpp   --program-prefix=i586-pc-msdosdjgpp-   --prefix="$prefix_cross_dos"      --with-sysroot="$sysroot_dos"      $binutils_conf; remove_non_prefixed_cross_tools;;
 	binutils-build-win32-to-win32    ) do_build_autotools_win32  binutils --target=i686-w64-mingw32   $binutils_conf; remove_non_prefixed_cross_tools;;
 	binutils-build-win64-to-win64    ) do_build_autotools_win64  binutils --target=x86_64-w64-mingw32 $binutils_conf; remove_non_prefixed_cross_tools;;
+
+	djbnu-build-native-to-dos)
+		../djbnu/configure \
+			--build=$build_triplet --host=$build_triplet \
+			--enable-static --disable-shared \
+			--target=i586-pc-msdosdjgpp --program-prefix=i586-pc-msdosdjgpp- \
+			--prefix="$prefix_cross_dos" --with-sysroot="$sysroot_dos" \
+			$binutils_conf
+		make configure-bfd
+		cd bfd
+		make stmp-lcoff-h
+		cd ..
+		make -j"$cpucount"
+		make -j"$cpucount" install
+		remove_non_prefixed_cross_tools
+		;;
+
 	djbnu-build-dos-to-dos           ) do_build_autotools_dos    djbnu    --target=i586-pc-msdosdjgpp $binutils_conf; remove_non_prefixed_cross_tools;;
 
 	gcc-glibc-bootstrap-native-to-lingnu32) gcc_glibc_bootstrap i686-pc-linux-gnu    i386   "$prefix_cross_lingnu32" "$sysroot_lingnu32";;
