@@ -818,6 +818,14 @@ do_build() {
 		make -j"$cpucount" install DESTDIR="$sysroot_linmus64"
 		;;
 
+	gmp-build-lingnu32) export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_lingnu32 gmp;;
+	gmp-build-lingnu64) export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_lingnu64 gmp;;
+	gmp-build-linmus32) export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_linmus32 gmp;;
+	gmp-build-linmus64) export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_linmus64 gmp;;
+	gmp-build-win32   ) export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_win32    gmp;;
+	gmp-build-win64   ) export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_win64    gmp;;
+	gmp-build-dos     ) export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_dos      gmp;;
+
 	*-build-native  ) do_build_autotools_native   ${buildname%-build-native}  --prefix="$prefix_native";;
 	*-build-lingnu32) do_build_autotools_lingnu32 ${buildname%-build-lingnu32};;
 	*-build-lingnu64) do_build_autotools_lingnu64 ${buildname%-build-lingnu64};;
