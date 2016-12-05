@@ -80,7 +80,6 @@ export CFLAGS="-O2 -g0"
 export CXXFLAGS="-O2 -g0"
 cpucount="$(grep -c '^processor' /proc/cpuinfo)"
 build_triplet=$(../downloads/config.guess)
-
 prepend_path() {
   export PATH="$1:$PATH"
 }
@@ -646,7 +645,20 @@ do_build() {
 		remove_non_prefixed_cross_tools
 		;;
 
-	djbnu-build-dos-to-dos           ) do_build_autotools_dos    djbnu    --target=i586-pc-msdosdjgpp $binutils_conf; remove_non_prefixed_cross_tools;;
+	djbnu-build-dos-to-dos)
+		prepend_path "$prefix_cross_dos"/bin
+		../djbnu/configure \
+			--build=$build_triplet --host=i586-pc-msdosdjgpp \
+			--enable-static --disable-shared \
+			--prefix=C:/DJGPP --target=i586-pc-msdosdjgpp $binutils_conf
+		make configure-bfd
+		cd bfd
+		make stmp-lcoff-h
+		cd ..
+		make -j"$cpucount"
+		#make -j"$cpucount" install DESTDIR="$sysroot_dos"
+		#remove_non_prefixed_cross_tools
+		;;
 
 	gcc-glibc-bootstrap-native-to-lingnu32) gcc_glibc_bootstrap i686-pc-linux-gnu    i386   "$prefix_cross_lingnu32" "$sysroot_lingnu32";;
 	gcc-glibc-bootstrap-native-to-lingnu64) gcc_glibc_bootstrap x86_64-pc-linux-gnu  x86_64 "$prefix_cross_lingnu64" "$sysroot_lingnu64";;
