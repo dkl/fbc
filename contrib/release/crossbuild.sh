@@ -41,6 +41,16 @@ fetch_extract_custom djlsr djlsr205  zip "ftp://ftp.fu-berlin.de/pc/languages/dj
 fetch_extract_custom djbnu bnu226sr3 zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/deleted/v2gnu/%s"
 fetch_extract_custom djgcc gcc620s   zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2gnu/%s"
 
+fetch_extract_custom djgcc_prebuilt gcc620b  zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2gnu/%s"
+fetch_extract_custom djbnu_prebuilt bnu227b  zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2gnu/%s"
+fetch_extract_custom djdev_prebuilt djdev205 zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2/%s"
+my_fetch ../downloads/bnu227s.zip                "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2gnu/bnu227s.zip"
+
+#fetch_extract_custom djcrx djcrx204  zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/deleted/beta/v2/%s"
+#fetch_extract_custom djlsr djlsr204  zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/deleted/beta/v2/%s"
+#fetch_extract_custom djbnu bnu2251s  zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/deleted/beta/v2gnu/%s"
+#fetch_extract_custom djgcc gcc492s   zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/deleted/beta/v2gnu/%s"
+
 # FB rtlib dependencies
 fetch_extract gpm     1.99.7 tar.lzma "http://www.nico.schottelius.org/software/gpm/archives/%s"
 fetch_extract libffi  3.2.1  tar.gz   "ftp://sourceware.org/pub/libffi/%s"
@@ -645,21 +655,6 @@ do_build() {
 		remove_non_prefixed_cross_tools
 		;;
 
-	djbnu-build-dos-to-dos)
-		prepend_path "$prefix_cross_dos"/bin
-		../djbnu/configure \
-			--build=$build_triplet --host=i586-pc-msdosdjgpp \
-			--enable-static --disable-shared \
-			--prefix=C:/DJGPP --target=i586-pc-msdosdjgpp $binutils_conf
-		make configure-bfd
-		cd bfd
-		make stmp-lcoff-h
-		cd ..
-		make -j"$cpucount"
-		#make -j"$cpucount" install DESTDIR="$sysroot_dos"
-		#remove_non_prefixed_cross_tools
-		;;
-
 	gcc-glibc-bootstrap-native-to-lingnu32) gcc_glibc_bootstrap i686-pc-linux-gnu    i386   "$prefix_cross_lingnu32" "$sysroot_lingnu32";;
 	gcc-glibc-bootstrap-native-to-lingnu64) gcc_glibc_bootstrap x86_64-pc-linux-gnu  x86_64 "$prefix_cross_lingnu64" "$sysroot_lingnu64";;
 	gcc-musl-bootstrap-native-to-linmus32)  gcc_musl_bootstrap  i686-pc-linux-musl   i386   "$prefix_cross_linmus32" "$sysroot_linmus32";;
@@ -688,18 +683,6 @@ do_build() {
 			--with-mpfr="$sysroot_win64" \
 			--with-mpc="$sysroot_win64" \
 			$gcc_conf $gcc_conf_windows
-		;;
-
-	djgcc-build-dos-to-dos)
-		ac_cv_c_bigendian=no \
-		do_build_autotools_dos djgcc \
-			--target=i586-pc-msdosdjgpp \
-			--with-local-prefix= \
-			--with-build-sysroot="$sysroot_dos" \
-			--with-gmp="$sysroot_dos" \
-			--with-mpfr="$sysroot_dos" \
-			--with-mpc="$sysroot_dos" \
-			$gcc_conf
 		;;
 
 	fbc-build-native)
@@ -1011,11 +994,9 @@ maybe_do_build fbc-build-native
 
 maybe_do_build binutils-build-win32-to-win32
 maybe_do_build binutils-build-win64-to-win64
-maybe_do_build djbnu-build-dos-to-dos
 
 maybe_do_build gcc-build-win32-to-win32
 maybe_do_build gcc-build-win64-to-win64
-maybe_do_build djgcc-build-dos-to-dos
 
 maybe_do_build fbc-build-lingnu32
 maybe_do_build fbc-build-lingnu64
