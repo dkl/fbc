@@ -835,50 +835,71 @@ do_build() {
 	fbc-lingnu32)
 		prepend_path "$prefix_native"/bin
 		prepend_path "$prefix_cross_lingnu32"/bin
-		make -j"$cpucount" -f ../fbc/makefile TARGET=i686-pc-linux-gnu compiler rtlib
-		#make               -f ../fbc/makefile TARGET=i686-pc-linux-gnu bindist
+		echo "TARGET=i686-pc-linux-gnu" > config.mk
+		make -f ../fbc/makefile -j"$cpucount"
+		make -f ../fbc/makefile bindist
+		cp *.tar.gz *.tar.xz ../output
+		cp ../fbc/contrib/manifest/fbc-linux-x86.lst ../output
 		;;
 
 	fbc-lingnu64)
 		prepend_path "$prefix_native"/bin
 		prepend_path "$prefix_cross_lingnu64"/bin
-		make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-pc-linux-gnu compiler rtlib
-		#make               -f ../fbc/makefile TARGET=x86_64-pc-linux-gnu bindist
+		echo "TARGET=x86_64-pc-linux-gnu" > config.mk
+		make -f ../fbc/makefile -j"$cpucount"
+		make -f ../fbc/makefile bindist
+		cp *.tar.gz *.tar.xz ../output
+		cp ../fbc/contrib/manifest/fbc-linux-x86_64.lst ../output
 		;;
 
 	fbc-linmus32)
 		prepend_path "$prefix_native"/bin
 		prepend_path "$prefix_cross_linmus32"/bin
-		make -j"$cpucount" -f ../fbc/makefile TARGET=i686-pc-linux-musl compiler rtlib
-		#make               -f ../fbc/makefile TARGET=i686-pc-linux-musl bindist
+		echo "TARGET=i686-pc-linux-musl" > config.mk
+		make -f ../fbc/makefile -j"$cpucount"
+		make -f ../fbc/makefile bindist
+		cp *.tar.gz *.tar.xz ../output
+		cp ../fbc/contrib/manifest/fbc-linux-x86.lst ../output/fbc-linuxmusl-x86.lst
 		;;
 
 	fbc-linmus64)
 		prepend_path "$prefix_native"/bin
 		prepend_path "$prefix_cross_linmus64"/bin
-		make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-pc-linux-musl compiler rtlib
-		#make               -f ../fbc/makefile TARGET=x86_64-pc-linux-musl bindist
+		echo "TARGET=x86_64-pc-linux-musl" > config.mk
+		make -f ../fbc/makefile -j"$cpucount"
+		make -f ../fbc/makefile bindist
+		cp *.tar.gz *.tar.xz ../output
+		cp ../fbc/contrib/manifest/fbc-linux-x86_64.lst ../output/fbc-linuxmusl-x86_64.lst
 		;;
 
 	fbc-win32)
 		prepend_path "$prefix_native"/bin
 		prepend_path "$prefix_cross_win32"/bin
-		make -j"$cpucount" -f ../fbc/makefile TARGET=i686-w64-mingw32 all
-		make -f ../fbc/makefile TARGET=i686-w64-mingw32 bindist
+		echo "TARGET=i686-w64-mingw32" > config.mk
+		make -f ../fbc/makefile -j"$cpucount"
+		make -f ../fbc/makefile bindist
+		cp *.zip *.7z ../output
+		cp ../fbc/contrib/manifest/fbc-win32.lst ../output
 		;;
 
 	fbc-win64)
 		prepend_path "$prefix_native"/bin
 		prepend_path "$prefix_cross_win64"/bin
-		make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-w64-mingw32 all
-		make               -f ../fbc/makefile TARGET=x86_64-w64-mingw32 bindist
+		echo "TARGET=x86_64-w64-mingw32" > config.mk
+		make -f ../fbc/makefile -j"$cpucount"
+		make -f ../fbc/makefile bindist
+		cp *.zip *.7z ../output
+		cp ../fbc/contrib/manifest/fbc-win64.lst ../output
 		;;
 
 	fbc-dos)
 		prepend_path "$prefix_native"/bin
 		prepend_path "$prefix_cross_dos"/bin
-		make -j"$cpucount" -f ../fbc/makefile TARGET=i586-pc-msdosdjgpp all
-		make               -f ../fbc/makefile TARGET=i586-pc-msdosdjgpp bindist
+		echo "TARGET=i586-pc-msdosdjgpp" > config.mk
+		make -f ../fbc/makefile -j"$cpucount"
+		make -f ../fbc/makefile bindist
+		cp *.zip ../output
+		cp ../fbc/contrib/manifest/fbc-dos.lst ../output
 		;;
 
 	fbc-win32-standalone)
