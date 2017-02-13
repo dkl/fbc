@@ -12,6 +12,7 @@ set -e
 
 mkdir -p build
 cd build
+mkdir -p output
 
 fetch_extract_custom fbc fbc-246172c59e6db0bb77811e10b70c2963237f2ee6 tar.gz "https://github.com/freebasic/fbc/archive/%s"
 #fetch_extract_custom fbc FreeBASIC-1.05.0-source tar.xz "https://sourceforge.net/projects/fbc/files/Source%%20Code/%s/download"
@@ -41,9 +42,10 @@ fetch_extract_custom djlsr djlsr205  zip "ftp://ftp.fu-berlin.de/pc/languages/dj
 fetch_extract_custom djbnu bnu226sr3 zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/deleted/v2gnu/%s"
 fetch_extract_custom djgcc gcc620s   zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2gnu/%s"
 
-fetch_extract_custom djgcc_prebuilt gcc620b  zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2gnu/%s"
+#fetch_extract_custom djgcc_prebuilt gcc620b  zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2gnu/%s"
+#fetch_extract_custom djgpp_prebuilt gpp620b  zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2gnu/%s"
 fetch_extract_custom djbnu_prebuilt bnu227b  zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2gnu/%s"
-fetch_extract_custom djdev_prebuilt djdev205 zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2/%s"
+#fetch_extract_custom djdev_prebuilt djdev205 zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2/%s"
 my_fetch ../downloads/bnu227s.zip                "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2gnu/bnu227s.zip"
 
 #fetch_extract_custom djcrx djcrx204  zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/deleted/beta/v2/%s"
@@ -705,18 +707,127 @@ do_build() {
 		rmdir "$prefix_native"/lib/freebas
 		;;
 
-	fbc-build-win32-standalone) prepend_path "$prefix_native"/bin; prepend_path "$prefix_cross_win32"/bin; make -j"$cpucount" -f ../fbc/makefile TARGET=i686-w64-mingw32   ENABLE_STANDALONE=1;;
-	fbc-build-win64-standalone) prepend_path "$prefix_native"/bin; prepend_path "$prefix_cross_win64"/bin; make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-w64-mingw32 ENABLE_STANDALONE=1;;
-	fbc-build-dos-standalone  ) prepend_path "$prefix_native"/bin; prepend_path "$prefix_cross_dos"/bin  ; make -j"$cpucount" -f ../fbc/makefile TARGET=i586-pc-msdosdjgpp ENABLE_STANDALONE=1;;
-	fbc-build-lingnu32) prepend_path "$prefix_native"/bin; prepend_path "$prefix_cross_lingnu32"/bin; make -j"$cpucount" -f ../fbc/makefile TARGET=i686-pc-linux-gnu    DESTDIR="$sysroot_lingnu32" prefix=/usr compiler rtlib install-compiler install-includes install-rtlib;;
-	fbc-build-lingnu64) prepend_path "$prefix_native"/bin; prepend_path "$prefix_cross_lingnu64"/bin; make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-pc-linux-gnu  DESTDIR="$sysroot_lingnu64" prefix=/usr compiler rtlib install-compiler install-includes install-rtlib;;
-	fbc-build-linmus32) prepend_path "$prefix_native"/bin; prepend_path "$prefix_cross_linmus32"/bin; make -j"$cpucount" -f ../fbc/makefile TARGET=i686-pc-linux-musl   DESTDIR="$sysroot_linmus32" prefix=/usr compiler rtlib install-compiler install-includes install-rtlib;;
-	fbc-build-linmus64) prepend_path "$prefix_native"/bin; prepend_path "$prefix_cross_linmus64"/bin; make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-pc-linux-musl DESTDIR="$sysroot_linmus64" prefix=/usr compiler rtlib install-compiler install-includes install-rtlib;;
-	fbc-build-win32   ) prepend_path "$prefix_native"/bin; prepend_path "$prefix_cross_win32"/bin   ; make -j"$cpucount" -f ../fbc/makefile TARGET=i686-w64-mingw32     DESTDIR="$sysroot_win32"    prefix=     all install;;
-	fbc-build-win64   ) prepend_path "$prefix_native"/bin; prepend_path "$prefix_cross_win64"/bin   ; make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-w64-mingw32   DESTDIR="$sysroot_win64"    prefix=     all install;;
-	fbc-build-dos     ) prepend_path "$prefix_native"/bin; prepend_path "$prefix_cross_dos"/bin     ; make -j"$cpucount" -f ../fbc/makefile TARGET=i586-pc-msdosdjgpp   DESTDIR="$sysroot_dos"      prefix=     all install
-		mv "$sysroot_dos"/lib/freebas/dos "$sysroot_dos"/lib/freebasic
-		rmdir "$sysroot_dos"/lib/freebas
+	fbc-build-lingnu32)
+		prepend_path "$prefix_native"/bin
+		prepend_path "$prefix_cross_lingnu32"/bin
+		make -j"$cpucount" -f ../fbc/makefile TARGET=i686-pc-linux-gnu compiler rtlib
+		#make               -f ../fbc/makefile TARGET=i686-pc-linux-gnu bindist
+		;;
+
+	fbc-build-lingnu64)
+		prepend_path "$prefix_native"/bin
+		prepend_path "$prefix_cross_lingnu64"/bin
+		make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-pc-linux-gnu compiler rtlib
+		#make               -f ../fbc/makefile TARGET=x86_64-pc-linux-gnu bindist
+		;;
+
+	fbc-build-linmus32)
+		prepend_path "$prefix_native"/bin
+		prepend_path "$prefix_cross_linmus32"/bin
+		make -j"$cpucount" -f ../fbc/makefile TARGET=i686-pc-linux-musl compiler rtlib
+		#make               -f ../fbc/makefile TARGET=i686-pc-linux-musl bindist
+		;;
+
+	fbc-build-linmus64)
+		prepend_path "$prefix_native"/bin
+		prepend_path "$prefix_cross_linmus64"/bin
+		make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-pc-linux-musl compiler rtlib
+		#make               -f ../fbc/makefile TARGET=x86_64-pc-linux-musl bindist
+		;;
+
+	fbc-build-win32)
+		prepend_path "$prefix_native"/bin
+		prepend_path "$prefix_cross_win32"/bin
+		make -j"$cpucount" -f ../fbc/makefile TARGET=i686-w64-mingw32 all
+		make -f ../fbc/makefile TARGET=i686-w64-mingw32 bindist
+		;;
+
+	fbc-build-win64)
+		prepend_path "$prefix_native"/bin
+		prepend_path "$prefix_cross_win64"/bin
+		make -j"$cpucount" -f ../fbc/makefile TARGET=x86_64-w64-mingw32 all
+		make               -f ../fbc/makefile TARGET=x86_64-w64-mingw32 bindist
+		;;
+
+	fbc-build-dos)
+		prepend_path "$prefix_native"/bin
+		prepend_path "$prefix_cross_dos"/bin
+		make -j"$cpucount" -f ../fbc/makefile TARGET=i586-pc-msdosdjgpp all
+		make               -f ../fbc/makefile TARGET=i586-pc-msdosdjgpp bindist
+		;;
+
+	fbc-build-win32-standalone)
+		prepend_path "$prefix_native"/bin
+		prepend_path "$prefix_cross_win32"/bin
+
+		echo "TARGET=i686-w64-mingw32" > config.mk
+		echo "ENABLE_STANDALONE=1" >> config.mk
+		make -j"$cpucount" -f ../fbc/makefile
+
+		mkdir -p bin/win32
+		for i in as ar ld dlltool gprof; do
+			cp "$sysroot_win32"/bin/$i.exe bin/win32/
+		done
+		for i in crt2 dllcrt2 gcrt2; do
+			cp "$sysroot_win32"/lib/$i.o lib/win32/
+		done
+		for i in libgcc.a crtbegin.o crtend.o; do
+			cp "$sysroot_win32"/lib/gcc/i686-w64-mingw32/*/$i lib/win32/
+		done
+		cp "$sysroot_win32"/lib/*.a lib/win32/
+		make -f ../fbc/makefile bindist
+		cp *.zip *.7z ../output
+		cp ../fbc/contrib/manifest/FreeBASIC-win32.lst ../output
+		;;
+
+	fbc-build-win64-standalone)
+		prepend_path "$prefix_native"/bin
+		prepend_path "$prefix_cross_win64"/bin
+
+		echo "TARGET=x86_64-w64-mingw32" > config.mk
+		echo "ENABLE_STANDALONE=1" >> config.mk
+		make -j"$cpucount" -f ../fbc/makefile
+
+		mkdir -p bin/win64
+		for i in as ar ld dlltool gprof; do
+			cp "$sysroot_win64"/bin/$i.exe bin/win64/
+		done
+		for i in crt2 dllcrt2 gcrt2; do
+			cp "$sysroot_win64"/lib/$i.o lib/win64/
+		done
+		for i in libgcc.a crtbegin.o crtend.o; do
+			cp "$sysroot_win64"/lib/gcc/x86_64-w64-mingw32/*/$i lib/win64/
+		done
+		cp "$sysroot_win64"/lib/*.a lib/win64/
+		make -f ../fbc/makefile bindist
+		cp *.zip *.7z ../output
+		cp ../fbc/contrib/manifest/FreeBASIC-win64.lst ../output
+		;;
+
+	fbc-build-dos-standalone)
+		prepend_path "$prefix_native"/bin
+		prepend_path "$prefix_cross_dos"/bin
+
+		echo "TARGET=i586-pc-msdosdjgpp" > config.mk
+		echo "ENABLE_STANDALONE=1" >> config.mk
+		make -j"$cpucount" -f ../fbc/makefile
+
+		mkdir -p bin/dos
+		# Use DJGPP's prebuilt binaries, instead of cross-compiling
+		# TODO: Find out why the cross-compiled DJGPP binutils didn't work,
+		# e.g. ld.exe didn't recognize COFF objects...
+		for i in ar as gprof ld; do
+			cp ../djbnu_prebuilt/bin/$i.exe bin/dos/
+		done
+		cp "$sysroot_dos"/lib/crt0.o lib/dos/
+		cp "$sysroot_dos"/lib/gcrt0.o lib/dos/
+		cp "$prefix_cross_dos"/i586-pc-msdosdjgpp/lib/libstdc++.a lib/dos/libstdcx.a
+		cp "$prefix_cross_dos"/i586-pc-msdosdjgpp/lib/libsupc++.a lib/dos/libsupcx.a
+		cp "$prefix_cross_dos"/lib/gcc/i586-pc-msdosdjgpp/*/libgcc.a lib/dos/
+		cp "$sysroot_dos"/lib/*.a lib/dos/
+		make -f ../fbc/makefile bindist
+		cp *.zip ../output
+		cp ../fbc/contrib/manifest/FreeBASIC-dos.lst ../output
 		;;
 
 	mpfr-build-native) do_build_autotools_native mpfr --with-gmp="$prefix_native" --prefix="$prefix_native";;
