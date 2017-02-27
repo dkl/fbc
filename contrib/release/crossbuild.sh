@@ -1043,9 +1043,8 @@ do_build() {
 		make -j"$cpucount" install DESTDIR="$sysroot_linmus64"
 		;;
 
-	gmp-*)
-		export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_$target gmp
-		;;
+	gmp-native) do_build_autotools_native gmp --prefix="$prefix_native";;
+	gmp-*) export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_$target gmp;;
 
 	*-native)
 		do_build_autotools_native ${buildname%-native} --prefix="$prefix_native"
