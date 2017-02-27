@@ -193,22 +193,69 @@ my_fetch ../downloads/bnu227s.zip                "ftp://ftp.fu-berlin.de/pc/lang
 #fetch_extract_custom djbnu bnu2251s  zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/deleted/beta/v2gnu/%s"
 #fetch_extract_custom djgcc gcc492s   zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/deleted/beta/v2gnu/%s"
 
-# FB rtlib dependencies
+fetch_extract zlib   1.2.8  tar.xz "http://zlib.net/%s"
+fetch_extract bzip2  1.0.6  tar.gz "http://www.bzip.org/1.0.6/%s"
+fetch_extract libzip 1.1.3  tar.xz "https://nih.at/libzip/%s"
+fetch_extract lzo    2.09   tar.gz "http://www.oberhumer.com/opensource/lzo/download/%s"
+fetch_extract xz     5.2.2  tar.xz "http://tukaani.org/xz/%s"
+
 fetch_extract gpm     1.99.7 tar.lzma "http://www.nico.schottelius.org/software/gpm/archives/%s"
 fetch_extract libffi  3.2.1  tar.gz   "ftp://sourceware.org/pub/libffi/%s"
-fetch_extract zlib    1.2.8  tar.xz   "http://zlib.net/%s"
 fetch_extract ncurses 6.0    tar.gz   "http://ftp.gnu.org/gnu/ncurses/%s"
+fetch_extract harfbuzz   1.4.2  tar.bz2 "https://www.freedesktop.org/software/harfbuzz/release/%s"
+fetch_extract freetype   2.7.1  tar.bz2 "https://sourceforge.net/projects/freetype/files/freetype2/2.7.1/%s/download"
+fetch_extract fontconfig 2.12.1 tar.gz  "https://www.freedesktop.org/software/fontconfig/release/%s"
+
+fetch_extract libpng 1.6.28 tar.xz  "http://prdownloads.sourceforge.net/libpng/%s?download"
+fetch_extract giflib 5.1.4  tar.bz2 "https://sourceforge.net/projects/giflib/files/%s/download"
+fetch_extract tiff   4.0.7  tar.gz  "http://download.osgeo.org/libtiff/%s"
+fetch_extract_custom jpeg-9b jpegsrc.v9b tar.gz "http://www.ijg.org/files/%s"
+
+fetch_extract dri2proto        2.8    tar.bz2 "https://www.x.org/releases/individual/proto/%s"
+fetch_extract dri3proto        1.0    tar.bz2 "https://www.x.org/releases/individual/proto/%s"
+fetch_extract fixesproto       5.0    tar.bz2 "https://www.x.org/releases/individual/proto/%s"
 fetch_extract inputproto       2.3.2  tar.bz2 "https://www.x.org/releases/individual/proto/%s"
 fetch_extract kbproto          1.0.7  tar.bz2 "https://www.x.org/releases/individual/proto/%s"
+fetch_extract presentproto     1.1    tar.bz2 "https://www.x.org/releases/individual/proto/%s"
+fetch_extract libICE           1.0.9  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract liblbxutil       1.1.0  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
 fetch_extract libpthread-stubs 0.3    tar.bz2 "https://xcb.freedesktop.org/dist/%s"
+fetch_extract libSM            1.2.2  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
 fetch_extract libX11           1.6.3  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
 fetch_extract libXau           1.0.8  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
 fetch_extract libxcb           1.12   tar.bz2 "https://xcb.freedesktop.org/dist/%s"
+fetch_extract libXcursor       1.1.14 tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libXdmcp         1.1.2  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libXext          1.3.3  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libXfixes        5.0.2  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libXft           2.3.2  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libXi            1.7.6  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libXinerama      1.1.3  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libXmu           1.1.2  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libXpm           3.5.11 tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libXrandr        1.5.0  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libXrender       0.9.9  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libXt            1.1.5  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libXtst          1.2.2  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libXv            1.0.10 tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libXxf86dga      1.1.4  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libXxf86vm       1.1.4  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract randrproto       1.5.0  tar.bz2 "https://www.x.org/releases/individual/proto/%s"
+fetch_extract recordproto      1.14.2 tar.bz2 "https://www.x.org/releases/individual/proto/%s"
+fetch_extract renderproto      0.11.1 tar.bz2 "https://www.x.org/releases/individual/proto/%s"
 fetch_extract util-macros      1.19.0 tar.bz2 "https://www.x.org/releases/individual/util/%s"
+fetch_extract videoproto       2.3.3  tar.bz2 "https://www.x.org/releases/individual/proto/%s"
 fetch_extract xcb-proto        1.12   tar.bz2 "https://xcb.freedesktop.org/dist/%s"
 fetch_extract xextproto        7.3.0  tar.bz2 "https://www.x.org/releases/individual/proto/%s"
+fetch_extract xf86dgaproto     2.1    tar.bz2 "https://www.x.org/releases/individual/proto/%s"
+fetch_extract xf86vidmodeproto 2.3.1  tar.bz2 "https://www.x.org/releases/individual/proto/%s"
 fetch_extract xproto           7.0.31 tar.bz2 "https://www.x.org/releases/individual/proto/%s"
+fetch_extract glproto          1.4.17 tar.bz2 "https://www.x.org/releases/individual/proto/%s"
 fetch_extract xtrans           1.3.5  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract libpciaccess     0.13.4 tar.bz2 "https://www.x.org/releases/individual/lib/%s"
+fetch_extract mesa             13.0.4 tar.xz  "https://mesa.freedesktop.org/archive/13.0.4/%s"
+fetch_extract glu              9.0.0  tar.bz2 "https://mesa.freedesktop.org/archive/glu/%s"
+fetch_extract libdrm           2.4.75 tar.gz  "https://dri.freedesktop.org/libdrm/%s"
 
 ################################################################################
 
@@ -949,10 +996,14 @@ do_build() {
 		make install DESTDIR="$sysroot_dos"
 		;;
 
-	libX11-lingnu32) do_build_autotools_lingnu32 libX11 --disable-malloc0returnsnull;;
-	libX11-lingnu64) do_build_autotools_lingnu64 libX11 --disable-malloc0returnsnull;;
-	libX11-linmus32) do_build_autotools_linmus32 libX11 --disable-malloc0returnsnull;;
-	libX11-linmus64) do_build_autotools_linmus64 libX11 --disable-malloc0returnsnull;;
+	mesa-lingnu32)
+		do_build_autotools_lingnu32 mesa
+		;;
+
+	libX*-lingnu32) do_build_autotools_lingnu32 ${buildname%-lingnu32} --disable-malloc0returnsnull;;
+	libX*-lingnu64) do_build_autotools_lingnu64 ${buildname%-lingnu64} --disable-malloc0returnsnull;;
+	libX*-linmus32) do_build_autotools_linmus32 ${buildname%-linmus32} --disable-malloc0returnsnull;;
+	libX*-linmus64) do_build_autotools_linmus64 ${buildname%-linmus64} --disable-malloc0returnsnull;;
 
 	*proto-lingnu32)
 		prepend_path "$prefix_cross_lingnu32"/bin
