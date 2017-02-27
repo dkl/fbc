@@ -1096,7 +1096,7 @@ maybe_do_build() {
 	fi
 }
 
-for i in $(./get_task_list.py "$maintask"); do
+for i in $(../get_task_list.py $@); do
 	maybe_do_build $i
 done
 
