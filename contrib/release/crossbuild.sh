@@ -252,20 +252,11 @@ mkdir -p "$sysroot_linmus64"; cd "$sysroot_linmus64"; mkdir -p bin lib usr/bin u
 mkdir -p "$sysroot_win32"   ; cd "$sysroot_win32"   ; mkdir -p bin include lib; cd ..
 mkdir -p "$sysroot_win64"   ; cd "$sysroot_win64"   ; mkdir -p bin include lib; cd ..
 mkdir -p "$sysroot_dos"     ; cd "$sysroot_dos"     ; mkdir -p bin include lib; cd ..
-if [ ! -e "$sysroot_win32/mingw" ]; then
-	ln -s "$sysroot_win32" "$sysroot_win32/mingw"
-fi
-if [ ! -e "$sysroot_win64/mingw" ]; then
-	ln -s "$sysroot_win64" "$sysroot_win64/mingw"
-fi
-if [ ! -e "$sysroot_dos/dev/env/DJDIR" ]; then
-	mkdir -p "$sysroot_dos/dev/env"
-	ln -s "$sysroot_dos" "$sysroot_dos/dev/env/DJDIR"
-fi
-if [ ! -e "$sysroot_dos"/sys-include ]; then
-	ln -s "$sysroot_dos"/include "$sysroot_dos"/sys-include
-fi
-
+mkdir -p "$sysroot_dos/dev/env"
+[ ! -e "$sysroot_win32/mingw"       ] && ln -s "$sysroot_win32"       "$sysroot_win32/mingw"
+[ ! -e "$sysroot_win64/mingw"       ] && ln -s "$sysroot_win64"       "$sysroot_win64/mingw"
+[ ! -e "$sysroot_dos/dev/env/DJDIR" ] && ln -s "$sysroot_dos"         "$sysroot_dos/dev/env/DJDIR"
+[ ! -e "$sysroot_dos/sys-include"   ] && ln -s "$sysroot_dos/include" "$sysroot_dos/sys-include"
 sed -e "s|@nativepath@|$PATH|g" -e "s|@targetsysroot@|$sysroot_lingnu32|g" < ../patches/pkg-config-wrapper > "$prefix_cross_lingnu32/bin/i686-pc-linux-gnu-pkg-config"
 sed -e "s|@nativepath@|$PATH|g" -e "s|@targetsysroot@|$sysroot_lingnu64|g" < ../patches/pkg-config-wrapper > "$prefix_cross_lingnu64/bin/x86_64-pc-linux-gnu-pkg-config"
 sed -e "s|@nativepath@|$PATH|g" -e "s|@targetsysroot@|$sysroot_linmus32|g" < ../patches/pkg-config-wrapper > "$prefix_cross_linmus32/bin/i686-pc-linux-musl-pkg-config"
