@@ -740,6 +740,8 @@ gcc_djgpp_bootstrap() {
 
 do_build() {
 	local buildname="$1"
+	local source="$(echo "$buildname" | sed -e 's/-[^-]*$//g')"
+	local target="$(echo "$buildname" | sed -e 's/^.*-//g')"
 
 	ORIG_PATH="$PATH"
 
@@ -1041,26 +1043,15 @@ do_build() {
 		make -j"$cpucount" install DESTDIR="$sysroot_linmus64"
 		;;
 
-	gmp-lingnu32) export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_lingnu32 gmp;;
-	gmp-lingnu64) export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_lingnu64 gmp;;
-	gmp-linmus32) export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_linmus32 gmp;;
-	gmp-linmus64) export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_linmus64 gmp;;
-	gmp-win32   ) export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_win32    gmp;;
-	gmp-win64   ) export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_win64    gmp;;
-	gmp-dos     ) export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_dos      gmp;;
+	gmp-*)
+		export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_$target gmp
+		;;
 
-	*-native  ) do_build_autotools_native   ${buildname%-native}  --prefix="$prefix_native";;
-	*-lingnu32) do_build_autotools_lingnu32 ${buildname%-lingnu32};;
-	*-lingnu64) do_build_autotools_lingnu64 ${buildname%-lingnu64};;
-	*-linmus32) do_build_autotools_linmus32 ${buildname%-linmus32};;
-	*-linmus64) do_build_autotools_linmus64 ${buildname%-linmus64};;
-	*-win32   ) do_build_autotools_win32    ${buildname%-win32}   ;;
-	*-win64   ) do_build_autotools_win64    ${buildname%-win64}   ;;
-	*-dos     ) do_build_autotools_dos      ${buildname%-dos}     ;;
-
+	*-native)
+		do_build_autotools_native ${buildname%-native} --prefix="$prefix_native"
+		;;
 	*)
-		echo "TODO: build $buildname"
-		exit 1
+		do_build_autotools_$target $source
 		;;
 	esac
 
