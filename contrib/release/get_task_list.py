@@ -1,5 +1,9 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import sys
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 assumeprovided = ["gcc-native-to-native"]
 targets    =           ["lingnu32", "lingnu64", "linmus32", "linmus64", "win32", "win64", "dos"]
@@ -13,6 +17,13 @@ class Build:
         self.depends = []
 
 def add(name):
+    def already_exists(name):
+        for i in builds:
+            if i.name == name:
+                return True
+        return False
+    if already_exists(name):
+        raise RuntimeError("duplicate add(\"" + name + "\")")
     builds.append(Build(name))
 
 def add_depends(dep):
@@ -105,7 +116,6 @@ for target in targets:
     add_depends("mpfr-native")
     add_depends("mpc-native")
 
-add("fbc-native")
 add("binutils-win32-to-win32")
 add("binutils-win64-to-win64")
 add("gcc-win32-to-win32")
@@ -138,20 +148,22 @@ class TaskCollector:
             for dep in b.depends:
                 if not dep in self.tasks:
                     self.collect_tasks(dep)
-            self.tasks.append(name)
+            if not name in self.tasks:
+                self.tasks.append(name)
 
         self.recursionstack.pop()
 
 collector = TaskCollector()
 if len(sys.argv) > 1:
     tasks = sys.argv[1:]
-    #print("collecting tasks for " + str(tasks) + " out of " + str(len(builds)) + " tasks total")
     for task in tasks:
         collector.collect_tasks(task)
+    eprint("Collected " + str(len(collector.tasks)) + "/" + str(len(builds)) + " tasks for " + str(tasks))
 else:
-    #print("collecting all " + str(len(builds)) + " tasks")
     for b in builds:
         collector.collect_tasks(b.name)
+    assert len(collector.tasks) == len(builds)
+    eprint("Collected all " + str(len(builds)) + " tasks")
 
 for t in collector.tasks:
     print(t)
