@@ -67,6 +67,57 @@ my_extract() {
 	fi
 }
 
+do_patch() {
+	srcdirname="$1"
+	case "$srcdirname" in
+	djbnu)
+		cp -R gnu/binutils-*/. .
+		rm -rf gnu manifest
+		chmod +x configure missing install-sh
+		;;
+
+	djgcc)
+		cp -R gnu/gcc-*/. .
+		rm -rf gnu manifest
+		chmod +x configure
+
+		# Fix precheck for fixincludes
+		patch -p1 < ../../patches/gcc-fixincludes-with-build-sysroot.patch
+
+		# Disable fixincludes
+		sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
+		;;
+
+	gcc)
+		# Fix precheck for fixincludes
+		patch -p1 < ../../patches/gcc-fixincludes-with-build-sysroot.patch
+
+		# Disable fixincludes
+		sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
+		;;
+
+	ncurses)
+		patch -p1 < ../../patches/ncurses-invoke-cpp-with-P.patch
+		;;
+
+	*proto|libpthread-stubs)
+		cp ../../downloads/config.guess ../../downloads/config.sub .
+		;;
+
+	esac
+}
+
+maybe_do_patch() {
+	srcdirname="$1"
+	if [ ! -f "$srcdirname/patch-done.stamp" ]; then
+		echo "patch: $srcdirname"
+		cd "$srcdirname"
+		do_patch "$srcdirname" > patch-log.txt 2>&1
+		touch patch-done.stamp
+		cd ..
+	fi
+}
+
 fetch_extract_custom() {
 	finaldir=$1
 	title=$2
@@ -78,6 +129,8 @@ fetch_extract_custom() {
 
 	my_fetch $tarball "$url"
 	my_extract $finaldir $tarball
+
+	maybe_do_patch $finaldir
 }
 
 fetch_extract() {
@@ -182,71 +235,6 @@ build_triplet=$(../downloads/config.guess)
 prepend_path() {
   export PATH="$1:$PATH"
 }
-
-################################################################################
-
-do_patch() {
-	srcdirname="$1"
-	case "$srcdirname" in
-	djbnu)
-		cp -R gnu/binutils-*/. .
-		rm -rf gnu manifest
-		chmod +x configure missing install-sh
-		;;
-
-	djgcc)
-		cp -R gnu/gcc-*/. .
-		rm -rf gnu manifest
-		chmod +x configure
-
-		# Fix precheck for fixincludes
-		patch -p1 < ../../patches/gcc-fixincludes-with-build-sysroot.patch
-
-		# Disable fixincludes
-		sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
-		;;
-
-	gcc)
-		# Fix precheck for fixincludes
-		patch -p1 < ../../patches/gcc-fixincludes-with-build-sysroot.patch
-
-		# Disable fixincludes
-		sed -i 's@\./fixinc\.sh@-c true@' gcc/Makefile.in
-
-		;;
-
-	ncurses)
-		patch -p1 < ../../patches/ncurses-invoke-cpp-with-P.patch
-		;;
-
-	*proto|libpthread-stubs)
-		cp ../../downloads/config.guess ../../downloads/config.sub .
-		;;
-
-	esac
-}
-
-maybe_do_patch() {
-	srcdirname="$1"
-	if [ ! -f "$srcdirname/patch-done.stamp" ]; then
-		echo "patch: $srcdirname"
-		cd "$srcdirname"
-		do_patch "$srcdirname" > patch-log.txt 2>&1
-		touch patch-done.stamp
-		cd ..
-	fi
-}
-
-maybe_do_patch djbnu
-maybe_do_patch djgcc
-maybe_do_patch gcc
-maybe_do_patch ncurses
-
-maybe_do_patch       inputproto
-maybe_do_patch          kbproto
-maybe_do_patch        xextproto
-maybe_do_patch           xproto
-maybe_do_patch libpthread-stubs
 
 ################################################################################
 
