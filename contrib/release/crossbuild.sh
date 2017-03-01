@@ -1011,7 +1011,7 @@ do_build() {
 		prepend_path "$prefix_cross_lingnu32"/bin
 		PKG_CONFIG=i686-pc-linux-gnu-pkg-config \
 		../"${buildname%-lingnu32}"/configure \
-			--build=$build_triplet --host=i686-pc-linux-gnu --prefix=/usr "$@"
+			--build=$build_triplet --host=i686-pc-linux-gnu --prefix=/usr
 		make -j"$cpucount"
 		make -j"$cpucount" install DESTDIR="$sysroot_lingnu32"
 		;;
@@ -1020,7 +1020,7 @@ do_build() {
 		prepend_path "$prefix_cross_lingnu64"/bin
 		PKG_CONFIG=x86_64-pc-linux-gnu-pkg-config \
 		../"${buildname%-lingnu64}"/configure \
-			--build=$build_triplet --host=x86_64-pc-linux-gnu --prefix=/usr "$@"
+			--build=$build_triplet --host=x86_64-pc-linux-gnu --prefix=/usr
 		make -j"$cpucount"
 		make -j"$cpucount" install DESTDIR="$sysroot_lingnu64"
 		;;
@@ -1029,7 +1029,7 @@ do_build() {
 		prepend_path "$prefix_cross_linmus32"/bin
 		PKG_CONFIG=i686-pc-linux-musl-pkg-config \
 		../"${buildname%-linmus32}"/configure \
-			--build=$build_triplet --host=i686-pc-linux-musl --prefix=/usr "$@"
+			--build=$build_triplet --host=i686-pc-linux-musl --prefix=/usr
 		make -j"$cpucount"
 		make -j"$cpucount" install DESTDIR="$sysroot_linmus32"
 		;;
@@ -1038,7 +1038,7 @@ do_build() {
 		prepend_path "$prefix_cross_linmus64"/bin
 		PKG_CONFIG=x86_64-pc-linux-musl-pkg-config \
 		../"${buildname%-linmus64}"/configure \
-			--build=$build_triplet --host=x86_64-pc-linux-musl --prefix=/usr "$@"
+			--build=$build_triplet --host=x86_64-pc-linux-musl --prefix=/usr
 		make -j"$cpucount"
 		make -j"$cpucount" install DESTDIR="$sysroot_linmus64"
 		;;
