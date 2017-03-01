@@ -56,7 +56,7 @@ add_multitarget("tiff")
 add_multitarget("jpeglib")
 
 add_multitarget("ncurses", linux=1)
-add_multitarget("gpm"    , linux=1, depends=["ncurses"])
+add("gpm-header")
 
 add_multitarget("freetype"  , excludetargets=["dos"], depends=["zlib", "bzip2", "libpng"])
 add_multitarget("fontconfig", excludetargets=["dos"], depends=["zlib", "freetype"])
@@ -120,9 +120,26 @@ add("binutils-win32-to-win32")
 add("binutils-win64-to-win64")
 add("gcc-win32-to-win32")
 add("gcc-win64-to-win64")
-add_multitarget("fbc")
+
+add("fbc-native")
+
+for linux in ["lingnu32", "lingnu64", "linmus32", "linmus64"]:
+    add("fbc-" + linux)
+    add_depends("libffi-" + linux)
+    add_depends("ncurses-" + linux)
+    add_depends("gpm-header")
+    add_depends("libX11-" + linux)
+    add_depends("libXext-" + linux)
+    add_depends("libXrandr-" + linux)
+    add_depends("libXrender-" + linux)
+    add_depends("libXpm-" + linux)
+    add_depends("mesa-" + linux)
+
+add("fbc-win32")
 add("fbc-win32-standalone")
+add("fbc-win64")
 add("fbc-win64-standalone")
+add("fbc-dos")
 add("fbc-dos-standalone")
 
 ################################################################################
