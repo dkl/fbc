@@ -772,13 +772,13 @@ do_build() {
 		remove_non_prefixed_cross_tools
 		;;
 
-	gcc-glibc-bootstrap-native-to-lingnu32) gcc_glibc_bootstrap i686-pc-linux-gnu    i386   "$prefix_cross_lingnu32" "$sysroot_lingnu32";;
-	gcc-glibc-bootstrap-native-to-lingnu64) gcc_glibc_bootstrap x86_64-pc-linux-gnu  x86_64 "$prefix_cross_lingnu64" "$sysroot_lingnu64";;
-	gcc-musl-bootstrap-native-to-linmus32)  gcc_musl_bootstrap  i686-pc-linux-musl   i386   "$prefix_cross_linmus32" "$sysroot_linmus32";;
-	gcc-musl-bootstrap-native-to-linmus64)  gcc_musl_bootstrap  x86_64-pc-linux-musl x86_64 "$prefix_cross_linmus64" "$sysroot_linmus64";;
-	gcc-mingw-w64-bootstrap-native-to-win32) gcc_mingww64_bootstrap i686-w64-mingw32   "$prefix_cross_win32" "$sysroot_win32";;
-	gcc-mingw-w64-bootstrap-native-to-win64) gcc_mingww64_bootstrap x86_64-w64-mingw32 "$prefix_cross_win64" "$sysroot_win64";;
-	gcc-djgpp-bootstrap-native-to-dos) gcc_djgpp_bootstrap;;
+	gcc-native-to-lingnu32) gcc_glibc_bootstrap i686-pc-linux-gnu    i386   "$prefix_cross_lingnu32" "$sysroot_lingnu32";;
+	gcc-native-to-lingnu64) gcc_glibc_bootstrap x86_64-pc-linux-gnu  x86_64 "$prefix_cross_lingnu64" "$sysroot_lingnu64";;
+	gcc-native-to-linmus32) gcc_musl_bootstrap  i686-pc-linux-musl   i386   "$prefix_cross_linmus32" "$sysroot_linmus32";;
+	gcc-native-to-linmus64) gcc_musl_bootstrap  x86_64-pc-linux-musl x86_64 "$prefix_cross_linmus64" "$sysroot_linmus64";;
+	gcc-native-to-win32) gcc_mingww64_bootstrap i686-w64-mingw32   "$prefix_cross_win32" "$sysroot_win32";;
+	gcc-native-to-win64) gcc_mingww64_bootstrap x86_64-w64-mingw32 "$prefix_cross_win64" "$sysroot_win64";;
+	gcc-native-to-dos) gcc_djgpp_bootstrap;;
 
 	gcc-win32-to-win32)
 		do_build_autotools_win32 gcc \
