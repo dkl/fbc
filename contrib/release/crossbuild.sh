@@ -878,7 +878,7 @@ do_build() {
 		make -f ../fbc/makefile -j"$cpucount"
 		make -f ../fbc/makefile bindist
 		cp *.tar.gz *.tar.xz ../output
-		cp ../fbc/contrib/manifest/fbc-linux-x86.lst ../output
+		cp ../fbc/contrib/manifest/FreeBASIC-linux-x86.lst ../output
 		;;
 
 	fbc-lingnu64)
@@ -888,7 +888,7 @@ do_build() {
 		make -f ../fbc/makefile -j"$cpucount"
 		make -f ../fbc/makefile bindist
 		cp *.tar.gz *.tar.xz ../output
-		cp ../fbc/contrib/manifest/fbc-linux-x86_64.lst ../output
+		cp ../fbc/contrib/manifest/FreeBASIC-linux-x86_64.lst ../output
 		;;
 
 	fbc-linmus32)
@@ -898,7 +898,7 @@ do_build() {
 		make -f ../fbc/makefile -j"$cpucount"
 		make -f ../fbc/makefile bindist
 		cp *.tar.gz *.tar.xz ../output
-		cp ../fbc/contrib/manifest/fbc-linux-x86.lst ../output/fbc-linuxmusl-x86.lst
+		cp ../fbc/contrib/manifest/FreeBASIC-linux-x86.lst ../output/FreeBASIC-linuxmusl-x86.lst
 		;;
 
 	fbc-linmus64)
@@ -908,7 +908,7 @@ do_build() {
 		make -f ../fbc/makefile -j"$cpucount"
 		make -f ../fbc/makefile bindist
 		cp *.tar.gz *.tar.xz ../output
-		cp ../fbc/contrib/manifest/fbc-linux-x86_64.lst ../output/fbc-linuxmusl-x86_64.lst
+		cp ../fbc/contrib/manifest/FreeBASIC-linux-x86_64.lst ../output/FreeBASIC-linuxmusl-x86_64.lst
 		;;
 
 	fbc-win32)
