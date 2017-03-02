@@ -748,6 +748,31 @@ gcc_djgpp_bootstrap() {
 	cd ..
 }
 
+zlib_win_build() {
+	additionalnativeprefix="$1"
+	triplet="$2"
+	sysroot="$3"
+	cp -R ../zlib/. .
+	prepend_path "$additionalnativeprefix"/bin
+	make -f win32/Makefile.gcc libz.a install \
+		PREFIX="$triplet"- \
+		BINARY_PATH=/bin INCLUDE_PATH=/include LIBRARY_PATH=/lib DESTDIR="$sysroot"
+}
+
+zlib_unix_build() {
+	additionalnativeprefix="$1"
+	shift
+	triplet="$1"
+	shift
+	sysroot="$1"
+	shift
+	cp -R ../zlib/. .
+	prepend_path "$additionalnativeprefix"/bin
+	CHOST="$triplet" ./configure "$@"
+	make
+	make install DESTDIR="$sysroot"
+}
+
 do_build() {
 	local buildname="$1"
 	local source="$(echo "$buildname" | sed -e 's/-[^-]*$//g')"
@@ -1005,29 +1030,13 @@ do_build() {
 	libffi-win32   ) do_build_autotools_win32    libffi; mv "$sysroot_win32"/lib/libffi-*/include/* "$sysroot_win32"/include;;
 	libffi-win64   ) do_build_autotools_win64    libffi; mv "$sysroot_win64"/lib/libffi-*/include/* "$sysroot_win64"/include;;
 
-	zlib-win32)
-		prepend_path "$prefix_cross_win32"/bin
-		cp -R ../zlib/. .
-		make -f win32/Makefile.gcc libz.a install \
-			PREFIX=i686-w64-mingw32- \
-			BINARY_PATH=/bin INCLUDE_PATH=/include LIBRARY_PATH=/lib DESTDIR="$sysroot_win32"
-		;;
-
-	zlib-win64)
-		prepend_path "$prefix_cross_win64"/bin
-		cp -R ../zlib/. .
-		make -f win32/Makefile.gcc libz.a install \
-			PREFIX=x86_64-w64-mingw32- \
-			BINARY_PATH=/bin INCLUDE_PATH=/include LIBRARY_PATH=/lib DESTDIR="$sysroot_win64"
-		;;
-
-	zlib-dos)
-		prepend_path "$prefix_cross_dos"/bin
-		cp -R ../zlib/. .
-		CHOST=i586-pc-msdosdjgpp ./configure --static --prefix=
-		make
-		make install DESTDIR="$sysroot_dos"
-		;;
+	zlib-win32) zlib_win_build "$prefix_cross_win32" i686-w64-mingw32   "$sysroot_win32";;
+	zlib-win64) zlib_win_build "$prefix_cross_win64" x86_64-w64-mingw32 "$sysroot_win64";;
+	zlib-dos)      zlib_unix_build "$prefix_cross_dos"      i586-pc-msdosdjgpp   "$sysroot_dos"      --static --prefix=;;
+	zlib-lingnu32) zlib_unix_build "$prefix_cross_lingnu32" i686-pc-linux-gnu    "$sysroot_lingnu32" --prefix=/usr;;
+	zlib-lingnu64) zlib_unix_build "$prefix_cross_lingnu64" x86_64-pc-linux-gnu  "$sysroot_lingnu64" --prefix=/usr;;
+	zlib-linmus32) zlib_unix_build "$prefix_cross_linmus32" i686-pc-linux-musl   "$sysroot_linmus32" --static --prefix=/usr;;
+	zlib-linmus64) zlib_unix_build "$prefix_cross_linmus64" x86_64-pc-linux-musl "$sysroot_linmus64" --static --prefix=/usr;;
 
 	mesa-*)
 		# Failed to build and we don't need it
