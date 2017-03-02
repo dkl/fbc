@@ -493,6 +493,13 @@ gcc_glibc_bootstrap() {
 	prefix="$3"
 	sysroot="$4"
 
+	# 1. cross-compiler gcc/g++
+	# 2. target linux headers (requires the cross-gcc for some reason?)
+	# 3. target glibc headers & crt1.o (requires gcc to compile .o's)
+	# 4. target libgcc.a (requires gcc and headers)
+	# 5. target libc.so (requires libgcc)
+	# 6. target libstdc++.so (requires libc)
+
 	mkdir gccbuild linuxbuild glibcbuild
 
 	echo
@@ -504,7 +511,7 @@ gcc_glibc_bootstrap() {
 		--with-gmp="$prefix_native" \
 		--with-mpfr="$prefix_native" \
 		--with-mpc="$prefix_native" \
-		--disable-static --enable-shared \
+		--enable-static --enable-shared=libstdc++ \
 		--prefix="$prefix" --with-sysroot="$sysroot" \
 		$gcc_conf
 	make -j"$cpucount" all-gcc
@@ -529,7 +536,7 @@ gcc_glibc_bootstrap() {
 	cd glibcbuild
 	BUILD_CC=gcc \
 	../../glibc/configure --build=$build_triplet --host=$target \
-		--disable-static --enable-shared \
+		--enable-static --enable-shared \
 		--prefix=/usr --enable-add-ons --enable-kernel=2.6.39 \
 		--with-headers="$sysroot"/usr/include \
 		libc_cv_ssp=no libc_cv_ssp_strong=no
