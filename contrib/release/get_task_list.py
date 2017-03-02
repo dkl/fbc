@@ -29,7 +29,7 @@ def add(name):
 def add_depends(dep):
     builds[-1].depends.append(dep)
 
-def add_multitarget(name, depends=[], includetargets=alltargets, excludetargets=[], linux=0):
+def add_multitarget(name, depends=[], includetargets=targets, excludetargets=[], linux=0):
     if linux:
         includetargets = linuxtargets
     for target in includetargets:
@@ -41,19 +41,19 @@ def add_multitarget(name, depends=[], includetargets=alltargets, excludetargets=
 
 add_multitarget("libffi", excludetargets=["dos"])
 
-add_multitarget("gmp")
-add_multitarget("mpfr", depends=["gmp"])
-add_multitarget("mpc", depends=["gmp", "mpfr"])
-
-add_multitarget("expat")
-add_multitarget("libxml2")
-add_multitarget("libxslt")
+add_multitarget("gmp" , includetargets=alltargets)
+add_multitarget("mpfr", includetargets=alltargets, depends=["gmp"])
+add_multitarget("mpc" , includetargets=alltargets, depends=["gmp", "mpfr"])
 
 add_multitarget("zlib")
 add_multitarget("bzip2")
 add_multitarget("libzip")
 add_multitarget("lzo")
 add_multitarget("xz")
+
+add_multitarget("expat")
+add_multitarget("libxml2", depends=["zlib", "xz"])
+add_multitarget("libxslt")
 
 add("gpm-header")
 add_multitarget("ncurses", linux=1)
@@ -184,16 +184,19 @@ class TaskCollector:
         self.recursionstack.pop()
 
 collector = TaskCollector()
+tasks = []
 if len(sys.argv) > 1:
     tasks = sys.argv[1:]
     for task in tasks:
         collector.collect_tasks(task)
-    eprint("Collected " + str(len(collector.tasks)) + "/" + str(len(builds)) + " tasks for " + str(tasks))
 else:
     for b in builds:
         collector.collect_tasks(b.name)
-    assert len(collector.tasks) == len(builds)
-    eprint("Collected all " + str(len(builds)) + " tasks")
+
+message = "Collected " + str(len(collector.tasks)) + "/" + str(len(builds)) + " tasks"
+if len(tasks) > 0:
+    message += " for " + str(tasks)
+eprint(message)
 
 for t in collector.tasks:
     print(t)
