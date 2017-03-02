@@ -1114,6 +1114,10 @@ do_build() {
 	gmp-native) do_build_autotools_native gmp --prefix="$prefix_native";;
 	gmp-*) export CC_FOR_BUILD="gcc" CPP_FOR_BUILD="cpp"; do_build_autotools_$target gmp;;
 
+	# Disable python binding because their "make install" doesn't fully respect DESTDIR
+	libxml2-native) do_build_autotools_$target $source --prefix="$prefix_native" --without-python;;
+	libxml2-*) do_build_autotools_$target $source --without-python;;
+
 	*-native)
 		do_build_autotools_native ${buildname%-native} --prefix="$prefix_native"
 		;;
