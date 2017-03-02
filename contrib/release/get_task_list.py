@@ -39,10 +39,15 @@ def add_multitarget(name, depends=[], includetargets=alltargets, excludetargets=
             for dep in depends:
                 add_depends(dep + "-" + target)
 
+add_multitarget("libffi", excludetargets=["dos"])
+
 add_multitarget("gmp")
 add_multitarget("mpfr", depends=["gmp"])
 add_multitarget("mpc", depends=["gmp", "mpfr"])
-add_multitarget("libffi", excludetargets=["dos"])
+
+add_multitarget("expat")
+add_multitarget("libxml2")
+add_multitarget("libxslt")
 
 add_multitarget("zlib")
 add_multitarget("bzip2")
@@ -50,16 +55,17 @@ add_multitarget("libzip")
 add_multitarget("lzo")
 add_multitarget("xz")
 
+add("gpm-header")
+add_multitarget("ncurses", linux=1)
+
+add_multitarget("harfbuzz"  , excludetargets=["dos"])
+add_multitarget("freetype"  , excludetargets=["dos"], depends=["zlib", "bzip2", "libpng"])
+add_multitarget("fontconfig", excludetargets=["dos"], depends=["zlib", "freetype"])
+
 add_multitarget("libpng")
 add_multitarget("giflib")
 add_multitarget("tiff")
 add_multitarget("jpeglib")
-
-add_multitarget("ncurses", linux=1)
-add("gpm-header")
-
-add_multitarget("freetype"  , excludetargets=["dos"], depends=["zlib", "bzip2", "libpng"])
-add_multitarget("fontconfig", excludetargets=["dos"], depends=["zlib", "freetype"])
 
 add_multitarget("damageproto" , linux=1, depends=["util-macros"])
 add_multitarget("dri2proto"   , linux=1, depends=["util-macros"])
@@ -111,7 +117,8 @@ add_multitarget("xtrans"      , linux=1, depends=["util-macros"])
 
 add_multitarget("mesa", linux=1, depends=[
     "libpthread-stubs", "glproto", "libdrm", "dri2proto", "dri3proto", "presentproto",
-    "libxcb", "libxshmfence", "libXxf86vm", "libXdamage", "libXfixes"
+    "libxcb", "libxshmfence", "libXxf86vm", "libXdamage", "libXfixes",
+    "expat"
 ])
 
 for target in targets:

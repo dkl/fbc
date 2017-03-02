@@ -167,15 +167,11 @@ if [ ! -f ../downloads/config.sub ]; then
 	chmod +x ../downloads/config.sub
 fi
 
-# gcc toolchains
 fetch_extract binutils  2.27   tar.bz2  "http://ftpmirror.gnu.org/binutils/%s"
 fetch_extract gcc       6.2.0  tar.bz2  "http://ftpmirror.gnu.org/gcc/gcc-6.2.0/%s"
 fetch_extract glibc     2.24   tar.xz   "http://ftp.gnu.org/gnu/glibc/%s"
-fetch_extract gmp       6.1.1  tar.lz   "https://gmplib.org/download/gmp/%s"
 fetch_extract linux     4.7.3  tar.xz   "https://cdn.kernel.org/pub/linux/kernel/v4.x/%s"
 fetch_extract mingw-w64 v4.0.6 tar.bz2  "https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/%s/download"
-fetch_extract mpc       1.0.3  tar.gz   "ftp://ftp.gnu.org/gnu/mpc/%s"
-fetch_extract mpfr      3.1.4  tar.xz   "http://www.mpfr.org/mpfr-current/%s"
 fetch_extract musl      1.1.15 tar.gz   "https://www.musl-libc.org/releases/%s"
 fetch_extract_custom djcrx djcrx205  zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2/%s"
 fetch_extract_custom djlsr djlsr205  zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/current/v2/%s"
@@ -193,6 +189,17 @@ my_fetch ../downloads/bnu227s.zip                "ftp://ftp.fu-berlin.de/pc/lang
 #fetch_extract_custom djbnu bnu2251s  zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/deleted/beta/v2gnu/%s"
 #fetch_extract_custom djgcc gcc492s   zip "ftp://ftp.fu-berlin.de/pc/languages/djgpp/deleted/beta/v2gnu/%s"
 
+fetch_extract libffi  3.2.1  tar.gz   "ftp://sourceware.org/pub/libffi/%s"
+#fetch_extract_custom llvm llvm-3.9.1.src tar.xz "http://releases.llvm.org/3.9.1/%s"
+
+fetch_extract gmp       6.1.1  tar.lz   "https://gmplib.org/download/gmp/%s"
+fetch_extract mpc       1.0.3  tar.gz   "ftp://ftp.gnu.org/gnu/mpc/%s"
+fetch_extract mpfr      3.1.4  tar.xz   "http://www.mpfr.org/mpfr-current/%s"
+
+fetch_extract expat   2.2.0  tar.bz2 "https://sourceforge.net/projects/expat/files/expat/2.2.0/%s/download"
+fetch_extract libxml2 2.9.4  tar.gz  "ftp://xmlsoft.org/libxml2/%s"
+fetch_extract libxslt 1.1.29 tar.gz  "ftp://xmlsoft.org/libxml2/%s"
+
 fetch_extract zlib   1.2.8  tar.xz "http://zlib.net/%s"
 fetch_extract bzip2  1.0.6  tar.gz "http://www.bzip.org/1.0.6/%s"
 fetch_extract libzip 1.1.3  tar.xz "https://nih.at/libzip/%s"
@@ -200,8 +207,8 @@ fetch_extract lzo    2.09   tar.gz "http://www.oberhumer.com/opensource/lzo/down
 fetch_extract xz     5.2.2  tar.xz "http://tukaani.org/xz/%s"
 
 fetch_extract gpm     1.99.7 tar.lzma "http://www.nico.schottelius.org/software/gpm/archives/%s"
-fetch_extract libffi  3.2.1  tar.gz   "ftp://sourceware.org/pub/libffi/%s"
 fetch_extract ncurses 6.0    tar.gz   "http://ftp.gnu.org/gnu/ncurses/%s"
+
 fetch_extract harfbuzz   1.4.2  tar.bz2 "https://www.freedesktop.org/software/harfbuzz/release/%s"
 fetch_extract freetype   2.7.1  tar.bz2 "https://sourceforge.net/projects/freetype/files/freetype2/2.7.1/%s/download"
 fetch_extract fontconfig 2.12.1 tar.gz  "https://www.freedesktop.org/software/fontconfig/release/%s"
@@ -1001,14 +1008,20 @@ do_build() {
 		make install DESTDIR="$sysroot_dos"
 		;;
 
-	mesa-lingnu32)
-		do_build_autotools_lingnu32 mesa
+	mesa-*)
+		# Failed to build and we don't need it
+		local conf="--disable-egl"
+
+		# Disable Gallium/LLVM stuff
+		#  - prevents it from using [target-]llvm-config
+		#  - we don't have to cross-compile LLVM (cmake...)
+		conf="$conf --without-gallium-drivers --disable-gallium-llvm"
+		conf="$conf --disable-llvm-shared-libs --without-clang-libdir --without-llvm-prefix"
+
+		do_build_autotools_$target mesa $conf
 		;;
 
-	libX*-lingnu32) do_build_autotools_lingnu32 ${buildname%-lingnu32} --disable-malloc0returnsnull;;
-	libX*-lingnu64) do_build_autotools_lingnu64 ${buildname%-lingnu64} --disable-malloc0returnsnull;;
-	libX*-linmus32) do_build_autotools_linmus32 ${buildname%-linmus32} --disable-malloc0returnsnull;;
-	libX*-linmus64) do_build_autotools_linmus64 ${buildname%-linmus64} --disable-malloc0returnsnull;;
+	libX*) do_build_autotools_$target $source --disable-malloc0returnsnull;;
 
 	*proto-lingnu32)
 		prepend_path "$prefix_cross_lingnu32"/bin
