@@ -1119,7 +1119,7 @@ do_build() {
 	libxml2-*) do_build_autotools_$target $source --without-python;;
 
 	*-native)
-		do_build_autotools_native ${buildname%-native} --prefix="$prefix_native"
+		do_build_autotools_$target $source --prefix="$prefix_native"
 		;;
 	*)
 		do_build_autotools_$target $source
