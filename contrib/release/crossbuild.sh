@@ -805,7 +805,7 @@ do_build() {
 	binutils-win32-to-win32    ) do_build_autotools_win32  binutils --target=i686-w64-mingw32   $binutils_conf; remove_non_prefixed_cross_tools;;
 	binutils-win64-to-win64    ) do_build_autotools_win64  binutils --target=x86_64-w64-mingw32 $binutils_conf; remove_non_prefixed_cross_tools;;
 
-	djbnu-native-to-dos)
+	binutils-native-to-dos)
 		../djbnu/configure \
 			--build=$build_triplet --host=$build_triplet \
 			--enable-static --disable-shared \
