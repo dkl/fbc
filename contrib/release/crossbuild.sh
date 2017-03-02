@@ -773,6 +773,20 @@ zlib_unix_build() {
 	make install DESTDIR="$sysroot"
 }
 
+bzip2_build() {
+	additionalnativeprefix="$1"
+	triplet="$2"
+	sysrootprefix="$3"
+	prepend_path "$additionalnativeprefix"/bin
+	local CC="$triplet-gcc"
+	local AR="$triplet-ar"
+	local S="../bzip2"
+	"$CC" $CFLAGS -D_FILE_OFFSET_BITS=64 -c $S/blocksort.c $S/huffman.c $S/crctable.c $S/randtable.c $S/compress.c $S/decompress.c $S/bzlib.c
+	"$AR" rcs libbz2.a blocksort.o huffman.o crctable.o randtable.o compress.o decompress.o bzlib.o
+	cp $S/bzlib.h "$sysrootprefix/include"
+	cp libbz2.a "$sysrootprefix/lib"
+}
+
 do_build() {
 	local buildname="$1"
 	local source="$(echo "$buildname" | sed -e 's/-[^-]*$//g')"
@@ -1037,6 +1051,14 @@ do_build() {
 	zlib-lingnu64) zlib_unix_build "$prefix_cross_lingnu64" x86_64-pc-linux-gnu  "$sysroot_lingnu64" --prefix=/usr;;
 	zlib-linmus32) zlib_unix_build "$prefix_cross_linmus32" i686-pc-linux-musl   "$sysroot_linmus32" --static --prefix=/usr;;
 	zlib-linmus64) zlib_unix_build "$prefix_cross_linmus64" x86_64-pc-linux-musl "$sysroot_linmus64" --static --prefix=/usr;;
+
+	bzip2-win32)    bzip2_build "$prefix_cross_win32"    i686-w64-mingw32     "$sysroot_win32"   ;;
+	bzip2-win64)    bzip2_build "$prefix_cross_win64"    x86_64-w64-mingw32   "$sysroot_win64"   ;;
+	bzip2-dos)      bzip2_build "$prefix_cross_dos"      i586-pc-msdosdjgpp   "$sysroot_dos"     ;;
+	bzip2-lingnu32) bzip2_build "$prefix_cross_lingnu32" i686-pc-linux-gnu    "$sysroot_lingnu32";;
+	bzip2-lingnu64) bzip2_build "$prefix_cross_lingnu64" x86_64-pc-linux-gnu  "$sysroot_lingnu64";;
+	bzip2-linmus32) bzip2_build "$prefix_cross_linmus32" i686-pc-linux-musl   "$sysroot_linmus32";;
+	bzip2-linmus64) bzip2_build "$prefix_cross_linmus64" x86_64-pc-linux-musl "$sysroot_linmus64";;
 
 	mesa-*)
 		# Failed to build and we don't need it
