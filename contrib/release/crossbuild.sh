@@ -174,7 +174,8 @@ mkdir -p build
 cd build
 mkdir -p output
 
-fetch_extract_custom fbc fbc-246172c59e6db0bb77811e10b70c2963237f2ee6 tar.gz "https://github.com/freebasic/fbc/archive/%s"
+fbc_version=d8687286e53e916b91ee43b15c40cb25cffa6adc
+fetch_extract_custom fbc fbc-$fbc_version tar.gz "https://github.com/freebasic/fbc/archive/$fbc_version.tar.gz"
 #fetch_extract_custom fbc FreeBASIC-1.05.0-source tar.xz "https://sourceforge.net/projects/fbc/files/Source%%20Code/%s/download"
 
 if [ ! -f ../downloads/config.guess ]; then
