@@ -6,6 +6,20 @@
 
 set -e
 
+SHOW_LOGS=no
+while [ "$#" -gt 0 ]; do
+	case "$1" in
+	--show-logs)
+		SHOW_LOGS=yes
+		;;
+	*)
+		echo "unknown/unexpected command line argument '$1'"
+		exit 1
+		;;
+	esac
+	shift
+done
+
 my_fetch() {
 	local tarball="$1"
 	local url="$2"
@@ -112,7 +126,13 @@ maybe_do_patch() {
 	if [ ! -f "$srcdirname/patch-done.stamp" ]; then
 		echo "patch: $srcdirname"
 		cd "$srcdirname"
-		do_patch "$srcdirname" > patch-log.txt 2>&1
+
+		if [ "$SHOW_LOGS" = "yes" ]; then
+			do_patch "$srcdirname"
+		else
+			do_patch "$srcdirname" > patch-log.txt 2>&1
+		fi
+
 		touch patch-done.stamp
 		cd ..
 	fi
@@ -1145,7 +1165,11 @@ maybe_do_build() {
 		mkdir "$buildname"
 		cd "$buildname"
 
-		do_build "$buildname" > build-log.txt 2>&1
+		if [ "$SHOW_LOGS" = "yes" ]; then
+			do_build "$buildname"
+		else
+			do_build "$buildname" > build-log.txt 2>&1
+		fi
 
 		# Remove libtool stuff, it's not needed. Otherwise we'd have to fix paths
 		# in the *.la files to support cross-compilation with sysroot.
