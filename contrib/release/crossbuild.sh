@@ -6,15 +6,23 @@
 
 set -e
 
+buildgoals=
 SHOW_LOGS=no
 while [ "$#" -gt 0 ]; do
 	case "$1" in
 	--show-logs)
 		SHOW_LOGS=yes
 		;;
-	*)
+	-*)
 		echo "unknown/unexpected command line argument '$1'"
 		exit 1
+		;;
+	*)
+		if [ -n "$buildgoals" ]; then
+			echo "too many build goals"
+			exit 1
+		fi
+		buildgoals="$1"
 		;;
 	esac
 	shift
@@ -1199,7 +1207,7 @@ maybe_do_build() {
 	fi
 }
 
-for i in $(../get_task_list.py $@); do
+for i in $(../get_task_list.py $buildgoal); do
 	maybe_do_build $i
 done
 
