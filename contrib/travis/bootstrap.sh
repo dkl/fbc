@@ -50,7 +50,7 @@ case "$1" in
 	cd ..
 	;;
 
-crossbuild)
+crossbuild*)
 	sudo apt-get -y install wget xz-utils lzip p7zip-full \
 		gcc g++ patch make autoconf automake libtool bison flex texinfo cmake
 	;;

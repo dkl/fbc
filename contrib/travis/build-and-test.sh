@@ -30,8 +30,9 @@ case "$1" in
 	fi
 	;;
 
-crossbuild)
+crossbuild-*)
 	cd contrib/release
-	./crossbuild.sh --show-logs
+	buildgoal="${1#crossbuild-}"
+	./crossbuild.sh --show-logs "$buildgoal"
 	;;
 esac

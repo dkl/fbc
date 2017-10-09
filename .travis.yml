@@ -4,7 +4,13 @@ compiler: gcc
 env:
   - FB_TRAVIS_BUILD_TYPE=32
   - FB_TRAVIS_BUILD_TYPE=64
-  - FB_TRAVIS_BUILD_TYPE=crossbuild
+  - FB_TRAVIS_BUILD_TYPE=crossbuild-fbc-lingnu32
+  - FB_TRAVIS_BUILD_TYPE=crossbuild-fbc-lingnu64
+  - FB_TRAVIS_BUILD_TYPE=crossbuild-fbc-linmus32
+  - FB_TRAVIS_BUILD_TYPE=crossbuild-fbc-linmus64
+  - FB_TRAVIS_BUILD_TYPE=crossbuild-fbc-win32
+  - FB_TRAVIS_BUILD_TYPE=crossbuild-fbc-win64
+  - FB_TRAVIS_BUILD_TYPE=crossbuild-fbc-dos
 
 before_install: sudo apt-get -qq update
 install: "contrib/travis/bootstrap.sh $FB_TRAVIS_BUILD_TYPE"
