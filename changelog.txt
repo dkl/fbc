@@ -6,6 +6,8 @@ Version 1.06.0
 [added]
 - -noobjinfo option to disable the writing/reading of compile-time library and other linking options from/to .o and .a files. This also disables the use of fbextra.x (the supplemental linker script) for discarding the .fbctinf sections, which is useful when using the gold linker that doesn't support this kind of linker script.
 - Linux console Inkey() now recognizes F11 and F12
+- 2D render through OpenGL on Windows and Linux via screencontrol (angros47)
+- Windows API binding updated to additionally support _WIN32_WINNT &h0501, &h0600, &h0601
 
 [fixed]
 - win/d3dx9.bi no longer has a hard-coded #inclib "d3dx9d". d3dx9d.dll is apparently not a generally valid choice. In practice programs have to be linked against d3dx9_33.dll or d3dx9_39.dll, etc.
@@ -27,6 +29,21 @@ Version 1.06.0
 - Compiler crash after reporting error about REDIM on a fixed-size array field
 - #827: Using the GNU gold linker (instead of ld.bfd) resulted in broken binaries due to fbextra.x, which fbc uses with ld.bfd to discard the objinfo .fbctinf sections, but is not supported by gold. Now when gold is detected, fbextra.x won't be used anymore, in order to get working binaries.
 - exec() on Linux & co was broken with regards to spaces in the executable path. Spaces were converted to "\ " and then to "/ ", resulting in a different path than given.
+- ASM backend: Fixed a compiler crash or potentially bad code generation in complex floating point expressions (which had enough operands to use up the x86 FPU stack, and trigger spilling of st() registers to stack)
+- C backend: Pointer arithmetic on the address of variables with any pointer type gave wrong results due to bad code generation in -gen gcc for this case.
+- LLVM backend: Self-BOP emitting, byref var/param accesses
+- #837: Compiler hang (or assertion triggered, if enabled) for Select Case As Const with Case -1
+- ASM backend: Invalid code generated for Select Case As Const jump table index when 64bit fbc cross-compiles to 32bit
+- #836: The MyUdt() syntax for creating temporary objects allowed creating objects of Abstract types (with unimplemented Abstract methods)
+- WString conversions from UTF32 to UTF16 produced incorrect high surrogate values (affected conversion from UTF32 to Windows WString, and from Linux WString to UTF16)
+- Conversion from UTF32 to Windows WString behaved differently from other UTF32 to UTF16 conversions in FB with regards to truncating surrogate pairs when the destination buffer is full
+- #839: Wstring constants could be allocated with the wrong size when cross-compiling, leading to compiler errors and/or incorrect code generation
+- WCHR would produce garbage if evaluated with constant values above &h3ffff (any value up to &hffffffffU is allowed)
+- WCHR would give the wrong result if given large number of arguments which were large constants
+- #846: Fix compiler crash on global variable initializer with type<T>(...) expression where T isn't a UDT
+- #847: Windows API binding: Fixed winnt.bi SECURITY_*_AUTHORITY initializers
+- #851: '#LINE line filename' only changed the source filename in error messages, not in debug info
+- #832: Fix bug allowing QB style suffixes on all keywords, regardless of -lang
 
 
 Version 1.05.0

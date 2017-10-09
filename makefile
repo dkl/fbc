@@ -259,7 +259,6 @@ endif
 ifeq ($(TARGET_OS),dos)
   FBNAME := freebas$(ENABLE_SUFFIX)
   FB_LDSCRIPT := i386go32.x
-  DISABLE_MT := YesPlease
 else
   FBNAME := freebasic$(ENABLE_SUFFIX)
   FB_LDSCRIPT := fbextra.x
@@ -560,7 +559,14 @@ $(LIBFBPIC_C): $(libfbpicobjdir)/%.o: %.c $(LIBFB_H) | $(libfbpicobjdir)
 	$(QUIET_CC)$(CC) -fPIC $(ALLCFLAGS) -c $< -o $@
 
 $(libdir)/libfbmt.a: $(LIBFBMT_C) $(LIBFBMT_S) | $(libdir)
+ifeq ($(TARGET_OS),dos)
+  # Avoid hitting the command line length limit (the libfb.a ar command line
+  # is very long...)
+	$(QUIET)rm -f $@
+	$(QUIET_AR)$(AR) rcs $@ $(libfbmtobjdir)/*.o
+else
 	$(QUIET_AR)rm -f $@; $(AR) rcs $@ $^
+endif
 $(LIBFBMT_C): $(libfbmtobjdir)/%.o: %.c $(LIBFB_H) | $(libfbmtobjdir)
 	$(QUIET_CC)$(CC) -DENABLE_MT $(ALLCFLAGS) -c $< -o $@
 $(LIBFBMT_S): $(libfbmtobjdir)/%.o: %.s $(LIBFB_H) | $(libfbmtobjdir)
@@ -615,7 +621,7 @@ $(LIBFBGFXMTPIC_C): $(libfbgfxmtpicobjdir)/%.o: %.c $(LIBFBGFX_H) | $(libfbgfxmt
 .PHONY: install install-compiler install-includes install-rtlib install-gfxlib2
 install:        install-compiler install-includes install-rtlib install-gfxlib2
 
-install-compiler:
+install-compiler: compiler
 	mkdir -p $(DESTDIR)$(prefixbindir)
 	$(INSTALL_PROGRAM) $(FBC_EXE) $(DESTDIR)$(PREFIX_FBC_EXE)
 
@@ -623,11 +629,11 @@ install-includes:
 	mkdir -p $(DESTDIR)$(prefixincdir)
 	cp -r $(rootdir)inc/* $(DESTDIR)$(prefixincdir)
 
-install-rtlib:
+install-rtlib: rtlib
 	mkdir -p $(DESTDIR)$(prefixlibdir)
 	$(INSTALL_FILE) $(RTL_LIBS) $(DESTDIR)$(prefixlibdir)
 
-install-gfxlib2:
+install-gfxlib2: gfxlib2
 	mkdir -p $(DESTDIR)$(prefixlibdir)
 	$(INSTALL_FILE) $(GFX_LIBS) $(DESTDIR)$(prefixlibdir)
 

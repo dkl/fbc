@@ -784,10 +784,9 @@ private sub hEmitVarDecl _
 		ln += "static "
 	end if
 
-	var dtype = symbGetType( sym )
-	if( symbIsRef( sym ) or symbIsImport( sym ) ) then
-		dtype = typeAddrOf( dtype )
-	end if
+	dim dtype as integer
+	dim subtype as FBSYMBOL ptr
+	symbGetRealType( sym, dtype, subtype )
 
 	ln += hEmitType( dtype, sym->subtype )
 	ln += " " + *symbGetMangledName( sym )
@@ -1715,12 +1714,6 @@ private function exprNewSYM( byval sym as FBSYMBOL ptr ) as EXPRNODE ptr
 		n = exprNew( EXPRCLASS_SYM, typeAddrOf( FB_DATATYPE_FUNCTION ), sym )
 		n->sym = sym
 
-	'' Bydesc dynamic array param? Use descriptor type
-	elseif( symbIsParamBydesc( sym ) ) then
-		assert( sym->var_.array.desctype )
-		n = exprNew( EXPRCLASS_SYM, typeAddrOf( FB_DATATYPE_STRUCT ), sym->var_.array.desctype )
-		n->sym = sym
-
 	'' Array? Add CAST to make it a pointer to the first element,
 	'' instead of a pointer to the array.
 	elseif( symbIsCArray( sym ) ) then
@@ -1736,14 +1729,9 @@ private function exprNewSYM( byval sym as FBSYMBOL ptr ) as EXPRNODE ptr
 	        ((sym->stats and FB_SYMBSTATS_ARGV) <> 0) ) then
 		n = exprNew( EXPRCLASS_SYM, typeMultAddrOf( FB_DATATYPE_BYTE, 2 ), NULL )
 		n->sym = sym
-	else
-		dtype = symbGetType( sym )
-		subtype = symbGetSubtype( sym )
 
-		'' Emitted as pointer?
-		if( symbIsRef( sym ) or symbIsParamByRef( sym ) or symbIsImport( sym ) ) then
-			dtype = typeAddrOf( dtype )
-		end if
+	else
+		symbGetRealType( sym, dtype, subtype )
 
 		n = exprNew( EXPRCLASS_SYM, dtype, subtype )
 		n->sym = sym
@@ -2503,6 +2491,8 @@ private function exprNewVREG _
 		'' field accesses:
 		''        *(vregtype*)&sym
 		''        *(vregtype*)((uint8*)&sym + offset)
+		'' addrof var:
+		''        (vregtype)((uint8*)&sym + offset)
 
 		have_offset = ((vreg->ofs <> 0) or (vreg->vidx <> NULL))
 
@@ -2511,7 +2501,8 @@ private function exprNewVREG _
 		'' - symbol is an array in the C code? (arrays, fixlen strings...)
 		''   cannot just do (elementtype)carray, it must always be
 		''   *(elementtype*)carray to access the memory in these cases.
-		dim as integer do_deref = have_offset or symbIsCArray( vreg->sym )
+		var is_c_array = symbIsCArray( vreg->sym )
+		var do_deref = have_offset or is_c_array
 
 		l = exprNewSYM( vreg->sym )
 
@@ -2545,8 +2536,8 @@ private function exprNewVREG _
 
 		'' Deref/addrof trick
 
-		'' Add '&' for things that aren't pointers already
-		if( typeIsPtr( symdtype ) = FALSE ) then
+		'' Add '&' if symbol isn't emitted as pointer already
+		if( is_c_array = FALSE ) then
 			l = exprNewUOP( AST_OP_ADDROF, l )
 		end if
 		if( have_offset ) then
@@ -3052,9 +3043,7 @@ private sub _emitJmpTb _
 	)
 
 	dim as string tb, temp, ln
-	dim as FBSYMBOL ptr label = any
 	dim as EXPRNODE ptr l = any
-	dim as integer i = any
 
 	var dtype = v1->dtype
 	assert( (dtype = FB_DATATYPE_UINT) or (dtype = FB_DATATYPE_ULONGINT) )
@@ -3078,17 +3067,27 @@ private sub _emitJmpTb _
 	hWriteLine( "static const void* " + tb + "[" + exprFlush( l ) + "] = {", TRUE )
 	sectionIndent( )
 
-	i = 0
-	for value as ulongint = minval to maxval
-		assert( i < labelcount )
-		if( value = values[i] ) then
-			label = labels[i]
-			i += 1
-		else
-			label = deflabel
-		end if
-		hWriteLine( "&&" + *symbGetMangledName( label ) + ",", TRUE )
-	next
+	if( minval <= maxval ) then
+		var i = 0
+		var value = minval
+		do
+			assert( i < labelcount )
+
+			dim as FBSYMBOL ptr label
+			if( value = values[i] ) then
+				label = labels[i]
+				i += 1
+			else
+				label = deflabel
+			end if
+			hWriteLine( "&&" + *symbGetMangledName( label ) + ",", TRUE )
+
+			if( value = maxval ) then
+				exit do
+			end if
+			value += 1
+		loop
+	end if
 
 	sectionUnindent( )
 	hWriteLine( "};", TRUE )
@@ -3638,13 +3637,7 @@ private sub _emitProcBegin _
 		byval initlabel as FBSYMBOL ptr _
 	)
 
-	dim as zstring ptr incfile = any
-
-	incfile = symbGetProcIncFile( proc )
-	if( incfile = NULL ) then
-		incfile = @env.inf.name
-	end if
-	hUpdateCurrentFileName( incfile )
+	hUpdateCurrentFileName( symbGetProcIncFile( proc ) )
 
 	irhlEmitProcBegin( )
 
