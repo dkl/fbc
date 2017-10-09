@@ -135,6 +135,8 @@ add("gcc-win32-to-win32")
 add("gcc-win64-to-win64")
 
 add("fbc-native")
+for target in targets:
+	add_depends("gcc-native-to-" + target)
 
 for linux in ["lingnu32", "lingnu64", "linmus32", "linmus64"]:
     add("fbc-" + linux)
@@ -149,10 +151,19 @@ for linux in ["lingnu32", "lingnu64", "linmus32", "linmus64"]:
     add_depends("mesa-" + linux)
 
 add("fbc-win32")
+add_depends("libffi-win32")
+
 add("fbc-win32-standalone")
+add_depends("libffi-win32")
+
 add("fbc-win64")
+add_depends("libffi-win64")
+
 add("fbc-win64-standalone")
+add_depends("libffi-win64")
+
 add("fbc-dos")
+
 add("fbc-dos-standalone")
 
 ################################################################################
