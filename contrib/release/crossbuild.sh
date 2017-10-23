@@ -282,7 +282,7 @@ fetch_extract libXtst          1.2.2  tar.bz2 "https://www.x.org/releases/indivi
 fetch_extract libXv            1.0.10 tar.bz2 "https://www.x.org/releases/individual/lib/%s"
 fetch_extract libXxf86dga      1.1.4  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
 fetch_extract libXxf86vm       1.1.4  tar.bz2 "https://www.x.org/releases/individual/lib/%s"
-fetch_extract mesa             13.0.4 tar.xz  "https://mesa.freedesktop.org/archive/13.0.4/%s"
+fetch_extract mesa             13.0.4 tar.xz  "https://mesa.freedesktop.org/archive/older-versions/13.x/13.0.4/%s"
 fetch_extract presentproto     1.1    tar.bz2 "https://www.x.org/releases/individual/proto/%s"
 fetch_extract randrproto       1.5.0  tar.bz2 "https://www.x.org/releases/individual/proto/%s"
 fetch_extract recordproto      1.14.2 tar.bz2 "https://www.x.org/releases/individual/proto/%s"
