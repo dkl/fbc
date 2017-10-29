@@ -1504,6 +1504,8 @@ sub fbFbfrogInclude( byref args as string )
 
 	'' Prepend "-include" to header file name, otherwise fbfrog won't use -incdirs
 	args = "-include " + args
+
+	args += " -target " + fbGetTargetId( )
 	args += " -o " + tempheader
 
 	appendFbfrogIncdirs( args, @env.gccincludepaths )
