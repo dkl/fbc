@@ -281,12 +281,16 @@ sub ppParse( )
 
 	case FB_TK_PP_BINDGEN
 		lexSkipToken( )
-		dim args as string
-		while( lexGetClass( ) = FB_TKCLASS_STRLITERAL )
-			args += *lexGetText( )
-			lexSkipToken( )
-		wend
-		fbBindgenInclude( args )
+		if( lexGetClass( ) = FB_TKCLASS_STRLITERAL ) then
+			dim args as string
+			do
+				args += *lexGetText( )
+				lexSkipToken( )
+			loop while( lexGetClass( ) = FB_TKCLASS_STRLITERAL )
+			fbBindgenInclude( args )
+		else
+			errReport( FB_ERRMSG_SYNTAXERROR )
+		end if
 
 	case else
 		errReport( FB_ERRMSG_SYNTAXERROR )
@@ -312,11 +316,8 @@ end sub
 '' ppInclude		=   '#'INCLUDE ONCE? LIT_STR
 ''
 private sub ppInclude()
-    static as zstring * FB_MAXPATHLEN+1 incfile
-    dim as integer isonce = any
-
 	'' ONCE?
-	isonce = hMatchIdOrKw( "ONCE" )
+	var isonce = hMatchIdOrKw( "ONCE" )
 
 	if( lexGetClass( ) <> FB_TKCLASS_STRLITERAL ) then
 		errReport( FB_ERRMSG_SYNTAXERROR )
@@ -325,9 +326,10 @@ private sub ppInclude()
 		return
 	end if
 
-	lexEatToken( incfile )
+	var filename = *lexGetText( )
+	lexSkipToken( )
 
-	fbIncludeFile( incfile, isonce )
+	fbIncludeFile( fbIncludeSearch( filename ), isonce )
 end sub
 
 '':::::

@@ -409,7 +409,8 @@ declare function hMakeParamDesc _
 		@"Incompatible reference initializer", _
 		@"Array of references - not supported yet", _
 		@"Invalid CASE range, start value is greater than the end value", _
-		@"Fixed-length string combined with BYREF (not supported)" _
+		@"Fixed-length string combined with BYREF (not supported)", _
+		@"Binding generation failed" _
 	}
 
 

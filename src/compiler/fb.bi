@@ -394,7 +394,8 @@ declare sub fbChangeOption(byval opt as integer, byval value as integer)
 declare sub fbSetLibs(byval libs as TSTRSET ptr, byval libpaths as TSTRSET ptr)
 declare sub fbGetLibs(byval libs as TSTRSET ptr, byval libpaths as TSTRSET ptr)
 declare sub fbPragmaOnce()
-declare sub fbIncludeFile(byval filename as zstring ptr, byval isonce as integer)
+declare function fbIncludeSearch( byref filename as const string ) as string
+declare sub fbIncludeFile( byref filename as const string, byval isonce as integer )
 declare sub fbBindgenInclude( byref args as string )
 declare sub fbOverrideFilename(byval filename as zstring ptr)
 
@@ -454,6 +455,27 @@ declare function fbGetLangId _
 		byval txt as zstring ptr _
 	) as FB_LANG
 
+enum
+	FBCTOOL_AS = 0
+	FBCTOOL_AR
+	FBCTOOL_LD
+	FBCTOOL_GCC
+	FBCTOOL_LLC
+	FBCTOOL_DLLTOOL
+	FBCTOOL_GORC
+	FBCTOOL_WINDRES
+	FBCTOOL_CXBE
+	FBCTOOL_DXEGEN
+	FBCTOOL_BINDGEN
+	FBCTOOL__COUNT
+end enum
+
+declare function fbcRunBin _
+	( _
+		byval action as zstring ptr, _
+		byval tool as integer, _
+		byref ln as string _
+	) as integer
 
 ''
 '' macros

@@ -949,7 +949,7 @@ end sub
 private sub fbParsePreIncludes()
 	dim as string ptr file = listGetHead(@env.preincludes)
 	while ((file <> NULL) and fbShouldContinue())
-		fbIncludeFile(*file, TRUE)
+		fbIncludeFile( fbIncludeSearch( *file ), TRUE )
 		file = listGetNext(file)
 	wend
 end sub
@@ -1293,19 +1293,10 @@ private function solve_path( byval path as zstring ptr ) as integer
 
 end function
 
-sub fbIncludeFile(byval filename as zstring ptr, byval isonce as integer)
-    static as zstring * FB_MAXPATHLEN incfile
-    dim as zstring ptr fileidx
-
-	if( env.includerec >= FB_MAXINCRECLEVEL ) then
-		errReport( FB_ERRMSG_RECLEVELTOODEEP )
-		errHideFurtherErrors()
-		exit sub
-	end if
-
+function fbIncludeSearch( byref filename as const string ) as string
 	'' 1st) try finding it at same path as the current source-file
-	incfile = hStripFilename( env.inf.name )
-	incfile += *filename
+	var incfile = hStripFilename( env.inf.name )
+	incfile += filename
 
 	if( hFileExists( incfile ) = FALSE ) then
 
@@ -1315,7 +1306,7 @@ sub fbIncludeFile(byval filename as zstring ptr, byval isonce as integer)
 			'' 3rd) try finding it at the inc paths
 			dim as string ptr path = listGetHead(@env.includepaths)
 			while (path)
-				incfile = *path + FB_HOST_PATHDIV + *filename
+				incfile = *path + FB_HOST_PATHDIV + filename
 				if (hFileExists(incfile)) then
 					exit while
 				end if
@@ -1325,17 +1316,35 @@ sub fbIncludeFile(byval filename as zstring ptr, byval isonce as integer)
 			'' not found?
 			if (path = NULL) then
 				if( env.clopt.showincludes ) then
-					hShowInclude( env.includerec + 1, *filename + " (not found in include dirs)" )
+					hShowInclude( env.includerec + 1, filename + " (not found in include dirs)" )
 				end if
-				errReportEx( FB_ERRMSG_FILENOTFOUND, QUOTE + *filename + QUOTE )
+				errReportEx( FB_ERRMSG_FILENOTFOUND, QUOTE + filename + QUOTE )
 				errHideFurtherErrors()
-				exit sub
+				return ""
 			end if
 
 		else
-			incfile = *filename
+			incfile = filename
 		end if
 	end if
+
+	return incfile
+end function
+
+sub fbIncludeFile( byref filename as const string, byval isonce as integer )
+	if( len( filename ) = 0 ) then
+		return
+	end if
+
+    dim as zstring ptr fileidx
+
+	if( env.includerec >= FB_MAXINCRECLEVEL ) then
+		errReport( FB_ERRMSG_RECLEVELTOODEEP )
+		errHideFurtherErrors()
+		exit sub
+	end if
+
+	dim incfile as string = filename
 
 	'' if this isn't a root path, make it one.
 	if( is_rootpath( incfile ) = FALSE ) then
@@ -1390,7 +1399,7 @@ sub fbIncludeFile(byval filename as zstring ptr, byval isonce as integer)
 	''
 	env.inf.num = freefile
 	if( open( incfile, for binary, access read, as #env.inf.num ) <> 0 ) then
-		errReportEx( FB_ERRMSG_FILENOTFOUND, QUOTE + *filename + QUOTE )
+		errReportEx( FB_ERRMSG_FILENOTFOUND, QUOTE + incfile + QUOTE )
 		errHideFurtherErrors()
 		exit sub
 	end if
@@ -1414,7 +1423,15 @@ sub fbIncludeFile(byval filename as zstring ptr, byval isonce as integer)
 end sub
 
 sub fbBindgenInclude( byref args as string )
-	print "#bindgeninclude " + args
+	var tempheader = "temp.bi"
+	args += " -o " + tempheader
+	if( fbcRunBin( "bindgen", FBCTOOL_BINDGEN, args ) ) then
+		fbIncludeFile( tempheader, FALSE )
+	else
+		errReportEx( FB_ERRMSG_BINDGEN, "", -1 )
+	end if
+	if( kill( tempheader ) ) then
+	end if
 end sub
 
 '' Used by #line to change the effective filename of the current source file.
