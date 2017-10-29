@@ -120,7 +120,7 @@ private sub cDirective( ) static
 				end if
 			end if
 
-			fbIncludeFile( incfile, isonce )
+			fbIncludeFile( fbIncludeSearch( incfile ), isonce )
 		end if
 
 	case else

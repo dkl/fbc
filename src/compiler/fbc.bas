@@ -110,23 +110,9 @@ type FBCCTX
 	objinf				as FBC_OBJINF
 end type
 
-enum
-	FBCTOOL_AS = 0
-	FBCTOOL_AR
-	FBCTOOL_LD
-	FBCTOOL_GCC
-	FBCTOOL_LLC
-	FBCTOOL_DLLTOOL
-	FBCTOOL_GORC
-	FBCTOOL_WINDRES
-	FBCTOOL_CXBE
-	FBCTOOL_DXEGEN
-	FBCTOOL__COUNT
-end enum
-
 static shared as zstring * 8 toolnames(0 to FBCTOOL__COUNT-1) = _
 { _
-	"as", "ar", "ld", "gcc", "llc", "dlltool", "GoRC", "windres", "cxbe", "dxe3gen" _
+	"as", "ar", "ld", "gcc", "llc", "dlltool", "GoRC", "windres", "cxbe", "dxe3gen", "fbfrog" _
 }
 
 declare sub fbcFindBin _
@@ -373,7 +359,7 @@ private sub fbcFindBin _
 	last_relying_on_system = relying_on_system
 end sub
 
-private function fbcRunBin _
+function fbcRunBin _
 	( _
 		byval action as zstring ptr, _
 		byval tool as integer, _
