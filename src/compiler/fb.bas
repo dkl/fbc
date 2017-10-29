@@ -1408,6 +1408,10 @@ sub fbIncludeFile(byval filename as zstring ptr, byval isonce as integer)
 	env.inf = infileTb( env.includerec )
 end sub
 
+sub fbFbfrogInclude( byref args as string )
+	print "#fbfroginclude " + args
+end sub
+
 '' Used by #line to change the effective filename of the current source file.
 sub fbOverrideFilename(byval filename as zstring ptr)
 	env.inf.name = *filename
