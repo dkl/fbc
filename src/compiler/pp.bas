@@ -53,6 +53,7 @@ const SYMB_MAXKEYWORDS = 24
         (@"LINE"	, FB_TK_PP_LINE		), _
         (@"LANG"	, FB_TK_PP_LANG		), _
         (@"ASSERT"	, FB_TK_PP_ASSERT	), _
+        (@"BINDGEN"	, FB_TK_PP_BINDGEN	), _
         (NULL) _
 	}
 
@@ -277,6 +278,15 @@ sub ppParse( )
 	case FB_TK_PP_LANG
 		lexSkipToken( )
 		ppLang( )
+
+	case FB_TK_PP_BINDGEN
+		lexSkipToken( )
+		dim args as string
+		while( lexGetClass( ) = FB_TKCLASS_STRLITERAL )
+			args += *lexGetText( )
+			lexSkipToken( )
+		wend
+		fbBindgenInclude( args )
 
 	case else
 		errReport( FB_ERRMSG_SYNTAXERROR )
