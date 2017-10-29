@@ -1499,6 +1499,36 @@ private sub appendBindgenIncdirs( byref args as string, byval incdirs as TLIST p
 	wend
 end sub
 
+private function getGccTriplet( byval os as integer, byval cputype as integer ) as string
+	dim as string archpart, systempart
+
+	if cputypeinfo(cputype).gccarch then
+		archpart = *cputypeinfo(cputype).gccarch
+	else
+		archpart = *cpufamilyinfo(cputypeinfo(cputype).family).id
+	end if
+
+	select case( os )
+	case FB_COMPTARGET_WIN32
+		systempart = "mingw32"
+	case FB_COMPTARGET_DOS
+		systempart = "msdosdjgpp"
+	case else
+		systempart = *targetinfo(os).id
+	end select
+
+	select case( os )
+	case FB_COMPTARGET_LINUX
+		systempart += "-gnu"
+	end select
+
+	return archpart + "-" + systempart
+end function
+
+private function getBindgenGccTriplet( ) as string
+	return getGccTriplet( env.clopt.target, env.clopt.cputype )
+end function
+
 sub fbBindgenInclude( byref args as string )
 	if( env.queried_gccincludepaths = FALSE ) then
 		hQueryGccIncludeDirs( )
@@ -1506,6 +1536,7 @@ sub fbBindgenInclude( byref args as string )
 	end if
 
 	var tempheader = "temp.bi"
+	args += " -target " + getBindgenGccTriplet()
 	args += " -o " + tempheader
 	appendBindgenIncdirs( args, @env.gccincludepaths )
 
