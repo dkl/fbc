@@ -1510,14 +1510,14 @@ sub fbFbfrogInclude( byref args as string )
 
 	appendFbfrogIncdirs( args, @env.gccincludepaths )
 
-	if( fbcRunBin( "bindgen", FBCTOOL_FBFROG, args ) ) then
+	if( fbcRunProgram( "bindgen", "fbfrog", args, TRUE ) ) then
 		fbIncludeFile( tempheader, FALSE )
 	else
 		errReportEx( FB_ERRMSG_BINDGEN, "", -1 )
 	end if
 
-	if( kill( tempheader ) ) then
-	end if
+	'if( kill( tempheader ) ) then
+	'end if
 end sub
 
 '' Used by #line to change the effective filename of the current source file.

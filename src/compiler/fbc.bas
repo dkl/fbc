@@ -364,48 +364,56 @@ private sub fbcFindBin _
 	last_relying_on_system = relying_on_system
 end sub
 
-function fbcRunBin _
+function fbcRunProgram _
 	( _
-		byval action as zstring ptr, _
-		byval tool as integer, _
-		byref ln as string _
+		byval action as const zstring ptr, _
+		byref binpath as string, _
+		byref args as string, _
+		byval search_env_path as integer _
 	) as integer
 
-	dim as integer result = any, relying_on_system = any
-	dim as string path
-
-	fbcFindBin( tool, path, relying_on_system )
-
 	if( fbc.verbose ) then
-		print *action + ": ", path + " " + ln
+		print *action + ": ", binpath + " " + args
 	end if
 
 	'' Always use exec() on Unix or for standalone because
 	'' - Unix exec() already searches the PATH, so shell() isn't needed,
 	'' - standalone doesn't use system-wide tools
+	dim as integer result
 	#if defined( __FB_UNIX__ ) or defined( ENABLE_STANDALONE )
-		result = exec( path, ln )
+		result = exec( binpath, args )
 	#else
-		'' Found at bin/?
-		if( relying_on_system = FALSE ) then
-			result = exec( path, ln )
+		if( search_env_path ) then
+			result = shell( binpath + " " + args )
 		else
-			result = shell( path + " " + ln )
+			result = exec( binpath, args )
 		end if
 	#endif
 
 	if( result = 0 ) then
 		function = TRUE
 	elseif( result < 0 ) then
-		errReportEx( FB_ERRMSG_EXEMISSING, path, -1, FB_ERRMSGOPT_ADDCOLON or FB_ERRMSGOPT_ADDQUOTES )
+		errReportEx( FB_ERRMSG_EXEMISSING, binpath, -1, FB_ERRMSGOPT_ADDCOLON or FB_ERRMSGOPT_ADDQUOTES )
 	else
 		'' Report bad exit codes only in verbose mode; normally the
 		'' program should already have shown an error message, and the
 		'' exit code is only interesting for debugging purposes.
 		if( fbc.verbose ) then
-			print *action + " failed: '" + path + "' terminated with exit code " + str( result )
+			print *action + " failed: '" + binpath + "' terminated with exit code " + str( result )
 		end if
 	end if
+end function
+
+private function fbcRunBin _
+	( _
+		byval action as zstring ptr, _
+		byval tool as integer, _
+		byref args as string _
+	) as integer
+	dim as string binpath
+	var relying_on_system = false
+	fbcFindBin( tool, binpath, relying_on_system )
+	return fbcRunProgram( action, binpath, args, relying_on_system )
 end function
 
 #if defined( __FB_WIN32__ ) or defined( __FB_DOS__ )
