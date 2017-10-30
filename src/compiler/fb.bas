@@ -1540,7 +1540,7 @@ sub fbBindgenInclude( byref args as string )
 	args += " -o " + tempheader
 	appendBindgenIncdirs( args, @env.gccincludepaths )
 
-	if( fbcRunBin( "bindgen", FBCTOOL_BINDGEN, args ) ) then
+	if( fbcRunProgram( "bindgen", "fbbindgen", args, TRUE ) ) then
 		fbIncludeFile( tempheader, FALSE )
 	else
 		errReportEx( FB_ERRMSG_BINDGEN, "", -1 )

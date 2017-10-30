@@ -455,26 +455,12 @@ declare function fbGetLangId _
 		byval txt as zstring ptr _
 	) as FB_LANG
 
-enum
-	FBCTOOL_AS = 0
-	FBCTOOL_AR
-	FBCTOOL_LD
-	FBCTOOL_GCC
-	FBCTOOL_LLC
-	FBCTOOL_DLLTOOL
-	FBCTOOL_GORC
-	FBCTOOL_WINDRES
-	FBCTOOL_CXBE
-	FBCTOOL_DXEGEN
-	FBCTOOL_BINDGEN
-	FBCTOOL__COUNT
-end enum
-
-declare function fbcRunBin _
+declare function fbcRunProgram _
 	( _
-		byval action as zstring ptr, _
-		byval tool as integer, _
-		byref ln as string _
+		byval action as const zstring ptr, _
+		byref binpath as string, _
+		byref args as string, _
+		byval search_env_path as integer _
 	) as integer
 
 declare function getTargetGccInvokeCommand( ) as string
