@@ -1,0 +1,4 @@
+/fbbindgen
+/fbbindgen.exe
+config.mk
+/src/obj/*.o
