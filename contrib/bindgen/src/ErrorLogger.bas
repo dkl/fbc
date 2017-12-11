@@ -2,7 +2,7 @@
 
 constructor ErrorLogger()
     stderr_filenum = freefile()
-    if open err(for output, as #stderr_filenum) = 0 then
+    if open err(for output, as #stderr_filenum) <> 0 then
         stderr_filenum = -1
     end if
 end constructor

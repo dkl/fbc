@@ -1,5 +1,5 @@
-#include once "ClangAstDumper.bi"
 #include once "ClangContext.bi"
+#include once "ClangParser.bi"
 
 type CommandLineOptions
     clangargs as ClangArgs
@@ -33,12 +33,15 @@ private function main(byval argc as integer, byval argv as const zstring const p
     end if
 
     dim logger as ErrorLogger
-    logger.printError("clang command line: " + cmdline.clangargs.dump())
+    logger.printError("libclang command line: " + cmdline.clangargs.dump())
 
-    dim ctx as ClangContext
-    ctx.parseTranslationUnit(logger, cmdline.clangargs)
+    dim tu as ClangTU = ClangTU(cmdline.clangargs)
+    tu.reportErrors(logger)
 
-    ClangAstDumper(ctx).dump()
+    ClangAstDumper(@tu).dump()
+
+    dim parser as TUParser = TUParser(@tu)
+    parser.parse()
 
     return 0
 end function
