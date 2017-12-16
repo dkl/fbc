@@ -16,8 +16,8 @@ enum TypeKind
     Type_Float32
     Type_Float64
     Type_CLongDouble
-    Type_Struct
-    Type_Function
+    Type_Named
+    Type_Proc
     Type_Char
     Type_Zstring
     Type_Wchar
@@ -92,9 +92,11 @@ type SymbolInfo
     variadic : 1 as boolean '' functions/macros: implicit variadic parameter at end
     dllimport : 1 as boolean
     functionlike : 1 as boolean '' macros
+    is_extern : 1 as boolean '' var
+    is_defined : 1 as boolean '' var
 
     bits as ubyte '' bitfield size
-    maxalign as ubyte '' max pack/field alignment for structs/unions
+    fieldalign as ubyte '' max pack/field alignment for structs/unions
 end type
 
 enum AstKind
@@ -147,6 +149,6 @@ type AstNode
 
     declare sub removeAll()
 
-    declare function dumpOne() as string
-    declare sub dump(byval nestlevel as integer = 0, byref prefix as const string = "")
+    declare const function dumpOne() as string
+    declare const sub dump(byval nestlevel as integer = 0, byref prefix as const string = "")
 end type

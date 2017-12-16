@@ -77,8 +77,8 @@ dim shared TypeNames(0 to TypeCount - 1) as const zstring const ptr => { _
     @"float32" , _
     @"float64" , _
     @"clongdouble", _
-    @"struct"  , _
-    @"function", _
+    @"named"   , _
+    @"proc"    , _
     @"char"    , _
     @"zstring" , _
     @"wchar"   , _
@@ -257,7 +257,7 @@ dim shared as const zstring const ptr AstKindNames(0 to AstKindCount - 1) => { _
     @"externend"    _
 }
 
-function AstNode.dumpOne() as string
+const function AstNode.dumpOne() as string
     var s = *AstKindNames(kind)
     if len(sym.id) > 0 then
         s += " " + sym.id
@@ -271,11 +271,11 @@ function AstNode.dumpOne() as string
     return s
 end function
 
-sub AstNode.dump(byval nestlevel as integer, byref prefix as const string)
+const sub AstNode.dump(byval nestlevel as integer, byref prefix as const string)
     nestlevel += 1
 
     scope
-        var s = space((nestlevel - 1) * 3)
+        var s = space((nestlevel - 1) * 4)
         if len(prefix) > 0 then
             s += prefix + ": "
         end if
@@ -287,7 +287,7 @@ sub AstNode.dump(byval nestlevel as integer, byref prefix as const string)
         sym.t.subtype->dump(nestlevel, "subtype")
     end if
 
-    var i = head
+    dim i as const AstNode ptr = head
     while i
         i->dump(nestlevel)
         i = i->nxt

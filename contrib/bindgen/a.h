@@ -1,29 +1,29 @@
-char var_char;
-signed char var_schar;
-unsigned char var_uchar;
+extern char var_char;
+extern signed char var_schar;
+extern unsigned char var_uchar;
 
-short var_short;
-signed short var_sshort;
-unsigned short var_ushort;
+extern short var_short;
+extern signed short var_sshort;
+extern unsigned short var_ushort;
 
-int var_int;
-signed int var_sint;
-unsigned int var_uint;
+extern int var_int;
+extern signed int var_sint;
+extern unsigned int var_uint;
 
-long var_long;
-signed long var_slong;
-unsigned long var_ulong;
+extern long var_long;
+extern signed long var_slong;
+extern unsigned long var_ulong;
 
-long long var_longlong;
-signed long long var_slonglong;
-unsigned long long var_ulonglong;
+extern long long var_longlong;
+extern signed long long var_slonglong;
+extern unsigned long long var_ulonglong;
 
-float var_float;
-double var_double;
+extern float var_float;
+extern double var_double;
 
-const int var_ci;
-int *var_pi;
-int const *var_pci;
-int *const var_cpi;
-int const *const var_cpci_1;
-const int *const var_cpci_2;
+extern const int var_ci;
+extern int *var_pi;
+extern int const *var_pci;
+extern int *const var_cpi;
+extern int const *const var_cpci_1;
+extern const int *const var_cpci_2;

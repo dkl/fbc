@@ -76,7 +76,6 @@ const function TUParser.parseType(byval ty as CXType) as FullType
         t.dtype = t.dtype.addrOf()
 
     case else
-        dim t as FullType
         t.dtype = t.dtype.withBase(parseSimplyType(ty))
         if t.dtype.basetype() = Type_None then
             abortProgram("unhandled clang type " + tu->dumpType(ty))
@@ -96,6 +95,13 @@ function TUParser.visitor(byval cursor as CXCursor, byval parent as CXCursor) as
         var n = new AstNode(AstKind_Var)
         n->sym.id = wrapstr(clang_getCursorSpelling(cursor))
         n->sym.t = parseType(clang_getCursorType(cursor))
+        if clang_getCursorLinkage(cursor) = CXLinkage_External then
+            n->sym.is_extern = true
+        end if
+        select case clang_Cursor_getStorageClass(cursor)
+        case CX_SC_None, CX_SC_Static
+            n->sym.is_defined = true
+        end select
         ast->append(n)
 
     case CXCursor_MacroDefinition
@@ -110,5 +116,4 @@ end function
 
 sub TUParser.parse()
     visitChildrenOf(clang_getTranslationUnitCursor(tu->unit))
-    ast->dump()
 end sub

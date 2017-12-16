@@ -1,5 +1,6 @@
 #include once "ClangContext.bi"
 #include once "ClangParser.bi"
+#include once "Emitter.bi"
 
 type CommandLineOptions
     clangargs as ClangArgs
@@ -42,6 +43,9 @@ private function main(byval argc as integer, byval argv as const zstring const p
 
     dim parser as TUParser = TUParser(@tu)
     parser.parse()
+
+    dim emit as Emitter
+    emit.emitCode(parser.ast)
 
     return 0
 end function
