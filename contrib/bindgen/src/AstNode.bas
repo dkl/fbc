@@ -277,14 +277,27 @@ dim shared as const zstring const ptr AstKindNames(0 to AstKindCount - 1) => { _
 const function AstNode.dumpOne() as string
     var s = *AstKindNames(kind)
     if len(sym.id) > 0 then
-        s += " " + sym.id
+        s += " id=" + sym.id
     end if
     if len(sym.aliasid) > 0 then
-        s += " alias """ + sym.aliasid + """"
+        s += " alias=" + sym.aliasid
     end if
     if sym.t.dtype.basetype() <> Type_None then
-        s += " as " + sym.t.dtype.dump()
+        s += " type=" + sym.t.dtype.dump()
     end if
+
+    #macro dumpFlag(name)
+        if sym.is_##name then
+            s += " " + #name
+        end if
+    #endmacro
+    dumpFlag(packed)
+    dumpFlag(variadic)
+    dumpFlag(dllimport)
+    dumpFlag(functionlike)
+    dumpFlag(extern)
+    dumpFlag(defined)
+
     return s
 end function
 

@@ -23,5 +23,6 @@ extern var_cpci_1 as const long const ptr
 extern var_cpci_2 as const long const ptr
 declare sub f1 cdecl()
 declare function f2 cdecl(byval as long, byval as double) as long
+declare sub f_variadic cdecl(byval as long, ...)
 extern pf1 as sub cdecl()
 extern pf2 as function cdecl(byval as long, byval as double) as long

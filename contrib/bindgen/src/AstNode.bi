@@ -91,20 +91,19 @@ end enum
 
 type SymbolInfo
     t as FullType
-
     id as string '' Symbol name
     aliasid as string '' External name (if symbol was renamed, or if given via asm() in C code, etc.)
 
     callconv as ProcCallConv
-    packed : 1 as boolean '' structs
-    variadic : 1 as boolean '' functions/macros: implicit variadic parameter at end
-    dllimport : 1 as boolean
-    functionlike : 1 as boolean '' macros
-    is_extern : 1 as boolean '' var
-    is_defined : 1 as boolean '' var
-
     bits as ubyte '' bitfield size
     fieldalign as ubyte '' max pack/field alignment for structs/unions
+
+    is_packed : 1 as integer '' structs
+    is_variadic : 1 as integer '' procedures/macros: implicit variadic parameter at end
+    is_dllimport : 1 as integer
+    is_functionlike : 1 as integer '' macros
+    is_extern : 1 as integer '' var
+    is_defined : 1 as integer '' var
 end type
 
 enum AstKind

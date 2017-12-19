@@ -103,7 +103,7 @@ function Emitter.emitIdAndArray(byval n as const AstNode ptr) as string
     return s
 end function
 
-function Emitter.emitParam(byval n as const AstNode ptr) as string
+function Emitter.emitProcParam(byval n as const AstNode ptr) as string
     assert(n->kind = AstKind_ProcParam)
     if n->sym.t.dtype.basetype() = Type_None then
         return "..."
@@ -121,16 +121,25 @@ function Emitter.emitParam(byval n as const AstNode ptr) as string
     return s
 end function
 
-function Emitter.emitParamList(byval n as const AstNode ptr) as string
+function Emitter.emitProcParams(byval proc as const AstNode ptr) as string
     var s = "("
-    dim i as const AstNode ptr = n->head
-    while i
-        if i <> n->head then
+
+    dim param as const AstNode ptr = proc->head
+    while param
+        if param <> proc->head then
             s += ", "
         end if
-        s += emitParam(i)
-        i = i->nxt
+        s += emitProcParam(param)
+        param = param->nxt
     wend
+
+    if proc->sym.is_variadic then
+        if proc->head then
+            s += ", "
+        end if
+        s += "..."
+    end if
+
     s += ")"
     return s
 end function
@@ -152,7 +161,7 @@ function Emitter.emitProcHeader(byval n as const AstNode ptr) as string
     end if
     s += " " + getCallConvKeyword(n->sym.callconv)
     s += emitAlias(n)
-    s += emitParamList(n)
+    s += emitProcParams(n)
     if is_function then
         s += " as " + emitType(n->sym.t)
     end if

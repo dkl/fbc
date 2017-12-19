@@ -30,5 +30,6 @@ extern const int *const var_cpci_2;
 
 void f1(void);
 int f2(int, double);
+void f_variadic(int, ...);
 extern void (*pf1)(void);
 extern int (*pf2)(int, double);

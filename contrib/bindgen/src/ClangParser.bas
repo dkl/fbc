@@ -94,6 +94,8 @@ const function TUParser.parseFunctionType(byval ty as CXType) as FullType
         next
     end if
 
+    proc->sym.is_variadic = clang_isFunctionTypeVariadic(ty)
+
     return FullType(DataType(Type_Proc), proc)
 end function
 

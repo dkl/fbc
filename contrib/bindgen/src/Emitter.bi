@@ -9,8 +9,8 @@ public:
     declare function emitAlias(byval n as const AstNode ptr) as string
     declare function emitIdAndArray(byval n as const AstNode ptr) as string
     declare function emitCommaSeparatedChildren(byval n as const AstNode ptr) as string
-    declare function emitParam(byval n as const AstNode ptr) as string
-    declare function emitParamList(byval n as const AstNode ptr) as string
+    declare function emitProcParam(byval n as const AstNode ptr) as string
+    declare function emitProcParams(byval n as const AstNode ptr) as string
     declare function emitProcHeader(byval n as const AstNode ptr) as string
 
     declare sub emitLine(byref ln as const string)
