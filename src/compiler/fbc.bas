@@ -383,26 +383,26 @@ function fbcRunProgram _
 		byval action as const zstring ptr, _
 		byref binpath as string, _
 		byref args as string, _
-		byval search_env_path as integer _
+		byval search_env_path as integer, _
+		byval requires_shell as integer _
 	) as integer
 
 	if( fbc.verbose ) then
 		print *action + ": ", binpath + " " + args
 	end if
 
-	'' Always use exec() on Unix or for standalone because
-	'' - Unix exec() already searches the PATH, so shell() isn't needed,
-	'' - standalone doesn't use system-wide tools
-	dim as integer result
-	#if defined( __FB_UNIX__ ) or defined( ENABLE_STANDALONE )
-		result = exec( binpath, args )
-	#else
-		if( search_env_path ) then
-			result = shell( binpath + " " + args )
-		else
-			result = exec( binpath, args )
-		end if
+	'' Use exec() if shell() isn't needed
+	#if (not defined( __FB_UNIX__ )) and (not defined( ENABLE_STANDALONE ))
+		'' shell() is required on Windows/DOS for non-standalone because exec() doesn't
+		'' automatically search the PATH environment variable as on Unix-like systems.
+		requires_shell or= search_env_path
 	#endif
+	dim as integer result
+	if( requires_shell ) then
+		result = shell( binpath + " " + args )
+	else
+		result = exec( binpath, args )
+	end if
 
 	if( result = 0 ) then
 		function = TRUE
@@ -427,7 +427,7 @@ private function fbcRunBin _
 	dim as string binpath
 	var relying_on_system = false
 	fbcFindBin( tool, binpath, relying_on_system )
-	return fbcRunProgram( action, binpath, args, relying_on_system )
+	return fbcRunProgram( action, binpath, args, relying_on_system, FALSE )
 end function
 
 #if defined( __FB_WIN32__ ) or defined( __FB_DOS__ )

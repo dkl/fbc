@@ -460,7 +460,8 @@ declare function fbcRunProgram _
 		byval action as const zstring ptr, _
 		byref binpath as string, _
 		byref args as string, _
-		byval search_env_path as integer _
+		byval search_env_path as integer, _
+		byval requires_shell as integer _
 	) as integer
 
 declare function getTargetGccInvokeCommand( ) as string

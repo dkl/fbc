@@ -1537,10 +1537,10 @@ sub fbBindgenInclude( byref args as string )
 
 	var tempheader = "temp.bi"
 	args += " -target " + getBindgenGccTriplet()
-	args += " -o " + tempheader
 	appendBindgenIncdirs( args, @env.gccincludepaths )
 
-	if( fbcRunProgram( "bindgen", "fbbindgen", args, TRUE ) ) then
+	var cmd = args + " > " + tempheader
+	if( fbcRunProgram( "bindgen", "fbbindgen", cmd, TRUE, TRUE ) ) then
 		fbIncludeFile( tempheader, FALSE )
 	else
 		errReportEx( FB_ERRMSG_BINDGEN, "", -1 )
