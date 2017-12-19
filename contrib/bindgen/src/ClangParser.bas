@@ -118,6 +118,14 @@ const function TUParser.parseType(byval ty as CXType) as FullType
             logger->abortProgram("unhandled clang type " + tu->dumpType(ty))
         end if
 
+    case CXType_Elaborated, CXType_Typedef
+        t = parseType(clang_getCanonicalType(ty))
+
+    case CXType_Record, CXType_Enum
+        var typeref = new AstNode(AstKind_TypeRef)
+        typeref->sym.id = wrapstr(clang_getCursorSpelling(clang_getTypeDeclaration(ty)))
+        t = FullType(DataType(Type_Named), typeref)
+
     case else
         t.dtype = t.dtype.withBase(parseSimpleType(ty))
         if t.dtype.basetype() = Type_None then
@@ -132,35 +140,130 @@ const function TUParser.parseType(byval ty as CXType) as FullType
     return t
 end function
 
+const function TUParser.parseVarDecl(byval cursor as CXCursor) as AstNode ptr
+    var n = new AstNode(AstKind_Var)
+    n->sym.id = wrapstr(clang_getCursorSpelling(cursor))
+    n->sym.t = parseType(clang_getCursorType(cursor))
+
+    if clang_getCursorLinkage(cursor) = CXLinkage_External then
+        n->sym.is_extern = true
+    end if
+
+    select case clang_Cursor_getStorageClass(cursor)
+    case CX_SC_None, CX_SC_Static
+        n->sym.is_defined = true
+    end select
+
+    return n
+end function
+
+const function TUParser.parseProcDecl(byval cursor as CXCursor) as AstNode ptr
+    var functiontype = parseType(clang_getCursorType(cursor))
+    assert(functiontype.dtype.basetype() = Type_Proc andalso _
+           functiontype.subtype andalso _
+           functiontype.subtype->kind = AstKind_Proc)
+    var n = functiontype.subtype
+    functiontype.subtype = NULL
+    n->sym.id = wrapstr(clang_getCursorSpelling(cursor))
+    return n
+end function
+
+type RecordFieldCollector
+    fields(any) as CXCursor
+    declare static function staticVisitor(byval cursor as CXCursor, byval client_data as CXClientData) as CXVisitorResult
+    declare function visitor(byval cursor as CXCursor) as CXVisitorResult
+    declare sub collectFieldsOf(byval ty as CXType)
+end type
+
+function RecordFieldCollector.staticVisitor(byval cursor as CXCursor, byval client_data as CXClientData) as CXVisitorResult
+    dim self as RecordFieldCollector ptr = client_data
+    return self->visitor(cursor)
+end function
+
+function RecordFieldCollector.visitor(byval cursor as CXCursor) as CXVisitorResult
+    if clang_getCursorKind(cursor) = CXCursor_FieldDecl then
+        redim preserve fields(0 to ubound(fields) + 1)
+        fields(ubound(fields)) = cursor
+    end if
+    return CXChildVisit_Continue
+end function
+
+sub RecordFieldCollector.collectFieldsOf(byval ty as CXType)
+    clang_Type_visitFields(ty, @staticVisitor, @this)
+end sub
+
+const function TUParser.parseRecordDecl(byval cursor as CXCursor, byval is_union as boolean) as AstNode ptr
+    var record = new AstNode(iif(is_union, AstKind_Union, AstKind_Struct))
+    record->sym.id = wrapstr(clang_getCursorSpelling(cursor))
+
+    var ty = clang_getCursorType(cursor)
+
+    dim fields as RecordFieldCollector
+    fields.collectFieldsOf(ty)
+    for i as integer = 0 to ubound(fields.fields)
+        var fld = new AstNode(AstKind_Field)
+        fld->sym.id = wrapstr(clang_getCursorSpelling(fields.fields(i)))
+        fld->sym.t = parseType(clang_getCursorType(fields.fields(i)))
+        record->append(fld)
+    next
+
+    return record
+end function
+
+type EnumConstCollector extends ClangAstVisitor
+    enumconsts(any) as CXCursor
+    declare function visitor(byval cursor as CXCursor, byval parent as CXCursor) as CXChildVisitResult override
+end type
+
+function EnumConstCollector.visitor(byval cursor as CXCursor, byval parent as CXCursor) as CXChildVisitResult
+    if clang_getCursorKind(cursor) = CXCursor_EnumConstantDecl then
+        redim preserve enumconsts(0 to ubound(enumconsts) + 1)
+        enumconsts(ubound(enumconsts)) = cursor
+    end if
+    return CXChildVisit_Continue
+end function
+
+const function TUParser.parseEnumDecl(byval cursor as CXCursor) as AstNode ptr
+    var n = new AstNode(AstKind_Enum)
+    n->sym.id = wrapstr(clang_getCursorSpelling(cursor))
+
+    dim enumconsts as EnumConstCollector
+    enumconsts.visitChildrenOf(cursor)
+    for i as integer = 0 to ubound(enumconsts.enumconsts)
+        var enumconst = new AstNode(AstKind_EnumConst)
+        enumconst->sym.id = wrapstr(clang_getCursorSpelling(enumconsts.enumconsts(i)))
+        n->append(enumconst)
+    next
+
+    return n
+end function
+
+const function TUParser.parseTypedefDecl(byval cursor as CXCursor) as AstNode ptr
+    var n = new AstNode(AstKind_Typedef)
+    n->sym.id = wrapstr(clang_getCursorSpelling(cursor))
+    n->sym.t = parseType(clang_getTypedefDeclUnderlyingType(cursor))
+    return n
+end function
+
 function TUParser.visitor(byval cursor as CXCursor, byval parent as CXCursor) as CXChildVisitResult
     select case clang_getCursorKind(cursor)
     case CXCursor_VarDecl
-        var n = new AstNode(AstKind_Var)
-        n->sym.id = wrapstr(clang_getCursorSpelling(cursor))
-        n->sym.t = parseType(clang_getCursorType(cursor))
-
-        if clang_getCursorLinkage(cursor) = CXLinkage_External then
-            n->sym.is_extern = true
-        end if
-
-        select case clang_Cursor_getStorageClass(cursor)
-        case CX_SC_None, CX_SC_Static
-            n->sym.is_defined = true
-        end select
-
-        ast->append(n)
+        ast->append(parseVarDecl(cursor))
 
     case CXCursor_FunctionDecl
-        var functiontype = parseType(clang_getCursorType(cursor))
-        assert(functiontype.dtype.basetype() = Type_Proc andalso _
-               functiontype.subtype andalso _
-               functiontype.subtype->kind = AstKind_Proc)
+        ast->append(parseProcDecl(cursor))
 
-        var n = functiontype.subtype
-        functiontype.subtype = NULL
-        n->sym.id = wrapstr(clang_getCursorSpelling(cursor))
+    case CXCursor_StructDecl
+        ast->append(parseRecordDecl(cursor, false))
 
-        ast->append(n)
+    case CXCursor_UnionDecl
+        ast->append(parseRecordDecl(cursor, true))
+
+    case CXCursor_EnumDecl
+        ast->append(parseEnumDecl(cursor))
+
+    case CXCursor_TypedefDecl
+        ast->append(parseTypedefDecl(cursor))
 
     case CXCursor_MacroDefinition
         '' TODO

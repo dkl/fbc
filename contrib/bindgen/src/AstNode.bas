@@ -271,7 +271,8 @@ dim shared as const zstring const ptr AstKindNames(0 to AstKindCount - 1) => { _
     @"macro"      , _
     @"macroparam" , _
     @"externbegin", _
-    @"externend"    _
+    @"externend"  , _
+    @"typeref"      _
 }
 
 const function AstNode.dumpOne() as string

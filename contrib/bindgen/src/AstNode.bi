@@ -122,6 +122,7 @@ enum AstKind
     AstKind_MacroParam
     AstKind_ExternBlockBegin
     AstKind_ExternBlockEnd
+    AstKind_TypeRef
     AstKindCount
 end enum
 

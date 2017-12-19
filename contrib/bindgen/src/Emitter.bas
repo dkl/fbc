@@ -38,7 +38,9 @@ function Emitter.emitType(byref t as const FullType) as string
     case Type_CLongDouble : s += "clongdouble"
 
     case Type_Named
-        assert(t.subtype andalso (len(t.subtype->sym.id) > 0))
+        assert(t.subtype andalso _
+               t.subtype->kind = AstKind_TypeRef andalso _
+               len(t.subtype->sym.id) > 0)
         s += t.subtype->sym.id
 
     case Type_Proc

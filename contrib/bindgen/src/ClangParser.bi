@@ -19,6 +19,12 @@ type TUParser extends ClangAstVisitor
     declare const function parseFunctionType(byval ty as CXType) as FullType
     declare const function parseType(byval ty as CXType) as FullType
 
+    declare const function parseVarDecl(byval cursor as CXCursor) as AstNode ptr
+    declare const function parseProcDecl(byval cursor as CXCursor) as AstNode ptr
+    declare const function parseRecordDecl(byval cursor as CXCursor, byval is_union as boolean) as AstNode ptr
+    declare const function parseEnumDecl(byval cursor as CXCursor) as AstNode ptr
+    declare const function parseTypedefDecl(byval cursor as CXCursor) as AstNode ptr
+
     declare function visitor(byval cursor as CXCursor, byval parent as CXCursor) as CXChildVisitResult override
     declare sub parse()
 end type

@@ -26,3 +26,17 @@ declare function f2 cdecl(byval as long, byval as double) as long
 declare sub f_variadic cdecl(byval as long, ...)
 extern pf1 as sub cdecl()
 extern pf2 as function cdecl(byval as long, byval as double) as long
+type struct1
+	as long field1
+	as double field2
+end type
+type struct1_t as struct1
+extern var_struct1_1 as struct1
+extern var_struct1_2 as struct1
+union union1
+	as long field1
+	as double field2
+end union
+type union1_t as union1
+extern var_union1_1 as union1
+extern var_union1_2 as union1
