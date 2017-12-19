@@ -1,7 +1,8 @@
 #include once "ClangParser.bi"
 #include once "Util.bi"
 
-constructor TUParser(byval tu as ClangTU ptr)
+constructor TUParser(byval logger as ErrorLogger ptr, byval tu as ClangTU ptr)
+    this.logger = logger
     this.tu = tu
     ast = new AstNode(AstKind_Group)
 end constructor
@@ -11,7 +12,7 @@ destructor TUParser()
 end destructor
 
 const sub TUParser.checkBasicTypeSize(byval condition as boolean, byval ty as CXType, byref expected as const string)
-    assertOrAbort(condition, _
+    logger->assertOrAbort(condition, _
         "sizeof " + wrapstr(clang_getTypeSpelling(ty)) + _
         " is " & clang_Type_getSizeOf(ty) & " bytes, " + _
         "expected " + expected)
@@ -75,7 +76,7 @@ const function TUParser.parseCallConv(byval ty as CXType) as ProcCallConv
     case CXCallingConv_X86StdCall
         return CallConv_Stdcall
     case else
-        abortProgram("Unsupported callconv " & callconv)
+        logger->abortProgram("Unsupported callconv " & callconv)
     end select
 end function
 
@@ -112,13 +113,13 @@ const function TUParser.parseType(byval ty as CXType) as FullType
         if resultty.kind <> CXType_Invalid then
             t = parseFunctionType(ty)
         else
-            abortProgram("unhandled clang type " + tu->dumpType(ty))
+            logger->abortProgram("unhandled clang type " + tu->dumpType(ty))
         end if
 
     case else
         t.dtype = t.dtype.withBase(parseSimpleType(ty))
         if t.dtype.basetype() = Type_None then
-            abortProgram("unhandled clang type " + tu->dumpType(ty))
+            logger->abortProgram("unhandled clang type " + tu->dumpType(ty))
         end if
     end select
 
@@ -163,7 +164,7 @@ function TUParser.visitor(byval cursor as CXCursor, byval parent as CXCursor) as
         '' TODO
 
     case else
-        abortProgram("unhandled cursor kind: " + wrapstr(clang_getCursorKindSpelling(clang_getCursorKind(cursor))))
+        logger->abortProgram("unhandled cursor kind: " + wrapstr(clang_getCursorKindSpelling(clang_getCursorKind(cursor))))
     end select
 
     return CXChildVisit_Continue

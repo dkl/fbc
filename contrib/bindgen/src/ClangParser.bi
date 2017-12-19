@@ -3,10 +3,11 @@
 #include once "ClangContext.bi"
 
 type TUParser extends ClangAstVisitor
+    logger as ErrorLogger ptr
     tu as ClangTU ptr
     ast as AstNode ptr
 
-    declare constructor(byval tu as ClangTU ptr)
+    declare constructor(byval logger as ErrorLogger ptr, byval tu as ClangTU ptr)
     declare operator let(byref as const TUParser) '' unimplemented
     declare destructor()
 

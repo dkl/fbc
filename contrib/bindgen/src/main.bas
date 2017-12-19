@@ -5,6 +5,7 @@
 type CommandLineOptions
     clangargs as ClangArgs
     show_help as boolean
+    show_debug as boolean
     declare sub parse(byval argc as integer, byval argv as const zstring const ptr ptr)
     declare operator let(byref as const CommandLineOptions) '' unimplemented
 end type
@@ -14,14 +15,21 @@ sub CommandLineOptions.parse(byval argc as integer, byval argv as const zstring 
         show_help = true
     end if
     for i as integer = 1 to argc - 1
-        clangargs.append(*argv[i])
+        var arg = *argv[i]
+        select case arg
+        case "-v"
+            show_debug = true
+        case else
+            clangargs.append(arg)
+        end select
     next
 end sub
 
 private sub printHelp()
     print "fbbindgen 0.1"
-    print "usage: fbbindgen foo.h [options]"
+    print "usage: fbbindgen foo.h [options] [clang options]"
     print "options:"
+    print "  -v        Show debug output"
 end sub
 
 private function main(byval argc as integer, byval argv as const zstring const ptr ptr) as integer
@@ -34,17 +42,23 @@ private function main(byval argc as integer, byval argv as const zstring const p
     end if
 
     dim logger as ErrorLogger
-    logger.printError("libclang command line: " + cmdline.clangargs.dump())
+    if cmdline.show_debug then
+        logger.eprint("libclang command line: " + cmdline.clangargs.dump())
+    end if
 
     dim tu as ClangTU = ClangTU(cmdline.clangargs)
     tu.reportErrors(logger)
 
-    'ClangAstDumper(@tu).dump()
+    if cmdline.show_debug then
+        ClangAstDumper(@logger, @tu).dump()
+    end if
 
-    dim parser as TUParser = TUParser(@tu)
+    dim parser as TUParser = TUParser(@logger, @tu)
     parser.parse()
 
-    'parser.ast->dump()
+    if cmdline.show_debug then
+        parser.ast->dump(logger)
+    end if
 
     dim emit as Emitter
     emit.emitCode(parser.ast)

@@ -146,7 +146,8 @@ function wrapstr(byref s as CXString) as string
     return wrapped.value()
 end function
 
-constructor ClangAstDumper(byval tu as ClangTU ptr)
+constructor ClangAstDumper(byval logger as ErrorLogger ptr, byval tu as ClangTU ptr)
+    this.logger = logger
     this.tu = tu
 end constructor
 
@@ -157,7 +158,7 @@ end function
 
 sub ClangAstDumper.dump(byval cursor as CXCursor)
     if tu->isBuiltIn(cursor) = false then
-        print space(nestinglevel * 4) + tu->dumpCursor(cursor)
+        logger->eprint(space(nestinglevel * 4) + tu->dumpCursor(cursor))
     end if
     nestinglevel += 1
     visitChildrenOf(cursor)

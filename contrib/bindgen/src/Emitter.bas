@@ -58,7 +58,7 @@ function Emitter.emitType(byref t as const FullType) as string
         s += emitProcHeader(t.subtype)
 
     case else
-        abortProgram("unhandled data type " + t.dtype.dump())
+        assert(false)
     end select
 
     if add_typeof then
@@ -104,7 +104,7 @@ function Emitter.emitIdAndArray(byval n as const AstNode ptr) as string
 end function
 
 function Emitter.emitParam(byval n as const AstNode ptr) as string
-    assert(n->kind = AstKind_Param)
+    assert(n->kind = AstKind_ProcParam)
     if n->sym.t.dtype.basetype() = Type_None then
         return "..."
     end if
@@ -253,6 +253,6 @@ sub Emitter.emitCode(byval n as const AstNode ptr)
         emitLine("end extern")
 
     case else
-        abortProgram("unhandled AST " + n->dumpOne())
+        assert(false)
     end select
 end sub

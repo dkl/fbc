@@ -1,4 +1,5 @@
 #pragma once
+#include once "ErrorLogger.bi"
 
 enum TypeKind
     Type_None
@@ -157,5 +158,5 @@ type AstNode_
     declare sub removeAll()
 
     declare const function dumpOne() as string
-    declare const sub dump(byval nestlevel as integer = 0, byref prefix as const string = "")
+    declare const sub dump(byref logger as ErrorLogger, byval nestlevel as integer = 0, byref prefix as const string = "")
 end type

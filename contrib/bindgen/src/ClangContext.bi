@@ -61,9 +61,10 @@ end type
 declare function wrapstr(byref s as CXString) as string
 
 type ClangAstDumper extends ClangAstVisitor
+    logger as ErrorLogger ptr
     tu as ClangTU ptr
     nestinglevel as integer
-    declare constructor(byval tu as ClangTU ptr)
+    declare constructor(byval logger as ErrorLogger ptr, byval tu as ClangTU ptr)
     declare function visitor(byval cursor as CXCursor, byval parent as CXCursor) as CXChildVisitResult override
     declare static function dumpOne(byval cursor as CXCursor) as string
     declare sub dump(byval cursor as CXCursor)

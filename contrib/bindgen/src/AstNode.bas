@@ -193,9 +193,9 @@ const function AstNode.contains(byval n as AstNode ptr) as boolean
 end function
 
 sub AstNode.insert(byval n as AstNode ptr, byval ref as AstNode ptr)
-    assert(not hasChild(n))
+    assert(not contains(n))
     if ref then
-        assert(hasChild(ref))
+        assert(contains(ref))
         if ref->prev then
             ref->prev->nxt = n
             n->prev = ref->prev
@@ -227,7 +227,7 @@ sub AstNode.append(byval n as AstNode ptr)
 end sub
 
 sub AstNode.unlink(byval n as AstNode ptr)
-    assert(hasChild(n))
+    assert(contains(n))
     if n->prev then
         n->prev->nxt = n->nxt
     else
@@ -288,7 +288,7 @@ const function AstNode.dumpOne() as string
     return s
 end function
 
-const sub AstNode.dump(byval nestlevel as integer, byref prefix as const string)
+const sub AstNode.dump(byref logger as ErrorLogger, byval nestlevel as integer, byref prefix as const string)
     nestlevel += 1
 
     scope
@@ -297,16 +297,16 @@ const sub AstNode.dump(byval nestlevel as integer, byref prefix as const string)
             s += prefix + ": "
         end if
         s += dumpOne()
-        print s
+        logger.eprint(s)
     end scope
 
     if sym.t.subtype then
-        sym.t.subtype->dump(nestlevel, "subtype")
+        sym.t.subtype->dump(logger, nestlevel, "subtype")
     end if
 
     dim i as const AstNode ptr = head
     while i
-        i->dump(nestlevel)
+        i->dump(logger, nestlevel)
         i = i->nxt
     wend
 
