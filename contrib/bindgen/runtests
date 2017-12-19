@@ -1,0 +1,6 @@
+#!/bin/sh
+FBBINDGEN=./fbbindgen
+$FBBINDGEN test/a.h -target   i686-pc-linux-gnu > test/a_linux_x86.bi
+$FBBINDGEN test/a.h -target x86_64-pc-linux-gnu > test/a_linux_x86_64.bi
+$FBBINDGEN test/a.h -target   i686-w64-mingw32 > test/a_win32.bi
+$FBBINDGEN test/a.h -target x86_64-w64-mingw32 > test/a_win64.bi

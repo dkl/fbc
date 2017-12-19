@@ -39,10 +39,12 @@ private function main(byval argc as integer, byval argv as const zstring const p
     dim tu as ClangTU = ClangTU(cmdline.clangargs)
     tu.reportErrors(logger)
 
-    ClangAstDumper(@tu).dump()
+    'ClangAstDumper(@tu).dump()
 
     dim parser as TUParser = TUParser(@tu)
     parser.parse()
+
+    'parser.ast->dump()
 
     dim emit as Emitter
     emit.emitCode(parser.ast)
