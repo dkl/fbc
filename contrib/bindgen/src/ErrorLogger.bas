@@ -19,6 +19,7 @@ end sub
 
 sub ErrorLogger.printError(byref message as const string)
     eprint("error: " + message)
+    have_errors = true
 end sub
 
 sub ErrorLogger.abortProgram(byref message as const string)
@@ -31,3 +32,7 @@ sub ErrorLogger.assertOrAbort(byval condition as boolean, byref message as const
         abortProgram(message)
     end if
 end sub
+
+const function ErrorLogger.haveErrors() as boolean
+    return have_errors
+end function

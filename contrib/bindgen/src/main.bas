@@ -63,7 +63,7 @@ private function main(byval argc as integer, byval argv as const zstring const p
     dim emit as Emitter
     emit.emitCode(parser.ast)
 
-    return 0
+    return iif(logger.haveErrors(), 1, 0)
 end function
 
 end main(__FB_ARGC__, __FB_ARGV__)
