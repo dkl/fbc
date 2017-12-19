@@ -1,44 +1,56 @@
 #include once "AstNode.bi"
 #include once "Util.bi"
 
+constructor DataType()
+    bits = Type_None
+end constructor
+
+constructor DataType(byval t as TypeKind)
+    bits = t
+end constructor
+
+constructor DataType(byval bits as ulong)
+    this.bits = bits
+end constructor
+
 const function DataType.withBase(byval ty as TypeKind) as DataType
-    return type<DataType>((bits and (not Mask_Base)) or (culng(ty) and Mask_Base))
+    return DataType((bits and (not Mask_Base)) or (culng(ty) and Mask_Base))
 end function
 
 const function DataType.withConst() as DataType
-    return type<DataType>(bits or (1ul shl Pos_Const))
+    return DataType(bits or (1ul shl Pos_Const))
 end function
 
 const function DataType.withRef() as DataType
-    return type<DataType>(bits or (1ul shl Pos_Ref))
+    return DataType(bits or (1ul shl Pos_Ref))
 end function
 
 const function DataType.withoutBaseConst() as DataType
-    return type<DataType>(bits and (not (1ul shl (Pos_Const + ptrcount()))))
+    return DataType(bits and (not (1ul shl (Pos_Const + ptrcount()))))
 end function
 
 const function DataType.withoutConsts() as DataType
-    return type<DataType>(bits and (Mask_Base or Mask_Ptr))
+    return DataType(bits and (Mask_Base or Mask_Ptr))
 end function
 
 const function DataType.addrOf(byval ptrlevels as uinteger) as DataType
     if ptrcount() + ptrlevels > MaxPtrCount then
-        return type<DataType>(Type_None)
+        return DataType(Type_None)
     end if
-    return type<DataType>(((bits and (Mask_Base or Mask_Ref)) or _
-                          ((bits and Mask_Ptr) + (ptrlevels shl Pos_Ptr)) or _
-                          ((bits and Mask_Const) shl ptrlevels)))
+    return DataType(((bits and (Mask_Base or Mask_Ref)) or _
+                     ((bits and Mask_Ptr) + (ptrlevels shl Pos_Ptr)) or _
+                     ((bits and Mask_Const) shl ptrlevels)))
 end function
 
 const function DataType.expand(byval other as DataType) as DataType
     var thisptrcount = ptrcount()
     if thisptrcount + other.ptrcount() > MaxPtrCount then
-        return type<DataType>(Type_None)
+        return DataType(Type_None)
     end if
     if isRef() and other.isRef() then
-        return type<DataType>(Type_None)
+        return DataType(Type_None)
     end if
-    return type<DataType>(other.addrOf(thisptrcount).bits or (bits and (Mask_Const or Mask_Ref)))
+    return DataType(other.addrOf(thisptrcount).bits or (bits and (Mask_Const or Mask_Ref)))
 end function
 
 const function DataType.isConstAt(byval ptrlevel as uinteger) as boolean
@@ -116,6 +128,11 @@ end constructor
 
 constructor FullType(byval dtype as DataType)
     this.dtype = dtype
+end constructor
+
+constructor FullType(byval dtype as DataType, byval subtype as AstNode ptr)
+    this.dtype = dtype
+    this.subtype = subtype
 end constructor
 
 constructor FullType(byref other as const FullType)

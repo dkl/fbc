@@ -42,6 +42,12 @@ private:
 public:
     const MaxPtrCount = 8
 
+    declare constructor()
+    declare constructor(byval t as TypeKind)
+private:
+    declare constructor(byval bits as ulong)
+public:
+
     declare const function withBase(byval ty as TypeKind) as DataType
     declare const function withConst() as DataType
     declare const function withRef() as DataType
@@ -63,14 +69,15 @@ public:
     declare const function dump() as string
 end type
 
-type AstNodeForward as AstNode
+type AstNode as AstNode_
 
 type FullType
     dtype as DataType
-    subtype as AstNodeForward ptr
+    subtype as AstNode ptr
 
     declare constructor()
     declare constructor(byval dtype as DataType)
+    declare constructor(byval dtype as DataType, byval subtype as AstNode ptr)
     declare constructor(byref other as const FullType)
     declare operator let(byref other as const FullType)
     declare destructor()
@@ -118,7 +125,7 @@ enum AstKind
     AstKindCount
 end enum
 
-type AstNode
+type AstNode_
     kind as AstKind
     sym as SymbolInfo
 
