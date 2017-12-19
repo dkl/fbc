@@ -1494,7 +1494,7 @@ end sub
 private sub appendBindgenIncdirs( byref args as string, byval incdirs as TLIST ptr )
 	dim as string ptr incdir = listGetHead( incdirs )
 	while( incdir )
-		args += " -I""" + *incdir + """"
+		args += " -isystem """ + *incdir + """"
 		incdir = listGetNext( incdir )
 	wend
 end sub
