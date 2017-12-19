@@ -1,3 +1,4 @@
+extern "C"
 extern var_char as byte
 extern var_schar as byte
 extern var_uchar as ubyte
@@ -40,3 +41,4 @@ end union
 type union1_t as union1
 extern var_union1_1 as union1
 extern var_union1_2 as union1
+end extern

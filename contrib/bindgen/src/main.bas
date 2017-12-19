@@ -61,7 +61,7 @@ private function main(byval argc as integer, byval argv as const zstring const p
     end if
 
     dim emit as Emitter
-    emit.emitCode(parser.ast)
+    emit.emitBinding(parser.ast)
 
     return iif(logger.haveErrors(), 1, 0)
 end function

@@ -18,5 +18,6 @@ public:
     declare sub emitVarDecl(byref keyword as const string, byval n as const AstNode ptr)
     declare sub emitCompoundHeader(byval n as const AstNode ptr)
     declare sub emitCompoundFooter(byval n as const AstNode ptr)
-    declare sub emitCode(byval n as const AstNode ptr)
+    declare sub emitDecl(byval n as const AstNode ptr)
+    declare sub emitBinding(byval n as const AstNode ptr)
 end type

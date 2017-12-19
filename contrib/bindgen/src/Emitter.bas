@@ -178,7 +178,7 @@ sub Emitter.emitIndentedChildren(byval n as const AstNode ptr)
     indent += 1
     dim i as const AstNode ptr = n->head
     while i
-        emitCode(i)
+        emitDecl(i)
         i = i->nxt
     wend
     indent -= 1
@@ -217,12 +217,12 @@ sub Emitter.emitCompoundFooter(byval n as const AstNode ptr)
     emitLine("end " + getCompoundKeyword(n))
 end sub
 
-sub Emitter.emitCode(byval n as const AstNode ptr)
+sub Emitter.emitDecl(byval n as const AstNode ptr)
     select case as const n->kind
     case AstKind_Group
         dim i as const AstNode ptr = n->head
         while i
-            emitCode(i)
+            emitDecl(i)
             i = i->nxt
         wend
 
@@ -266,4 +266,10 @@ sub Emitter.emitCode(byval n as const AstNode ptr)
     case else
         assert(false)
     end select
+end sub
+
+sub Emitter.emitBinding(byval n as const AstNode ptr)
+    emitLine("extern ""C""")
+    emitDecl(n)
+    emitLine("end extern")
 end sub
