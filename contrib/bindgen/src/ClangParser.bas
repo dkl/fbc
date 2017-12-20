@@ -140,20 +140,66 @@ const function TUParser.parseType(byval ty as CXType) as FullType
     return t
 end function
 
+const function TUParser.parseEnumConstValue(byval cursor as CXCursor, byval parent as CXCursor) as ConstantValue
+    var t = parseType(clang_getEnumDeclIntegerType(parent))
+    assert(t.subtype = NULL)
+
+    dim v as ConstantValue
+    v.dtype = t.dtype
+
+    if v.dtype.isSignedInteger() then
+        v.value = str(clang_getEnumConstantDeclValue(cursor))
+    elseif v.dtype.isUnsignedInteger() then
+        v.value = str(clang_getEnumConstantDeclUnsignedValue(cursor))
+    else
+        assert(false)
+    end if
+
+    return v
+end function
+
+const function TUParser.parseEvalResult(byval eval as CXEvalResult) as ConstantValue
+    dim v as ConstantValue
+    var evalkind = clang_EvalResult_getKind(eval)
+    select case as const evalkind
+    case CXEval_Int
+        if clang_EvalResult_isUnsignedInt(eval) then
+            v.dtype = DataType(Type_UInt64)
+            v.value = str(clang_EvalResult_getAsUnsigned(eval))
+        else
+            v.dtype = DataType(Type_Int64)
+            v.value = str(clang_EvalResult_getAsLongLong(eval))
+        end if
+    case CXEval_Float
+        v.dtype = DataType(Type_Float64)
+        v.value = str(clang_EvalResult_getAsDouble(eval))
+    case CXEval_UnExposed
+        '' No initializer
+    case else
+        logger->abortProgram("unhandled eval result kind " & evalkind)
+    end select
+    return v
+end function
+
+const function TUParser.evaluateInitializer(byval cursor as CXCursor) as ConstantValue
+    var eval = clang_Cursor_Evaluate(cursor)
+    var v = parseEvalResult(eval)
+    clang_EvalResult_dispose(eval)
+    return v
+end function
+
 const function TUParser.parseVarDecl(byval cursor as CXCursor) as AstNode ptr
     var n = new AstNode(AstKind_Var)
     n->sym.id = wrapstr(clang_getCursorSpelling(cursor))
     n->sym.t = parseType(clang_getCursorType(cursor))
-
+    n->sym.constval = evaluateInitializer(cursor)
     if clang_getCursorLinkage(cursor) = CXLinkage_External then
         n->sym.is_extern = true
     end if
-
     select case clang_Cursor_getStorageClass(cursor)
     case CX_SC_None, CX_SC_Static
         n->sym.is_defined = true
     end select
-
     return n
 end function
 
@@ -230,8 +276,10 @@ const function TUParser.parseEnumDecl(byval cursor as CXCursor) as AstNode ptr
     dim enumconsts as EnumConstCollector
     enumconsts.visitChildrenOf(cursor)
     for i as integer = 0 to ubound(enumconsts.enumconsts)
+        var enumconstcursor = enumconsts.enumconsts(i)
         var enumconst = new AstNode(AstKind_EnumConst)
-        enumconst->sym.id = wrapstr(clang_getCursorSpelling(enumconsts.enumconsts(i)))
+        enumconst->sym.id = wrapstr(clang_getCursorSpelling(enumconstcursor))
+        enumconst->sym.constval = parseEnumConstValue(enumconstcursor, cursor)
         n->append(enumconst)
     next
 

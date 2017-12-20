@@ -69,6 +69,22 @@ const function DataType.ptrcount() as uinteger
     return (bits and Mask_Ptr) shr Pos_Ptr
 end function
 
+const function DataType.isSignedInteger() as boolean
+    select case as const withoutConsts().bits
+    case Type_Int8, Type_Int16, Type_Int32, Type_Int64, Type_IntPtr
+        return true
+    end select
+    return false
+end function
+
+const function DataType.isUnsignedInteger() as boolean
+    select case as const withoutConsts().bits
+    case Type_UInt8, Type_UInt16, Type_UInt32, Type_UInt64, Type_UIntPtr
+        return true
+    end select
+    return false
+end function
+
 sub DataType.setConst()
     this = withConst()
 end sub

@@ -85,6 +85,25 @@ function Emitter.emitType(byref t as const FullType) as string
     return s
 end function
 
+function Emitter.emitConstVal(byref v as const ConstantValue) as string
+    dim as string s = v.value
+    select case as const v.dtype.basetype()
+    case Type_Int8
+    case Type_Int16
+    case Type_Int32  : s += "l"
+    case Type_Int64  : s += "ll"
+    case Type_UInt8
+    case Type_UInt16
+    case Type_Uint32 : s += "ul"
+    case Type_Uint64 : s += "ull"
+    case Type_Float32 : s += "f"
+    case Type_Float64 : s += "d"
+    case else
+        assert(false)
+    end select
+    return s
+end function
+
 '' Normally we'll emit Extern blocks, making it unnecessary to worry about
 '' case-preserving aliases, but symbols can still have an explicit alias set due
 '' to symbol renaming.
@@ -184,6 +203,13 @@ sub Emitter.emitIndentedChildren(byval n as const AstNode ptr)
     indent -= 1
 end sub
 
+function Emitter.emitInitializer(byval n as const AstNode ptr) as string
+    if n->sym.constval.dtype.basetype() <> Type_None then
+        return " = " + emitConstVal(n->sym.constval)
+    end if
+    return ""
+end function
+
 sub Emitter.emitVarDecl(byref keyword as const string, byval n as const AstNode ptr)
     var ln = keyword + " "
     if n->sym.t.dtype.isRef() then
@@ -191,6 +217,7 @@ sub Emitter.emitVarDecl(byref keyword as const string, byval n as const AstNode 
     end if
     ln += emitIdAndArray(n)
     ln += " as " + emitType(n->sym.t)
+    ln += emitInitializer(n)
     emitLine(ln)
 end sub
 
@@ -227,7 +254,7 @@ sub Emitter.emitDecl(byval n as const AstNode ptr)
         wend
 
     case AstKind_Const
-        emitLine("const " + n->sym.id)
+        emitLine("const " + n->sym.id + emitInitializer(n))
 
     case AstKind_Var
         if n->sym.is_extern then
@@ -255,7 +282,7 @@ sub Emitter.emitDecl(byval n as const AstNode ptr)
         emitLine("as " + emitType(n->sym.t) + " " + emitIdAndArray(n))
 
     case AstKind_EnumConst
-        emitLine(n->sym.id)
+        emitLine(n->sym.id + emitInitializer(n))
 
     case AstKind_Proc
         emitLine("declare " + emitProcHeader(n))

@@ -64,6 +64,8 @@ public:
     declare const function isRef() as boolean
     declare const function basetype() as TypeKind
     declare const function ptrcount() as uinteger
+    declare const function isSignedInteger() as boolean
+    declare const function isUnsignedInteger() as boolean
 
     declare sub setConst()
 
@@ -84,6 +86,11 @@ type FullType
     declare destructor()
 end type
 
+type ConstantValue
+    dtype as DataType
+    value as string
+end type
+
 enum ProcCallConv
     CallConv_Cdecl
     CallConv_Stdcall
@@ -93,6 +100,7 @@ type SymbolInfo
     t as FullType
     id as string '' Symbol name
     aliasid as string '' External name (if symbol was renamed, or if given via asm() in C code, etc.)
+    constval as ConstantValue
 
     callconv as ProcCallConv
     bits as ubyte '' bitfield size

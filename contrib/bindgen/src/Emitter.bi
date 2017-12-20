@@ -6,6 +6,7 @@ private:
 
 public:
     declare function emitType(byref t as const FullType) as string
+    declare function emitConstVal(byref v as const ConstantValue) as string
     declare function emitAlias(byval n as const AstNode ptr) as string
     declare function emitIdAndArray(byval n as const AstNode ptr) as string
     declare function emitCommaSeparatedChildren(byval n as const AstNode ptr) as string
@@ -15,6 +16,7 @@ public:
 
     declare sub emitLine(byref ln as const string)
     declare sub emitIndentedChildren(byval n as const AstNode ptr)
+    declare function emitInitializer(byval n as const AstNode ptr) as string
     declare sub emitVarDecl(byref keyword as const string, byval n as const AstNode ptr)
     declare sub emitCompoundHeader(byval n as const AstNode ptr)
     declare sub emitCompoundFooter(byval n as const AstNode ptr)
