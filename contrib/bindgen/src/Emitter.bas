@@ -254,6 +254,9 @@ sub Emitter.emitDecl(byval n as const AstNode ptr)
         '' a TYPE block.
         emitLine("as " + emitType(n->sym.t) + " " + emitIdAndArray(n))
 
+    case AstKind_EnumConst
+        emitLine(n->sym.id)
+
     case AstKind_Proc
         emitLine("declare " + emitProcHeader(n))
 
