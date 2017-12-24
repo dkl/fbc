@@ -104,3 +104,24 @@ enum BigUInt64Enum {
 };
 
 static int _sizeof_BigUInt64Enum = sizeof (enum BigUInt64Enum);
+
+struct CircularReferenceA {
+    struct CircularReferenceB *b;
+};
+
+struct CircularReferenceB {
+    struct CircularReferenceA *a;
+};
+
+typedef struct ResolvedForwardStruct ResolvedForwardStruct_t;
+struct ResolvedForwardStruct { int dummy; };
+
+typedef union ResolvedForwardUnion ResolvedForwardUnion_t;
+union ResolvedForwardUnion { int dummy; };
+
+typedef enum ResolvedForwardEnum ResolvedForwardEnum_t;
+enum ResolvedForwardEnum { dummy };
+
+typedef struct UnresolvedForwardStruct UnresolvedForwardStruct_t;
+typedef union UnresolvedForwardUnion UnresolvedForwardUnion_t;
+typedef enum UnresolvedForwardEnum UnresolvedForwardEnum_t;

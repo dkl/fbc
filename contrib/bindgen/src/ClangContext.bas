@@ -108,8 +108,11 @@ end function
 const function ClangTU.dumpCursor(byval cursor as CXCursor) as string
     var s = wrapstr(clang_getCursorKindSpelling(clang_getCursorKind(cursor)))
     s += " " + wrapstr(clang_getCursorSpelling(cursor))
-    s += " | type " + dumpType(clang_getCursorType(cursor))
-    's += " | loc " + dumpLocation(clang_getCursorLocation(cursor))
+    s += " t(" + dumpType(clang_getCursorType(cursor)) + ")"
+    s += " loc(" + dumpLocation(clang_getCursorLocation(cursor)) + ")"
+    if clang_isCursorDefinition(cursor) then
+        s += " def"
+    end if
     return s
 end function
 

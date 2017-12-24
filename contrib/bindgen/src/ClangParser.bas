@@ -1,6 +1,65 @@
 #include once "ClangParser.bi"
 #include once "Util.bi"
 
+function TempIdProvider.getNext() as string
+    function = "__fbbindgen_tempid_" & count
+    count += 1
+end function
+
+constructor TypeTable()
+end constructor
+
+destructor TypeTable()
+    for i as integer = 0 to hashtb.room - 1
+        with hashtb.items[i]
+            if .s then
+                delete cptr(TypeNode ptr, .data)
+                .s = NULL
+                .data = NULL
+            end if
+        end with
+    next
+end destructor
+
+function TypeTable.add(byval decl as CXCursor, byval is_definition as boolean) as TypeAddResult
+    var usr = wrapstr(clang_getCursorUSR(decl))
+    var id = wrapstr(clang_getCursorSpelling(decl))
+    'print "type " + iif(is_definition, "decl", "ref") + " usr=""" + usr + """ id=""" + id + """"
+
+    var usrhash = hashHash(usr)
+    var item = hashtb.lookup(usr, usrhash)
+
+    if item->s = NULL then
+        '' New forward-ref or definition.
+        var t = new TypeNode
+        t->usr = usr
+        if len(id) > 0 then
+            t->id = id
+        else
+            t->id = tempid.getNext()
+        end if
+        t->was_forward_used = not is_definition
+        t->was_defined = is_definition
+        if t->was_forward_used then
+            t->forwardid = "__fbbindgen_forwardid_" + t->id
+        end if
+        hashtb.add(item, usrhash, t->usr, t)
+        return type<TypeAddResult>(t, not is_definition, false)
+    end if
+
+    '' Forward-ref or definition already exists.
+    dim t as TypeNode ptr = item->data
+    if t->was_defined then
+        if is_definition then
+            return type<TypeAddResult>(t, false, true)
+        end if
+    else
+        assert(t->was_forward_used)
+        t->was_defined = is_definition
+    end if
+    return type<TypeAddResult>(t, false, false)
+end function
+
 constructor TUParser(byval logger as ErrorLogger ptr, byval tu as ClangTU ptr)
     this.logger = logger
     this.tu = tu
@@ -10,6 +69,19 @@ end constructor
 destructor TUParser()
     delete ast
 end destructor
+
+sub TUParser.emitForwardDecl(byref id as const string, byref forwardid as const string)
+    var n = new AstNode(AstKind_Typedef)
+    n->sym.id = id
+    n->sym.t = buildTypeRef(forwardid)
+    ast->append(n)
+end sub
+
+const function TUParser.buildTypeRef(byref id as const string) as FullType
+    var typeref = new AstNode(AstKind_TypeRef)
+    typeref->sym.id = id
+    return FullType(DataType(Type_Named), typeref)
+end function
 
 const sub TUParser.checkBasicTypeSize(byval condition as boolean, byval ty as CXType, byref expected as const string)
     logger->assertOrAbort(condition, _
@@ -80,7 +152,7 @@ const function TUParser.parseCallConv(byval ty as CXType) as ProcCallConv
     end select
 end function
 
-const function TUParser.parseFunctionType(byval ty as CXType) as FullType
+function TUParser.parseFunctionType(byval ty as CXType) as FullType
     var proc = new AstNode(AstKind_Proc)
     proc->sym.t = parseType(clang_getResultType(ty))
     proc->sym.callconv = parseCallConv(ty)
@@ -99,7 +171,7 @@ const function TUParser.parseFunctionType(byval ty as CXType) as FullType
     return FullType(DataType(Type_Proc), proc)
 end function
 
-const function TUParser.parseType(byval ty as CXType) as FullType
+function TUParser.parseType(byval ty as CXType) as FullType
     dim t as FullType
 
     select case as const ty.kind
@@ -122,9 +194,14 @@ const function TUParser.parseType(byval ty as CXType) as FullType
         t = parseType(clang_getCanonicalType(ty))
 
     case CXType_Record, CXType_Enum
-        var typeref = new AstNode(AstKind_TypeRef)
-        typeref->sym.id = wrapstr(clang_getCursorSpelling(clang_getTypeDeclaration(ty)))
-        t = FullType(DataType(Type_Named), typeref)
+        var decl = clang_getTypeDeclaration(ty)
+
+        var addresult = types.add(decl, false)
+        if addresult.emit_forward_decl then
+            emitForwardDecl(addresult.t->id, addresult.t->forwardid)
+        end if
+
+        t = buildTypeRef(addresult.t->id)
 
     case else
         t.dtype = t.dtype.withBase(parseSimpleType(ty))
@@ -140,7 +217,7 @@ const function TUParser.parseType(byval ty as CXType) as FullType
     return t
 end function
 
-const function TUParser.parseEnumConstValue(byval cursor as CXCursor, byval parent as CXCursor) as ConstantValue
+function TUParser.parseEnumConstValue(byval cursor as CXCursor, byval parent as CXCursor) as ConstantValue
     var t = parseType(clang_getEnumDeclIntegerType(parent))
     assert(t.subtype = NULL)
 
@@ -188,7 +265,7 @@ const function TUParser.evaluateInitializer(byval cursor as CXCursor) as Constan
     return v
 end function
 
-const function TUParser.parseVarDecl(byval cursor as CXCursor) as AstNode ptr
+sub TUParser.parseVarDecl(byval cursor as CXCursor)
     var n = new AstNode(AstKind_Var)
     n->sym.id = wrapstr(clang_getCursorSpelling(cursor))
     n->sym.t = parseType(clang_getCursorType(cursor))
@@ -200,10 +277,10 @@ const function TUParser.parseVarDecl(byval cursor as CXCursor) as AstNode ptr
     case CX_SC_None, CX_SC_Static
         n->sym.is_defined = true
     end select
-    return n
-end function
+    ast->append(n)
+end sub
 
-const function TUParser.parseProcDecl(byval cursor as CXCursor) as AstNode ptr
+sub TUParser.parseProcDecl(byval cursor as CXCursor)
     var functiontype = parseType(clang_getCursorType(cursor))
     assert(functiontype.dtype.basetype() = Type_Proc andalso _
            functiontype.subtype andalso _
@@ -211,8 +288,8 @@ const function TUParser.parseProcDecl(byval cursor as CXCursor) as AstNode ptr
     var n = functiontype.subtype
     functiontype.subtype = NULL
     n->sym.id = wrapstr(clang_getCursorSpelling(cursor))
-    return n
-end function
+    ast->append(n)
+end sub
 
 type RecordFieldCollector
     fields(any) as CXCursor
@@ -238,9 +315,9 @@ sub RecordFieldCollector.collectFieldsOf(byval ty as CXType)
     clang_Type_visitFields(ty, @staticVisitor, @this)
 end sub
 
-const function TUParser.parseRecordDecl(byval cursor as CXCursor, byval is_union as boolean) as AstNode ptr
-    var record = new AstNode(iif(is_union, AstKind_Union, AstKind_Struct))
-    record->sym.id = wrapstr(clang_getCursorSpelling(cursor))
+sub TUParser.parseRecordDecl(byval cursor as CXCursor, byref id as const string)
+    var record = new AstNode(iif(clang_getCursorKind(cursor) = CXCursor_UnionDecl, AstKind_Union, AstKind_Struct))
+    record->sym.id = id
 
     var ty = clang_getCursorType(cursor)
 
@@ -253,8 +330,8 @@ const function TUParser.parseRecordDecl(byval cursor as CXCursor, byval is_union
         record->append(fld)
     next
 
-    return record
-end function
+    ast->append(record)
+end sub
 
 type EnumConstCollector extends ClangAstVisitor
     enumconsts(any) as CXCursor
@@ -269,9 +346,9 @@ function EnumConstCollector.visitor(byval cursor as CXCursor, byval parent as CX
     return CXChildVisit_Continue
 end function
 
-const function TUParser.parseEnumDecl(byval cursor as CXCursor) as AstNode ptr
+sub TUParser.parseEnumDecl(byval cursor as CXCursor, byref id as const string)
     var n = new AstNode(AstKind_Enum)
-    n->sym.id = wrapstr(clang_getCursorSpelling(cursor))
+    n->sym.id = id
 
     dim enumconsts as EnumConstCollector
     enumconsts.visitChildrenOf(cursor)
@@ -283,35 +360,48 @@ const function TUParser.parseEnumDecl(byval cursor as CXCursor) as AstNode ptr
         n->append(enumconst)
     next
 
-    return n
-end function
+    ast->append(n)
+end sub
 
-const function TUParser.parseTypedefDecl(byval cursor as CXCursor) as AstNode ptr
+sub TUParser.parseTagDecl(byval cursor as CXCursor)
+    if clang_isCursorDefinition(cursor) = 0 then
+        return
+    end if
+
+    var addresult = types.add(cursor, true)
+    if addresult.is_duplicated_decl then
+        logger->abortProgram("duplicated definition of type " + addresult.t->id)
+    end if
+
+    var id = iif(len(addresult.t->forwardid) > 0, @addresult.t->forwardid, @addresult.t->id)
+
+    if clang_getCursorKind(cursor) = CXCursor_EnumDecl then
+        parseEnumDecl(cursor, *id)
+    else
+        parseRecordDecl(cursor, *id)
+    end if
+end sub
+
+sub TUParser.parseTypedefDecl(byval cursor as CXCursor)
     var n = new AstNode(AstKind_Typedef)
     n->sym.id = wrapstr(clang_getCursorSpelling(cursor))
     n->sym.t = parseType(clang_getTypedefDeclUnderlyingType(cursor))
-    return n
-end function
+    ast->append(n)
+end sub
 
 function TUParser.visitor(byval cursor as CXCursor, byval parent as CXCursor) as CXChildVisitResult
-    select case clang_getCursorKind(cursor)
+    select case as const clang_getCursorKind(cursor)
     case CXCursor_VarDecl
-        ast->append(parseVarDecl(cursor))
+        parseVarDecl(cursor)
 
     case CXCursor_FunctionDecl
-        ast->append(parseProcDecl(cursor))
+        parseProcDecl(cursor)
 
-    case CXCursor_StructDecl
-        ast->append(parseRecordDecl(cursor, false))
-
-    case CXCursor_UnionDecl
-        ast->append(parseRecordDecl(cursor, true))
-
-    case CXCursor_EnumDecl
-        ast->append(parseEnumDecl(cursor))
+    case CXCursor_StructDecl, CXCursor_UnionDecl, CXCursor_EnumDecl
+        parseTagDecl(cursor)
 
     case CXCursor_TypedefDecl
-        ast->append(parseTypedefDecl(cursor))
+        parseTypedefDecl(cursor)
 
     case CXCursor_MacroDefinition
         '' TODO
