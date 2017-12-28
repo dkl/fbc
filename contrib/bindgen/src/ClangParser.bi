@@ -8,41 +8,46 @@ type TempIdProvider
     declare function getNext() as string
 end type
 
-'' A forward-referenced or defined type.
-'' Forward-referenced types can eventually turn into defined ones.
-type TypeNode
-    usr as string
+'' Information about a struct/union/enum tag identifier
+type TagNode
+    '' clang's unique Unified Symbol Resolution identifier,
+    '' used as key for TagTable.hashtb
+    usr as const string
+
+    '' struct/union/enum name (original or auto-generated if anonymous),
+    '' except for anonymous struct/union field types that will be emitted
+    '' as anonymous in the FB code too.
     id as string
-    forwardid as string
-    was_forward_used as boolean
-    was_defined as boolean
+
+    is_emitted as boolean
+    is_being_emitted as boolean
+    is_forward_decl_emitted as boolean
+
+    declare constructor(byref usr as const string)
+
+    '' Get the FB forward reference id for this type, if any.
+    declare const function getFbForwardId() as string
+
+    '' Get the id to use in the FB TYPE..END TYPE definition.
+    declare const function getFbTypeBlockId() as string
 end type
 
-type TypeAddResult
-    t as const TypeNode ptr
-    emit_forward_decl as boolean
-    is_duplicated_decl as boolean
-end type
-
-type TypeTable
+type TagTable
     hashtb as HashTable = HashTable(8) '' map clang USR string (owned by TypeNode) => TypeNode ptr
-    tempid as TempIdProvider
 
     declare constructor()
     declare destructor()
-    declare operator let(byref as const TypeTable) '' unimplemented
+    declare operator let(byref as const TagTable) '' unimplemented
 
-    '' Update the list with a type reference or definition.
-    '' If the type is not yet known, this can be a forward-reference or definition.
-    '' If the type is already known, this can be a reference or forward-reference.
-    declare function add(byval decl as CXCursor, byval is_definition as boolean) as TypeAddResult
+    declare function add(byval decl as CXCursor) as TagNode ptr
 end type
 
 type TUParser extends ClangAstVisitor
     logger as ErrorLogger ptr
     tu as ClangTU ptr
 
-    types as TypeTable
+    tags as TagTable
+    tempids as TempIdProvider
     ast as AstNode ptr
 
     declare constructor(byval logger as ErrorLogger ptr, byval tu as ClangTU ptr)
@@ -58,7 +63,7 @@ type TUParser extends ClangAstVisitor
     declare const function parseSimpleType(byval ty as CXType) as TypeKind
     declare const function parseCallConv(byval ty as CXType) as ProcCallConv
     declare function parseFunctionType(byval ty as CXType) as FullType
-    declare function parseType(byval ty as CXType) as FullType
+    declare function parseType(byval ty as CXType, byval context_allows_using_forward_ref as boolean) as FullType
 
     declare function parseEnumConstValue(byval cursor as CXCursor, byval parent as CXCursor) as ConstantValue
     declare const function parseEvalResult(byval eval as CXEvalResult) as ConstantValue
@@ -66,9 +71,10 @@ type TUParser extends ClangAstVisitor
 
     declare sub parseVarDecl(byval cursor as CXCursor)
     declare sub parseProcDecl(byval cursor as CXCursor)
-    declare sub parseRecordDecl(byval cursor as CXCursor, byref id as const string)
-    declare sub parseEnumDecl(byval cursor as CXCursor, byref id as const string)
-    declare sub parseTagDecl(byval cursor as CXCursor)
+    declare function parseFieldDecl(byval cursor as CXCursor) as AstNode ptr
+    declare function parseRecordDecl(byval tag as const TagNode ptr, byval cursor as CXCursor) as AstNode ptr
+    declare function parseEnumDecl(byval tag as const TagNode ptr, byval cursor as CXCursor) as AstNode ptr
+    declare function parseTagDecl(byval cursor as CXCursor, byval context_allows_using_forward_ref as boolean) as const TagNode ptr
     declare sub parseTypedefDecl(byval cursor as CXCursor)
 
     declare function visitor(byval cursor as CXCursor, byval parent as CXCursor) as CXChildVisitResult override

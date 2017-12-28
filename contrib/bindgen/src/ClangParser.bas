@@ -6,14 +6,32 @@ function TempIdProvider.getNext() as string
     count += 1
 end function
 
-constructor TypeTable()
+constructor TagNode(byref usr as const string)
+    cast(string, this.usr) = usr
 end constructor
 
-destructor TypeTable()
+const function TagNode.getFbForwardId() as string
+    if len(id) > 0 then
+        return "__fbbindgen_forwardid_" + id
+    end if
+    return ""
+end function
+
+const function TagNode.getFbTypeBlockId() as string
+    if is_forward_decl_emitted then
+        return getFbForwardId()
+    end if
+    return id
+end function
+
+constructor TagTable()
+end constructor
+
+destructor TagTable()
     for i as integer = 0 to hashtb.room - 1
         with hashtb.items[i]
             if .s then
-                delete cptr(TypeNode ptr, .data)
+                delete cptr(TagNode ptr, .data)
                 .s = NULL
                 .data = NULL
             end if
@@ -21,43 +39,22 @@ destructor TypeTable()
     next
 end destructor
 
-function TypeTable.add(byval decl as CXCursor, byval is_definition as boolean) as TypeAddResult
+function TagTable.add(byval decl as CXCursor) as TagNode ptr
     var usr = wrapstr(clang_getCursorUSR(decl))
-    var id = wrapstr(clang_getCursorSpelling(decl))
-    'print "type " + iif(is_definition, "decl", "ref") + " usr=""" + usr + """ id=""" + id + """"
 
+    assert(len(usr) > 0)
     var usrhash = hashHash(usr)
     var item = hashtb.lookup(usr, usrhash)
 
-    if item->s = NULL then
-        '' New forward-ref or definition.
-        var t = new TypeNode
-        t->usr = usr
-        if len(id) > 0 then
-            t->id = id
-        else
-            t->id = tempid.getNext()
-        end if
-        t->was_forward_used = not is_definition
-        t->was_defined = is_definition
-        if t->was_forward_used then
-            t->forwardid = "__fbbindgen_forwardid_" + t->id
-        end if
-        hashtb.add(item, usrhash, t->usr, t)
-        return type<TypeAddResult>(t, not is_definition, false)
+    if item->s then
+        '' Already exists
+        return item->data
     end if
 
-    '' Forward-ref or definition already exists.
-    dim t as TypeNode ptr = item->data
-    if t->was_defined then
-        if is_definition then
-            return type<TypeAddResult>(t, false, true)
-        end if
-    else
-        assert(t->was_forward_used)
-        t->was_defined = is_definition
-    end if
-    return type<TypeAddResult>(t, false, false)
+    '' New tag
+    var tag = new TagNode(usr)
+    hashtb.add(item, usrhash, tag->usr, tag)
+    return tag
 end function
 
 constructor TUParser(byval logger as ErrorLogger ptr, byval tu as ClangTU ptr)
@@ -154,14 +151,14 @@ end function
 
 function TUParser.parseFunctionType(byval ty as CXType) as FullType
     var proc = new AstNode(AstKind_Proc)
-    proc->sym.t = parseType(clang_getResultType(ty))
+    proc->sym.t = parseType(clang_getResultType(ty), false)
     proc->sym.callconv = parseCallConv(ty)
 
     var paramcount = clang_getNumArgTypes(ty)
     if paramcount > 0 then
         for i as integer = 0 to paramcount - 1
             var param = new AstNode(AstKind_ProcParam)
-            param->sym.t = parseType(clang_getArgType(ty, i))
+            param->sym.t = parseType(clang_getArgType(ty, i), false)
             proc->append(param)
         next
     end if
@@ -171,12 +168,12 @@ function TUParser.parseFunctionType(byval ty as CXType) as FullType
     return FullType(DataType(Type_Proc), proc)
 end function
 
-function TUParser.parseType(byval ty as CXType) as FullType
+function TUParser.parseType(byval ty as CXType, byval context_allows_using_forward_ref as boolean) as FullType
     dim t as FullType
 
     select case as const ty.kind
     case CXType_Pointer
-        t = parseType(clang_getPointeeType(ty))
+        t = parseType(clang_getPointeeType(ty), true)
         t.dtype = t.dtype.addrOf()
 
     case CXType_FunctionProto
@@ -191,17 +188,12 @@ function TUParser.parseType(byval ty as CXType) as FullType
         end if
 
     case CXType_Elaborated, CXType_Typedef
-        t = parseType(clang_getCanonicalType(ty))
+        t = parseType(clang_getCanonicalType(ty), context_allows_using_forward_ref)
 
     case CXType_Record, CXType_Enum
         var decl = clang_getTypeDeclaration(ty)
-
-        var addresult = types.add(decl, false)
-        if addresult.emit_forward_decl then
-            emitForwardDecl(addresult.t->id, addresult.t->forwardid)
-        end if
-
-        t = buildTypeRef(addresult.t->id)
+        var tag = parseTagDecl(decl, context_allows_using_forward_ref)
+        t = buildTypeRef(tag->id)
 
     case else
         t.dtype = t.dtype.withBase(parseSimpleType(ty))
@@ -218,7 +210,7 @@ function TUParser.parseType(byval ty as CXType) as FullType
 end function
 
 function TUParser.parseEnumConstValue(byval cursor as CXCursor, byval parent as CXCursor) as ConstantValue
-    var t = parseType(clang_getEnumDeclIntegerType(parent))
+    var t = parseType(clang_getEnumDeclIntegerType(parent), false)
     assert(t.subtype = NULL)
 
     dim v as ConstantValue
@@ -268,7 +260,7 @@ end function
 sub TUParser.parseVarDecl(byval cursor as CXCursor)
     var n = new AstNode(AstKind_Var)
     n->sym.id = wrapstr(clang_getCursorSpelling(cursor))
-    n->sym.t = parseType(clang_getCursorType(cursor))
+    n->sym.t = parseType(clang_getCursorType(cursor), false)
     n->sym.constval = evaluateInitializer(cursor)
     if clang_getCursorLinkage(cursor) = CXLinkage_External then
         n->sym.is_extern = true
@@ -281,7 +273,7 @@ sub TUParser.parseVarDecl(byval cursor as CXCursor)
 end sub
 
 sub TUParser.parseProcDecl(byval cursor as CXCursor)
-    var functiontype = parseType(clang_getCursorType(cursor))
+    var functiontype = parseType(clang_getCursorType(cursor), false)
     assert(functiontype.dtype.basetype() = Type_Proc andalso _
            functiontype.subtype andalso _
            functiontype.subtype->kind = AstKind_Proc)
@@ -291,47 +283,49 @@ sub TUParser.parseProcDecl(byval cursor as CXCursor)
     ast->append(n)
 end sub
 
-type RecordFieldCollector
+type RecordFieldCollector extends ClangFieldVisitor
     fields(any) as CXCursor
-    declare static function staticVisitor(byval cursor as CXCursor, byval client_data as CXClientData) as CXVisitorResult
-    declare function visitor(byval cursor as CXCursor) as CXVisitorResult
-    declare sub collectFieldsOf(byval ty as CXType)
+    declare function visitor(byval cursor as CXCursor) as CXVisitorResult override
 end type
 
-function RecordFieldCollector.staticVisitor(byval cursor as CXCursor, byval client_data as CXClientData) as CXVisitorResult
-    dim self as RecordFieldCollector ptr = client_data
-    return self->visitor(cursor)
-end function
-
 function RecordFieldCollector.visitor(byval cursor as CXCursor) as CXVisitorResult
-    if clang_getCursorKind(cursor) = CXCursor_FieldDecl then
-        redim preserve fields(0 to ubound(fields) + 1)
-        fields(ubound(fields)) = cursor
-    end if
+    assert(clang_getCursorKind(cursor) = CXCursor_FieldDecl)
+    redim preserve fields(0 to ubound(fields) + 1)
+    fields(ubound(fields)) = cursor
     return CXChildVisit_Continue
 end function
 
-sub RecordFieldCollector.collectFieldsOf(byval ty as CXType)
-    clang_Type_visitFields(ty, @staticVisitor, @this)
-end sub
-
-sub TUParser.parseRecordDecl(byval cursor as CXCursor, byref id as const string)
-    var record = new AstNode(iif(clang_getCursorKind(cursor) = CXCursor_UnionDecl, AstKind_Union, AstKind_Struct))
-    record->sym.id = id
-
+function TUParser.parseFieldDecl(byval cursor as CXCursor) as AstNode ptr
+    var id = wrapstr(clang_getCursorSpelling(cursor))
     var ty = clang_getCursorType(cursor)
 
-    dim fields as RecordFieldCollector
-    fields.collectFieldsOf(ty)
-    for i as integer = 0 to ubound(fields.fields)
-        var fld = new AstNode(AstKind_Field)
-        fld->sym.id = wrapstr(clang_getCursorSpelling(fields.fields(i)))
-        fld->sym.t = parseType(clang_getCursorType(fields.fields(i)))
-        record->append(fld)
-    next
+    if len(id) = 0 then
+        var recorddecl = clang_getTypeDeclaration(ty)
+        select case clang_getCursorKind(recorddecl)
+        case CXCursor_StructDecl, CXCursor_UnionDecl
+            if len(wrapstr(clang_getCursorSpelling(recorddecl))) = 0 then
+                '' Anonymous struct/union field
+                var tag = tags.add(recorddecl)
+                return parseRecordDecl(tag, recorddecl)
+            end if
+        end select
+    end if
 
-    ast->append(record)
-end sub
+    var n = new AstNode(AstKind_Field)
+    n->sym.id = id
+    n->sym.t = parseType(ty, false)
+    return n
+end function
+
+function TUParser.parseRecordDecl(byval tag as const TagNode ptr, byval cursor as CXCursor) as AstNode ptr
+    var record = new AstNode(iif(clang_getCursorKind(cursor) = CXCursor_UnionDecl, AstKind_Union, AstKind_Struct))
+    dim fields as RecordFieldCollector
+    fields.visitFieldsOf(clang_getCursorType(cursor))
+    for i as integer = 0 to ubound(fields.fields)
+        record->append(parseFieldDecl(fields.fields(i)))
+    next
+    return record
+end function
 
 type EnumConstCollector extends ClangAstVisitor
     enumconsts(any) as CXCursor
@@ -339,17 +333,14 @@ type EnumConstCollector extends ClangAstVisitor
 end type
 
 function EnumConstCollector.visitor(byval cursor as CXCursor, byval parent as CXCursor) as CXChildVisitResult
-    if clang_getCursorKind(cursor) = CXCursor_EnumConstantDecl then
-        redim preserve enumconsts(0 to ubound(enumconsts) + 1)
-        enumconsts(ubound(enumconsts)) = cursor
-    end if
+    assert(clang_getCursorKind(cursor) = CXCursor_EnumConstantDecl)
+    redim preserve enumconsts(0 to ubound(enumconsts) + 1)
+    enumconsts(ubound(enumconsts)) = cursor
     return CXChildVisit_Continue
 end function
 
-sub TUParser.parseEnumDecl(byval cursor as CXCursor, byref id as const string)
+function TUParser.parseEnumDecl(byval tag as const TagNode ptr, byval cursor as CXCursor) as AstNode ptr
     var n = new AstNode(AstKind_Enum)
-    n->sym.id = id
-
     dim enumconsts as EnumConstCollector
     enumconsts.visitChildrenOf(cursor)
     for i as integer = 0 to ubound(enumconsts.enumconsts)
@@ -359,33 +350,85 @@ sub TUParser.parseEnumDecl(byval cursor as CXCursor, byref id as const string)
         enumconst->sym.constval = parseEnumConstValue(enumconstcursor, cursor)
         n->append(enumconst)
     next
+    return n
+end function
 
-    ast->append(n)
-end sub
+function TUParser.parseTagDecl(byval cursor as CXCursor, byval context_allows_using_forward_ref as boolean) as const TagNode ptr
+    '' Try to resolve the type reference to the definition
+    scope
+        var def = clang_getCursorDefinition(cursor)
+        if clang_isInvalid(clang_getCursorKind(def)) = false then
+            cursor = def
+        end if
+    end scope
 
-sub TUParser.parseTagDecl(byval cursor as CXCursor)
-    if clang_isCursorDefinition(cursor) = 0 then
-        return
+    var tag = tags.add(cursor)
+    if len(tag->id) = 0 then
+        tag->id = wrapstr(clang_getCursorSpelling(cursor))
+        if len(tag->id) = 0 then
+            tag->id = tempids.getNext()
+        end if
     end if
 
-    var addresult = types.add(cursor, true)
-    if addresult.is_duplicated_decl then
-        logger->abortProgram("duplicated definition of type " + addresult.t->id)
+    '' Already emitted previously?
+    if tag->is_emitted then
+        return tag
     end if
 
-    var id = iif(len(addresult.t->forwardid) > 0, @addresult.t->forwardid, @addresult.t->id)
+    '' Unresolved forward reference?
+    '' Requires special handling since there is no struct/union/enum to parse in this case.
+    if clang_isCursorDefinition(cursor) = false then
+        emitForwardDecl(tag->id, tag->getFbForwardId())
+        tag->is_forward_decl_emitted = true
+        tag->is_emitted = true
+        return tag
+    end if
 
+    '' Already in process of being emitted?
+    '' This means there is a circular dependency with another struct/union.
+    '' One of the references must be a pointer though, because structs cannot contain each-other,
+    '' so this can always be solved by using a forward reference.
+    if tag->is_being_emitted then
+        if context_allows_using_forward_ref then
+            if tag->is_forward_decl_emitted = false then
+                emitForwardDecl(tag->id, tag->getFbForwardId())
+                tag->is_forward_decl_emitted = true
+            end if
+            return tag
+        end if
+        '' TODO: handle infinite recursion that can't be resolved with FB forward refs
+        '' (C allows forward refs in more places than FB, e.g. function pointer result types)
+    end if
+
+    tag->is_being_emitted = true
+
+    '' Recursively parse the tag, and emit the types needed by the fields.
+    dim n as AstNode ptr
     if clang_getCursorKind(cursor) = CXCursor_EnumDecl then
-        parseEnumDecl(cursor, *id)
+        n = parseEnumDecl(tag, cursor)
     else
-        parseRecordDecl(cursor, *id)
+        n = parseRecordDecl(tag, cursor)
     end if
-end sub
+
+    n->sym.id = tag->getFbTypeBlockId()
+
+    if tag->is_emitted then
+        '' Already emitted now due to recursion, don't emit again.
+        delete n
+        n = NULL
+    else
+        ast->append(n)
+        tag->is_emitted = true
+    end if
+
+    tag->is_being_emitted = false
+    return tag
+end function
 
 sub TUParser.parseTypedefDecl(byval cursor as CXCursor)
     var n = new AstNode(AstKind_Typedef)
     n->sym.id = wrapstr(clang_getCursorSpelling(cursor))
-    n->sym.t = parseType(clang_getTypedefDeclUnderlyingType(cursor))
+    n->sym.t = parseType(clang_getTypedefDeclUnderlyingType(cursor), true)
     ast->append(n)
 end sub
 
@@ -398,13 +441,25 @@ function TUParser.visitor(byval cursor as CXCursor, byval parent as CXCursor) as
         parseProcDecl(cursor)
 
     case CXCursor_StructDecl, CXCursor_UnionDecl, CXCursor_EnumDecl
-        parseTagDecl(cursor)
+        '' Most tags (including anonymous ones) are parsed by parseType() when needed,
+        '' but we also want to collect unused global named tags, so the types are available in
+        '' the binding.
+        parseTagDecl(cursor, true)
+
+        '' Recurse into tag body, which may contain nested named tag declarations
+        return CXChildVisit_Recurse
 
     case CXCursor_TypedefDecl
         parseTypedefDecl(cursor)
 
     case CXCursor_MacroDefinition
         '' TODO
+
+    case CXCursor_InclusionDirective, CXCursor_MacroExpansion
+        '' Ignore
+
+    case CXCursor_EnumConstantDecl, CXCursor_FieldDecl
+        '' Ignore, should only occur during recursion
 
     case else
         logger->abortProgram("unhandled cursor kind: " + wrapstr(clang_getCursorKindSpelling(clang_getCursorKind(cursor))))

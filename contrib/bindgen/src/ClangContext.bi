@@ -49,6 +49,12 @@ type ClangAstVisitor extends object
     declare sub visitChildrenOf(byval cursor as CXCursor)
 end type
 
+type ClangFieldVisitor extends object
+    declare abstract function visitor(byval cursor as CXCursor) as CXVisitorResult
+    declare static function staticVisitor(byval cursor as CXCursor, byval client_data as CXClientData) as CXVisitorResult
+    declare sub visitFieldsOf(byval ty as CXType)
+end type
+
 type ClangStr
     s as CXString
     declare constructor(byval source as CXString)
@@ -66,9 +72,15 @@ type ClangAstDumper extends ClangAstVisitor
     nestinglevel as integer
     declare constructor(byval logger as ErrorLogger ptr, byval tu as ClangTU ptr)
     declare function visitor(byval cursor as CXCursor, byval parent as CXCursor) as CXChildVisitResult override
-    declare static function dumpOne(byval cursor as CXCursor) as string
+    declare sub indentedPrint(byref s as const string)
     declare sub dump(byval cursor as CXCursor)
     declare sub dump()
     declare const function dumpToken(byval token as CXToken) as string
     declare const function dumpCursorTokens(byval cursor as CXCursor) as string
+end type
+
+type ClangFieldDumper extends ClangFieldVisitor
+    astdumper as ClangAstDumper ptr
+    declare constructor(byval astdumper as ClangAstDumper ptr)
+    declare function visitor(byval cursor as CXCursor) as CXVisitorResult override
 end type

@@ -90,29 +90,33 @@ const function ClangTU.dumpLocation(byval location as CXSourceLocation) as strin
 end function
 
 const function ClangTU.dumpType(byval ty as CXType) as string
-    var s = wrapstr(clang_getTypeKindSpelling(ty.kind)) + " " + wrapstr(clang_getTypeSpelling(ty))
+    var s = wrapstr(clang_getTypeKindSpelling(ty.kind))
+    #if 0
+        s += " """ + wrapstr(clang_getTypeSpelling(ty)) + """"
 
-    select case ty.kind
-    case CXType_Elaborated
-        s += " elaborated " + dumpType(clang_Type_getNamedType(ty))
-    end select
+        select case ty.kind
+        case CXType_Elaborated
+            s += " elaborated " + dumpType(clang_Type_getNamedType(ty))
+        end select
 
-    var canonical = clang_getCanonicalType(ty)
-    if clang_equalTypes(ty, canonical) = 0 then
-        s += " canonical " + dumpType(canonical)
-    end if
-
+        var canonical = clang_getCanonicalType(ty)
+        if clang_equalTypes(ty, canonical) = 0 then
+            s += " canonical " + dumpType(canonical)
+        end if
+    #endif
     return s
 end function
 
 const function ClangTU.dumpCursor(byval cursor as CXCursor) as string
     var s = wrapstr(clang_getCursorKindSpelling(clang_getCursorKind(cursor)))
-    s += " " + wrapstr(clang_getCursorSpelling(cursor))
+    s += " """ + wrapstr(clang_getCursorSpelling(cursor)) + """"
     s += " t(" + dumpType(clang_getCursorType(cursor)) + ")"
-    s += " loc(" + dumpLocation(clang_getCursorLocation(cursor)) + ")"
-    if clang_isCursorDefinition(cursor) then
-        s += " def"
-    end if
+    #if 0
+        s += " loc(" + dumpLocation(clang_getCursorLocation(cursor)) + ")"
+        if clang_isCursorDefinition(cursor) then
+            s += " def"
+        end if
+    #endif
     return s
 end function
 
@@ -123,12 +127,19 @@ const function ClangTU.isBuiltIn(byval cursor as CXCursor) as boolean
 end function
 
 function ClangAstVisitor.staticVisitor(byval cursor as CXCursor, byval parent as CXCursor, byval client_data as CXClientData) as CXChildVisitResult
-    dim self as ClangAstVisitor ptr = client_data
-    return self->visitor(cursor, parent)
+    return cptr(ClangAstVisitor ptr, client_data)->visitor(cursor, parent)
 end function
 
 sub ClangAstVisitor.visitChildrenOf(byval cursor as CXCursor)
     clang_visitChildren(cursor, @staticVisitor, @this)
+end sub
+
+function ClangFieldVisitor.staticVisitor(byval cursor as CXCursor, byval client_data as CXClientData) as CXVisitorResult
+    return cptr(ClangFieldVisitor ptr, client_data)->visitor(cursor)
+end function
+
+sub ClangFieldVisitor.visitFieldsOf(byval ty as CXType)
+    clang_Type_visitFields(ty, @staticVisitor, @this)
 end sub
 
 constructor ClangStr(byval source as CXString)
@@ -159,12 +170,25 @@ function ClangAstDumper.visitor(byval cursor as CXCursor, byval parent as CXCurs
     return CXChildVisit_Continue
 end function
 
+sub ClangAstDumper.indentedPrint(byref s as const string)
+    logger->eprint(space(nestinglevel * 4) + s)
+end sub
+
 sub ClangAstDumper.dump(byval cursor as CXCursor)
     if tu->isBuiltIn(cursor) = false then
-        logger->eprint(space(nestinglevel * 4) + tu->dumpCursor(cursor))
+        indentedPrint(tu->dumpCursor(cursor))
     end if
     nestinglevel += 1
-    visitChildrenOf(cursor)
+    select case clang_getCursorKind(cursor)
+    case CXCursor_StructDecl, CXCursor_UnionDecl
+        'nestinglevel -= 1
+        'indentedPrint("fields only:")
+        'nestinglevel += 1
+        dim fielddumper as ClangFieldDumper = ClangFieldDumper(@this)
+        fielddumper.visitFieldsOf(clang_getCursorType(cursor))
+    case else
+        visitChildrenOf(cursor)
+    end select
     nestinglevel -= 1
 end sub
 
@@ -204,4 +228,14 @@ const function ClangAstDumper.dumpCursorTokens(byval cursor as CXCursor) as stri
 
     clang_disposeTokens(tu->unit, buffer, count)
     return s
+end function
+
+constructor ClangFieldDumper(byval astdumper as ClangAstDumper ptr)
+    this.astdumper = astdumper
+end constructor
+
+function ClangFieldDumper.visitor(byval cursor as CXCursor) as CXVisitorResult
+    assert(clang_getCursorKind(cursor) = CXCursor_FieldDecl)
+    astdumper->dump(cursor)
+    return CXChildVisit_Continue
 end function

@@ -82,28 +82,25 @@ enum BigUInt64Enum
 	BigUInt64Enum_max_uint64_ull = 18446744073709551615ull
 end enum
 dim shared _sizeof_BigUInt64Enum as long = 8ll
-type CircularReferenceB as __fbbindgen_forwardid_CircularReferenceB
-type CircularReferenceA
-	as CircularReferenceB ptr b
-end type
-type __fbbindgen_forwardid_CircularReferenceB
+type CircularReferenceA as __fbbindgen_forwardid_CircularReferenceA
+type CircularReferenceB
 	as CircularReferenceA ptr a
 end type
-type ResolvedForwardStruct as __fbbindgen_forwardid_ResolvedForwardStruct
-type ResolvedForwardStruct_t as ResolvedForwardStruct
-type __fbbindgen_forwardid_ResolvedForwardStruct
+type __fbbindgen_forwardid_CircularReferenceA
+	as CircularReferenceB ptr b
+end type
+type ResolvedForwardStruct
 	as long dummy
 end type
-type ResolvedForwardUnion as __fbbindgen_forwardid_ResolvedForwardUnion
-type ResolvedForwardUnion_t as ResolvedForwardUnion
-union __fbbindgen_forwardid_ResolvedForwardUnion
+type ResolvedForwardStruct_t as ResolvedForwardStruct
+union ResolvedForwardUnion
 	as long dummy
 end union
-type ResolvedForwardEnum as __fbbindgen_forwardid_ResolvedForwardEnum
-type ResolvedForwardEnum_t as ResolvedForwardEnum
-enum __fbbindgen_forwardid_ResolvedForwardEnum
+type ResolvedForwardUnion_t as ResolvedForwardUnion
+enum ResolvedForwardEnum
 	dummy = 0ul
 end enum
+type ResolvedForwardEnum_t as ResolvedForwardEnum
 type UnresolvedForwardStruct as __fbbindgen_forwardid_UnresolvedForwardStruct
 type UnresolvedForwardStruct_t as UnresolvedForwardStruct
 type UnresolvedForwardUnion as __fbbindgen_forwardid_UnresolvedForwardUnion
