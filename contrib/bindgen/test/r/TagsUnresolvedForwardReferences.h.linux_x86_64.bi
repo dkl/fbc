@@ -1,0 +1,8 @@
+extern "C"
+type UnresolvedForwardStruct as __fbbindgen_forwardid_UnresolvedForwardStruct
+type UnresolvedForwardStruct_t as UnresolvedForwardStruct
+type UnresolvedForwardUnion as __fbbindgen_forwardid_UnresolvedForwardUnion
+type UnresolvedForwardUnion_t as UnresolvedForwardUnion
+type UnresolvedForwardEnum as __fbbindgen_forwardid_UnresolvedForwardEnum
+type UnresolvedForwardEnum_t as UnresolvedForwardEnum
+end extern

@@ -1,0 +1,3 @@
+typedef struct UnresolvedForwardStruct UnresolvedForwardStruct_t;
+typedef union UnresolvedForwardUnion UnresolvedForwardUnion_t;
+typedef enum UnresolvedForwardEnum UnresolvedForwardEnum_t;
