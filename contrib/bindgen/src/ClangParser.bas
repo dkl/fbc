@@ -333,9 +333,10 @@ type EnumConstCollector extends ClangAstVisitor
 end type
 
 function EnumConstCollector.visitor(byval cursor as CXCursor, byval parent as CXCursor) as CXChildVisitResult
-    assert(clang_getCursorKind(cursor) = CXCursor_EnumConstantDecl)
-    redim preserve enumconsts(0 to ubound(enumconsts) + 1)
-    enumconsts(ubound(enumconsts)) = cursor
+    if clang_getCursorKind(cursor) = CXCursor_EnumConstantDecl then
+        redim preserve enumconsts(0 to ubound(enumconsts) + 1)
+        enumconsts(ubound(enumconsts)) = cursor
+    end if
     return CXChildVisit_Continue
 end function
 
