@@ -1,3 +1,4 @@
+#include once "crt/longdouble.bi"
 extern "C"
 type UnresolvedForwardStruct as __fbbindgen_forwardid_UnresolvedForwardStruct
 type UnresolvedForwardStruct_t as UnresolvedForwardStruct

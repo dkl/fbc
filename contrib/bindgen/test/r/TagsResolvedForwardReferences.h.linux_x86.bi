@@ -1,3 +1,4 @@
+#include once "crt/longdouble.bi"
 extern "C"
 type ResolvedForwardStruct
 	as long dummy

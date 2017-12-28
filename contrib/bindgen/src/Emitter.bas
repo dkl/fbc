@@ -299,6 +299,7 @@ sub Emitter.emitDecl(byval n as const AstNode ptr)
 end sub
 
 sub Emitter.emitBinding(byval n as const AstNode ptr)
+    emitLine("#include once ""crt/longdouble.bi""")
     emitLine("extern ""C""")
     emitDecl(n)
     emitLine("end extern")

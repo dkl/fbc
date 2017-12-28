@@ -1,3 +1,4 @@
+#include once "crt/longdouble.bi"
 extern "C"
 type __fbbindgen_tempid_0
 	as long a

@@ -1,3 +1,4 @@
+#include once "crt/longdouble.bi"
 extern "C"
 type struct1
 	as long field1

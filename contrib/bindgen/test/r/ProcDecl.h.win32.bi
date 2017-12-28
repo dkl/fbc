@@ -1,3 +1,4 @@
+#include once "crt/longdouble.bi"
 extern "C"
 declare sub f1 cdecl()
 declare function f2 cdecl(byval as long, byval as double) as long

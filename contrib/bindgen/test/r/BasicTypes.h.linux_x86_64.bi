@@ -1,3 +1,4 @@
+#include once "crt/longdouble.bi"
 extern "C"
 extern var_char as byte
 extern var_schar as byte

@@ -1,3 +1,4 @@
+#include once "crt/longdouble.bi"
 extern "C"
 enum SingleConstEnum
 	SingleConst = 0ul

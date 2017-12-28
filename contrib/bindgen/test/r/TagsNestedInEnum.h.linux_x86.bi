@@ -1,3 +1,4 @@
+#include once "crt/longdouble.bi"
 extern "C"
 type intptr_t as long
 enum DummyEnum

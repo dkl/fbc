@@ -1,3 +1,4 @@
+#include once "crt/longdouble.bi"
 extern "C"
 type A as __fbbindgen_forwardid_A
 type B
