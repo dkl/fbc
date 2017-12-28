@@ -20,6 +20,7 @@ extern unsigned long long var_ulonglong;
 
 extern float var_float;
 extern double var_double;
+extern long double var_longdouble;
 
 extern const int var_ci;
 extern int *var_pi;

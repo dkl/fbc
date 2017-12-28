@@ -132,6 +132,9 @@ const function TUParser.parseSimpleType(byval ty as CXType) as TypeKind
         checkBasicTypeSize(ty, 8)
         return Type_Float64
 
+    case CXType_LongDouble
+        return Type_CLongDouble
+
     end select
 
     return Type_None

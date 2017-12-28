@@ -17,6 +17,7 @@ extern var_slonglong as ulongint
 extern var_ulonglong as ulongint
 extern var_float as single
 extern var_double as double
+extern var_longdouble as clongdouble
 extern var_ci as const long
 extern var_pi as long ptr
 extern var_pci as const long ptr
