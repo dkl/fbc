@@ -1,3 +1,5 @@
+#pragma GCC diagnostic ignored "-Wignored-attributes"
+
 static int __storage_spec_on_procs;
 static void f0(void);
 extern void f1(void);
@@ -25,3 +27,8 @@ static int __result_procptr;
 void (*f40(void))(void);
 int (*f41(float, float))(double, double);
 void (*(*f42(short int a))(short int b))(short int c);
+
+static int __callconv;
+__attribute__((stdcall)) void f50(int a, ...); // gcc: warning: stdcall calling convention ignored on variadic function [-Wignored-attributes]
+__attribute__((cdecl)) void f51(void);
+__attribute__((stdcall)) void f52(void);

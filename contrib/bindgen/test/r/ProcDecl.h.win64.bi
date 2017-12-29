@@ -24,4 +24,8 @@ dim shared __result_procptr as long
 declare function f40 cdecl() as sub cdecl()
 declare function f41 cdecl(byval as single, byval as single) as function cdecl(byval as double, byval as double) as long
 declare function f42 cdecl(byval as short) as function cdecl(byval as short) as sub cdecl(byval as short)
+dim shared __callconv as long
+declare sub f50 cdecl(byval as long, ...)
+declare sub f51 cdecl()
+declare sub f52 cdecl()
 end extern
