@@ -1,4 +1,5 @@
 #include once "AstNode.bi"
+#include once "crt/mem.bi"
 #include once "Util.bi"
 
 constructor DataType()
@@ -139,6 +140,19 @@ const function DataType.dump() as string
     return s
 end function
 
+sub ArrayDimensions.addOuterDimension(byval size as ulongint)
+    '' Prepend dimension to list
+    redim preserve sizes(0 to ubound(sizes) + 1)
+    if ubound(sizes) > 0 then
+        memmove(@sizes(1), @sizes(0), ubound(sizes) * sizeof(sizes(0)))
+    end if
+    sizes(0) = size
+end sub
+
+const function ArrayDimensions.empty() as boolean
+    return (ubound(sizes) < 0)
+end function
+
 constructor FullType()
 end constructor
 
@@ -162,6 +176,7 @@ operator FullType.let(byref other as const FullType)
     if other.subtype then
         subtype = new AstNode(*other.subtype)
     end if
+    arraydims = other.arraydims
 end operator
 
 destructor FullType()

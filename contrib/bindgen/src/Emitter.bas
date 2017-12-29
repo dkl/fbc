@@ -107,17 +107,35 @@ end function
 '' Normally we'll emit Extern blocks, making it unnecessary to worry about
 '' case-preserving aliases, but symbols can still have an explicit alias set due
 '' to symbol renaming.
-function Emitter.emitAlias(byval n as const AstNode ptr) as string
+sub Emitter.emitAlias(byref s as string, byval n as const AstNode ptr)
     if len(n->sym.aliasid) > 0 then
-        return " alias """ + n->sym.aliasid + """"
+        s += " alias """ + n->sym.aliasid + """"
     end if
-    return ""
-end function
+end sub
+
+sub Emitter.emitArrayDimensions(byref s as string, byref arraydims as const ArrayDimensions)
+    if arraydims.empty() then
+        return
+    end if
+    s += "("
+    for i as integer = 0 to ubound(arraydims.sizes)
+        if i > 0 then
+            s += ", "
+        end if
+        s += "0 to "
+        if arraydims.sizes(i) = 0 then
+            s += "..."
+        else
+            s &= arraydims.sizes(i) - 1
+        end if
+    next
+    s += ")"
+end sub
 
 function Emitter.emitIdAndArray(byval n as const AstNode ptr) as string
     dim s as string = n->sym.id
-    '' TODO: array dimensions
-    s += emitAlias(n)
+    emitArrayDimensions(s, n->sym.t.arraydims)
+    emitAlias(s, n)
     if n->sym.bits > 0 then
         s += " : " & n->sym.bits
     end if
@@ -181,7 +199,7 @@ function Emitter.emitProcHeader(byval n as const AstNode ptr) as string
         s += " " + n->sym.id
     end if
     s += " " + getCallConvKeyword(n->sym.callconv)
-    s += emitAlias(n)
+    emitAlias(s, n)
     s += emitProcParams(n)
     if is_function then
         s += " as " + emitType(n->sym.t)

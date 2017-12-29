@@ -7,7 +7,8 @@ private:
 public:
     declare function emitType(byref t as const FullType) as string
     declare function emitConstVal(byref v as const ConstantValue) as string
-    declare function emitAlias(byval n as const AstNode ptr) as string
+    declare sub emitAlias(byref s as string, byval n as const AstNode ptr)
+    declare sub emitArrayDimensions(byref s as string, byref arraydims as const ArrayDimensions)
     declare function emitIdAndArray(byval n as const AstNode ptr) as string
     declare function emitCommaSeparatedChildren(byval n as const AstNode ptr) as string
     declare function emitProcParam(byval n as const AstNode ptr) as string

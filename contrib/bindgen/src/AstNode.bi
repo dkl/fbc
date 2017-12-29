@@ -72,11 +72,21 @@ public:
     declare const function dump() as string
 end type
 
+type ArrayDimensions
+    '' Sizes of C array dimensions in outer-to-inner/left-to-right order,
+    '' as written in C/FB source code.
+    '' A size of 0 indicates an unsized dimension.
+    sizes(any) as ulongint
+    declare sub addOuterDimension(byval size as ulongint)
+    declare const function empty() as boolean
+end type
+
 type AstNode as AstNode_
 
 type FullType
     dtype as DataType
     subtype as AstNode ptr
+    arraydims as ArrayDimensions
 
     declare constructor()
     declare constructor(byval dtype as DataType)

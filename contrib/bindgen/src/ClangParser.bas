@@ -172,11 +172,21 @@ function TUParser.parseFunctionType(byval ty as CXType) as FullType
 end function
 
 function TUParser.parseType(byval ty as CXType, byval context_allows_using_forward_ref as boolean) as FullType
+    '' Resolve typedefs and some unexposed wrapper types
+    ty = clang_getCanonicalType(ty)
+
     dim t as FullType
 
     select case as const ty.kind
     case CXType_Pointer
         t = parseType(clang_getPointeeType(ty), true)
+
+        if t.arraydims.empty() = false then
+            '' Pointer to array - not possible in FB.
+            '' Drop the array type, and use a pointer to just one array element.
+            t.arraydims = type<ArrayDimensions>()
+        end if
+
         t.dtype = t.dtype.addrOf()
 
     case CXType_FunctionProto
@@ -191,15 +201,19 @@ function TUParser.parseType(byval ty as CXType, byval context_allows_using_forwa
         end if
 
     case CXType_Elaborated, CXType_Typedef
-        t = parseType(clang_getCanonicalType(ty), context_allows_using_forward_ref)
+        t = parseType(ty, context_allows_using_forward_ref)
 
     case CXType_Record, CXType_Enum
         var decl = clang_getTypeDeclaration(ty)
         var tag = parseTagDecl(decl, context_allows_using_forward_ref)
         t = buildTypeRef(tag->id)
 
+    case CXType_ConstantArray, CXType_IncompleteArray
+        t = parseType(clang_getArrayElementType(ty), false)
+        t.arraydims.addOuterDimension(iif(ty.kind = CXType_IncompleteArray, 0, clang_getArraySize(ty)))
+
     case else
-        t.dtype = t.dtype.withBase(parseSimpleType(ty))
+        t.dtype = DataType(parseSimpleType(ty))
         if t.dtype.basetype() = Type_None then
             logger->abortProgram("unhandled clang type " + tu->dumpType(ty))
         end if
