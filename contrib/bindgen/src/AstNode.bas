@@ -323,7 +323,6 @@ const function AstNode.dumpOne() as string
             s += " " + #name
         end if
     #endmacro
-    dumpFlag(packed)
     dumpFlag(variadic)
     dumpFlag(dllimport)
     dumpFlag(functionlike)

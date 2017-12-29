@@ -340,13 +340,37 @@ function TUParser.parseFieldDecl(byval cursor as CXCursor) as AstNode ptr
     return n
 end function
 
+type PackedAttrCollector extends ClangAstVisitor
+    is_packed as boolean
+    declare function visitor(byval cursor as CXCursor, byval parent as CXCursor) as CXChildVisitResult override
+end type
+
+function PackedAttrCollector.visitor(byval cursor as CXCursor, byval parent as CXCursor) as CXChildVisitResult
+    if clang_getCursorKind(cursor) = CXCursor_PackedAttr then
+        is_packed = true
+    end if
+    return CXChildVisit_Continue
+end function
+
 function TUParser.parseRecordDecl(byval tag as const TagNode ptr, byval cursor as CXCursor) as AstNode ptr
     var n = new AstNode(iif(clang_getCursorKind(cursor) = CXCursor_UnionDecl, AstKind_Union, AstKind_Struct))
-    dim fields as RecordFieldCollector
-    fields.visitFieldsOf(clang_getCursorType(cursor))
-    for i as integer = 0 to ubound(fields.fields)
-        n->append(parseFieldDecl(fields.fields(i)))
-    next
+
+    scope
+        dim pack as PackedAttrCollector
+        pack.visitChildrenOf(cursor)
+        if pack.is_packed then
+            n->sym.fieldalign = 1
+        end if
+    end scope
+
+    scope
+        dim fields as RecordFieldCollector
+        fields.visitFieldsOf(clang_getCursorType(cursor))
+        for i as integer = 0 to ubound(fields.fields)
+            n->append(parseFieldDecl(fields.fields(i)))
+        next
+    end scope
+
     return n
 end function
 
@@ -483,7 +507,7 @@ function TUParser.visitor(byval cursor as CXCursor, byval parent as CXCursor) as
     case CXCursor_InclusionDirective, CXCursor_MacroExpansion
         '' Ignore
 
-    case CXCursor_EnumConstantDecl, CXCursor_FieldDecl
+    case CXCursor_EnumConstantDecl, CXCursor_FieldDecl, CXCursor_PackedAttr
         '' Ignore, should only occur during recursion
 
     case else
