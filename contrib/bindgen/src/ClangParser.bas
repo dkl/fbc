@@ -195,7 +195,7 @@ function TUParser.parseType(byval ty as CXType, byval context_allows_using_forwa
 
         t.dtype = t.dtype.addrOf()
 
-    case CXType_FunctionProto
+    case CXType_FunctionProto, CXType_FunctionNoProto
         t = parseFunctionType(ty)
 
     case CXType_Unexposed
