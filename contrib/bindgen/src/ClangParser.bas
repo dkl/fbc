@@ -337,6 +337,9 @@ function TUParser.parseFieldDecl(byval cursor as CXCursor) as AstNode ptr
     var n = new AstNode(AstKind_Field)
     n->sym.id = id
     n->sym.t = parseType(ty, false)
+    if clang_Cursor_isBitField(cursor) then
+        n->sym.bits = clang_getFieldDeclBitWidth(cursor)
+    end if
     return n
 end function
 
