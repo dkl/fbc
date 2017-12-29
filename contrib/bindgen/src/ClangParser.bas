@@ -198,14 +198,6 @@ function TUParser.parseType(byval ty as CXType, byval context_allows_using_forwa
     case CXType_FunctionProto, CXType_FunctionNoProto
         t = parseFunctionType(ty)
 
-    case CXType_Unexposed
-        var resultty = clang_getResultType(ty)
-        if resultty.kind <> CXType_Invalid then
-            t = parseFunctionType(ty)
-        else
-            logger->abortProgram("unhandled clang type " + tu->dumpType(ty))
-        end if
-
     case CXType_Elaborated, CXType_Typedef
         t = parseType(ty, context_allows_using_forward_ref)
 
