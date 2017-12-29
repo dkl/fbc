@@ -3,6 +3,7 @@ extern "C"
 enum SingleConstEnum
 	SingleConst = 0ul
 end enum
+#assert sizeof(SingleConstEnum) = 4
 enum SmallEnum
 	SmallEnum_default = 0l
 	SmallEnum_1 = 1l
@@ -10,6 +11,7 @@ enum SmallEnum
 	SmallEnum_minus_1 = -1l
 	SmallEnum_sizeof_int = 4l
 end enum
+#assert sizeof(SmallEnum) = 4
 dim shared _sizeof_SmallEnum as long = 4ll
 enum BigInt64Enum
 	BigInt64Enum_default = 0ll
@@ -21,6 +23,7 @@ enum BigInt64Enum
 	BigInt64Enum_max_uint32_ul = 4294967295ll
 	BigInt64Enum_max_int64_ll = 9223372036854775807ll
 end enum
+#assert sizeof(BigInt64Enum) = 8
 dim shared _sizeof_BigInt64Enum as long = 8ll
 enum BigUInt64Enum
 	BigUInt64Enum_default = 0ull
@@ -32,5 +35,6 @@ enum BigUInt64Enum
 	BigUInt64Enum_max_int64_ll = 9223372036854775807ull
 	BigUInt64Enum_max_uint64_ull = 18446744073709551615ull
 end enum
+#assert sizeof(BigUInt64Enum) = 8
 dim shared _sizeof_BigUInt64Enum as long = 8ll
 end extern

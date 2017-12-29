@@ -286,6 +286,9 @@ sub Emitter.emitDecl(byval n as const AstNode ptr)
         emitCompoundHeader(n)
         emitIndentedChildren(n)
         emitCompoundFooter(n)
+        if len(n->sym.id) > 0 then
+            emitLine("#assert sizeof(" + n->sym.id + ") = " & n->sym.size)
+        end if
 
     case AstKind_Typedef
         emitLine("type " + n->sym.id + " as " + emitType(n->sym.t))

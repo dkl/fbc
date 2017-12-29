@@ -115,6 +115,7 @@ type SymbolInfo
     callconv as ProcCallConv
     bits as ubyte '' bitfield size
     fieldalign as ubyte '' max pack/field alignment for structs/unions
+    size as ulongint '' libclang's sizeof
 
     is_packed : 1 as integer '' structs
     is_variadic : 1 as integer '' procedures/macros: implicit variadic parameter at end

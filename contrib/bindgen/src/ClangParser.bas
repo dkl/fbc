@@ -80,6 +80,12 @@ const function TUParser.buildTypeRef(byref id as const string) as FullType
     return FullType(DataType(Type_Named), typeref)
 end function
 
+const function TUParser.getSizeOfType(byval ty as CXType) as ulongint
+    var size = clang_Type_getSizeOf(ty)
+    logger->assertOrAbort(size >= 0, "cannot get sizeof type " + tu->dumpType(ty))
+    return size
+end function
+
 const sub TUParser.checkBasicTypeSize(byval condition as boolean, byval ty as CXType, byref expected as const string)
     logger->assertOrAbort(condition, _
         "sizeof " + wrapstr(clang_getTypeSpelling(ty)) + _
@@ -88,11 +94,11 @@ const sub TUParser.checkBasicTypeSize(byval condition as boolean, byval ty as CX
 end sub
 
 const sub TUParser.checkBasicTypeSize(byval ty as CXType, byval expected as uinteger)
-    checkBasicTypeSize(clang_Type_getSizeOf(ty) = expected, ty, str(expected))
+    checkBasicTypeSize(getSizeOfType(ty) = expected, ty, str(expected))
 end sub
 
 const function TUParser.parseIntType(byval ty as CXType, byval is_signed as boolean) as TypeKind
-    select case clang_Type_getSizeOf(ty)
+    select case getSizeOfType(ty)
     case 1
         return iif(is_signed, Type_Int8, Type_Uint8)
     case 2
@@ -335,13 +341,13 @@ function TUParser.parseFieldDecl(byval cursor as CXCursor) as AstNode ptr
 end function
 
 function TUParser.parseRecordDecl(byval tag as const TagNode ptr, byval cursor as CXCursor) as AstNode ptr
-    var record = new AstNode(iif(clang_getCursorKind(cursor) = CXCursor_UnionDecl, AstKind_Union, AstKind_Struct))
+    var n = new AstNode(iif(clang_getCursorKind(cursor) = CXCursor_UnionDecl, AstKind_Union, AstKind_Struct))
     dim fields as RecordFieldCollector
     fields.visitFieldsOf(clang_getCursorType(cursor))
     for i as integer = 0 to ubound(fields.fields)
-        record->append(parseFieldDecl(fields.fields(i)))
+        n->append(parseFieldDecl(fields.fields(i)))
     next
-    return record
+    return n
 end function
 
 type EnumConstCollector extends ClangAstVisitor
@@ -429,6 +435,7 @@ function TUParser.parseTagDecl(byval cursor as CXCursor, byval context_allows_us
     end if
 
     n->sym.id = tag->getFbTypeBlockId()
+    n->sym.size = getSizeOfType(clang_getCursorType(cursor))
 
     if tag->is_emitted then
         '' Already emitted now due to recursion, don't emit again.

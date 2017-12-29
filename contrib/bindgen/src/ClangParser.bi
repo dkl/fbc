@@ -57,6 +57,7 @@ type TUParser extends ClangAstVisitor
     declare sub emitForwardDecl(byref id as const string, byref forwardid as const string)
     declare const function buildTypeRef(byref id as const string) as FullType
 
+    declare const function getSizeOfType(byval ty as CXType) as ulongint
     declare const sub checkBasicTypeSize(byval condition as boolean, byval ty as CXType, byref expected as const string)
     declare const sub checkBasicTypeSize(byval ty as CXType, byval expected as uinteger)
     declare const function parseIntType(byval ty as CXType, byval is_signed as boolean) as TypeKind

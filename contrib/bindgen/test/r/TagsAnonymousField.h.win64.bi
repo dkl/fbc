@@ -3,6 +3,7 @@ extern "C"
 type __fbbindgen_tempid_1
 	as long a
 end type
+#assert sizeof(__fbbindgen_tempid_1) = 4
 type __fbbindgen_tempid_0
 	as long a
 	union
@@ -10,6 +11,7 @@ type __fbbindgen_tempid_0
 		as long c
 	end union
 end type
+#assert sizeof(__fbbindgen_tempid_0) = 8
 type Parent
 	type
 		as long a
@@ -24,9 +26,11 @@ type Parent
 		as __fbbindgen_tempid_0 d
 	end union
 end type
+#assert sizeof(Parent) = 12
 type __fbbindgen_tempid_2
 	as long a
 end type
+#assert sizeof(__fbbindgen_tempid_2) = 4
 union __fbbindgen_tempid_3
 	type
 		as long b
@@ -36,13 +40,16 @@ union __fbbindgen_tempid_3
 	end type
 	as __fbbindgen_tempid_0 d
 end union
+#assert sizeof(__fbbindgen_tempid_3) = 8
 type __fbbindgen_tempid_4
 	as long b
 end type
+#assert sizeof(__fbbindgen_tempid_4) = 4
 union __fbbindgen_tempid_5
 	as __fbbindgen_tempid_1 b
 	as long c
 end union
+#assert sizeof(__fbbindgen_tempid_5) = 4
 union Nested
 	as long a
 	as long b
@@ -75,6 +82,7 @@ union Nested
 	end type
 	as long p
 end union
+#assert sizeof(Nested) = 20
 type __fbbindgen_tempid_6
 	as long c
 	union
@@ -83,10 +91,12 @@ type __fbbindgen_tempid_6
 	end union
 	as long f
 end type
+#assert sizeof(__fbbindgen_tempid_6) = 12
 union __fbbindgen_tempid_7
 	as long d
 	as long e
 end union
+#assert sizeof(__fbbindgen_tempid_7) = 4
 type __fbbindgen_tempid_8
 	as long j
 	union
@@ -95,8 +105,10 @@ type __fbbindgen_tempid_8
 	end union
 	as long m
 end type
+#assert sizeof(__fbbindgen_tempid_8) = 12
 union __fbbindgen_tempid_9
 	as long k
 	as long l
 end union
+#assert sizeof(__fbbindgen_tempid_9) = 4
 end extern
