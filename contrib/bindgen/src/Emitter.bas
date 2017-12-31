@@ -86,7 +86,7 @@ function Emitter.emitType(byref t as const FullType) as string
 end function
 
 function Emitter.emitConstVal(byref v as const ConstantValue) as string
-    dim as string s = v.value
+    dim as string s = v.fbtoken
     select case as const v.dtype.basetype()
     case Type_Int8
     case Type_Int16

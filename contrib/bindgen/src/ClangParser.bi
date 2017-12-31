@@ -77,6 +77,7 @@ type TUParser extends ClangAstVisitor
     declare function parseEnumDecl(byval tag as const TagNode ptr, byval cursor as CXCursor) as AstNode ptr
     declare function parseTagDecl(byval cursor as CXCursor, byval context_allows_using_forward_ref as boolean) as const TagNode ptr
     declare sub parseTypedefDecl(byval cursor as CXCursor)
+    declare sub parseMacro(byval cursor as CXCursor)
 
     declare function visitor(byval cursor as CXCursor, byval parent as CXCursor) as CXChildVisitResult override
     declare sub parse()

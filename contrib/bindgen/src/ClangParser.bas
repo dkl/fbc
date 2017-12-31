@@ -1,4 +1,5 @@
 #include once "ClangParser.bi"
+#include once "LiteralParser.bi"
 #include once "Util.bi"
 
 function TempIdProvider.getNext() as string
@@ -232,9 +233,9 @@ function TUParser.parseEnumConstValue(byval cursor as CXCursor, byval parent as 
     v.dtype = t.dtype
 
     if v.dtype.isSignedInteger() then
-        v.value = str(clang_getEnumConstantDeclValue(cursor))
+        v.fbtoken = str(clang_getEnumConstantDeclValue(cursor))
     elseif v.dtype.isUnsignedInteger() then
-        v.value = str(clang_getEnumConstantDeclUnsignedValue(cursor))
+        v.fbtoken = str(clang_getEnumConstantDeclUnsignedValue(cursor))
     else
         assert(false)
     end if
@@ -249,14 +250,14 @@ const function TUParser.parseEvalResult(byval eval as CXEvalResult) as ConstantV
     case CXEval_Int
         if clang_EvalResult_isUnsignedInt(eval) then
             v.dtype = DataType(Type_UInt64)
-            v.value = str(clang_EvalResult_getAsUnsigned(eval))
+            v.fbtoken = str(clang_EvalResult_getAsUnsigned(eval))
         else
             v.dtype = DataType(Type_Int64)
-            v.value = str(clang_EvalResult_getAsLongLong(eval))
+            v.fbtoken = str(clang_EvalResult_getAsLongLong(eval))
         end if
     case CXEval_Float
         v.dtype = DataType(Type_Float64)
-        v.value = str(clang_EvalResult_getAsDouble(eval))
+        v.fbtoken = str(clang_EvalResult_getAsDouble(eval))
     case CXEval_UnExposed
         '' No initializer
     case else
@@ -476,6 +477,62 @@ sub TUParser.parseTypedefDecl(byval cursor as CXCursor)
     ast->append(n)
 end sub
 
+type ClangTokenBuffer
+    tu as ClangTU ptr
+    buffer as CXToken ptr
+    count as ulong
+    declare constructor(byval tu as ClangTU ptr, byval cursor as CXCursor)
+    declare destructor()
+    declare const function kind(byval i as integer) as CXTokenKind
+    declare const function spell(byval i as integer) as string
+end type
+
+constructor ClangTokenBuffer(byval tu as ClangTU ptr, byval cursor as CXCursor)
+    this.tu = tu
+    clang_tokenize(tu->unit, clang_getCursorExtent(cursor), @buffer, @count)
+end constructor
+
+destructor ClangTokenBuffer()
+    clang_disposeTokens(tu->unit, buffer, count)
+end destructor
+
+const function ClangTokenBuffer.kind(byval i as integer) as CXTokenKind
+    assert(i >= 0 and i < count)
+    return clang_getTokenKind(buffer[i])
+end function
+
+const function ClangTokenBuffer.spell(byval i as integer) as string
+    assert(i >= 0 and i < count)
+    return wrapstr(clang_getTokenSpelling(tu->unit, buffer[i]))
+end function
+
+sub TUParser.parseMacro(byval cursor as CXCursor)
+    if tu->isBuiltIn(cursor) then
+        return
+    end if
+
+    var macroid = wrapstr(clang_getCursorSpelling(cursor))
+    'print ClangAstDumper(logger, tu).dumpCursorTokens(cursor)
+
+    '' libclang's MacroDecl cursor provides the identifier token,
+    '' followed by the parameter list, if any, and then the body/expansion tokens.
+    dim tk as const ClangTokenBuffer = ClangTokenBuffer(tu, cursor)
+
+    '' MacroId + Literal?
+    if (tk.count = 2) andalso _
+       (tk.kind(0) = CXToken_Identifier) andalso _
+       (tk.spell(0) = macroid) andalso _
+       (tk.kind(1) = CXToken_Literal) then
+        dim numlit as const CNumberLiteralParser = CNumberLiteralParser(tk.spell(1))
+        if numlit.isValid() then
+            var n = new AstNode(AstKind_Const)
+            n->sym.id = macroid
+            n->sym.constval = numlit.getValue()
+            ast->append(n)
+        end if
+    end if
+end sub
+
 function TUParser.visitor(byval cursor as CXCursor, byval parent as CXCursor) as CXChildVisitResult
     select case as const clang_getCursorKind(cursor)
     case CXCursor_VarDecl
@@ -497,7 +554,7 @@ function TUParser.visitor(byval cursor as CXCursor, byval parent as CXCursor) as
         parseTypedefDecl(cursor)
 
     case CXCursor_MacroDefinition
-        '' TODO
+        parseMacro(cursor)
 
     case CXCursor_InclusionDirective, CXCursor_MacroExpansion
         '' Ignore

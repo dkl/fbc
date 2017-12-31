@@ -98,7 +98,7 @@ end type
 
 type ConstantValue
     dtype as DataType
-    value as string
+    fbtoken as string '' FB number literal token, possibly including &b/&o/&h prefix, without type suffix
 end type
 
 enum ProcCallConv
