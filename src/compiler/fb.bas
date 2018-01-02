@@ -448,6 +448,7 @@ sub fbGlobalInit()
 	'' default settings
 	env.clopt.outtype       = FB_DEFAULT_OUTTYPE
 	env.clopt.pponly        = FALSE
+	env.clopt.keeptempfiles = FALSE
 
 	env.clopt.backend       = FB_DEFAULT_BACKEND
 	env.clopt.target        = FB_DEFAULT_TARGET
@@ -505,6 +506,8 @@ sub fbSetOption( byval opt as integer, byval value as integer )
 		env.clopt.outtype = value
 	case FB_COMPOPT_PPONLY
 		env.clopt.pponly = value
+	case FB_COMPOPT_KEEPTEMPFILES
+		env.clopt.keeptempfiles = value
 
 	case FB_COMPOPT_BACKEND
 		env.clopt.backend = value
@@ -582,6 +585,8 @@ function fbGetOption( byval opt as integer ) as integer
 		function = env.clopt.outtype
 	case FB_COMPOPT_PPONLY
 		function = env.clopt.pponly
+	case FB_COMPOPT_KEEPTEMPFILES
+		function = env.clopt.keeptempfiles
 
 	case FB_COMPOPT_BACKEND
 		function = env.clopt.backend
@@ -1546,7 +1551,9 @@ sub fbBindgenInclude( byref args as string )
 		errReportEx( FB_ERRMSG_BINDGEN, "", -1 )
 	end if
 
-	if( kill( tempheader ) ) then
+	if( fbGetOption( FB_COMPOPT_KEEPTEMPFILES ) = FALSE ) then
+		if( kill( tempheader ) ) then
+		end if
 	end if
 end sub
 

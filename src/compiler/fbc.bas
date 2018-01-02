@@ -1757,6 +1757,7 @@ private sub handleOpt(byval optid as integer, byref arg as string)
 
 	case OPT_RKEEPASM
 		fbc.keepasm = TRUE
+		fbSetOption( FB_COMPOPT_KEEPTEMPFILES, TRUE )
 
 	case OPT_RR
 		fbSetOption( FB_COMPOPT_OUTTYPE, FB_OUTTYPE_OBJECT )
