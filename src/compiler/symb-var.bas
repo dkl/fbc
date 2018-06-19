@@ -708,7 +708,8 @@ end function
 
 function symbGetRealSize( byval sym as FBSYMBOL ptr ) as longint
 	assert( symbIsVar( sym ) or symbIsField( sym ) )
-	var size = iif( symbIsRef( sym ), env.pointersize, symbGetLen( sym ) )
+	'' FIXME: result is wrong for other special cases such as BYVAL parameters implicitly passed as reference
+	var size = iif( symbIsRef( sym ) or symbIsImport( sym ) or symbIsParamBydescOrByref( sym ), env.pointersize, symbGetLen( sym ) )
 	size *= symbGetArrayElements( sym )
 	function = size
 end function

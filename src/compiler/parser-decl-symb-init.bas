@@ -301,6 +301,7 @@ private function hArrayInit _
 					pad_lgt = symbCalcLen( ctx.dtype, ctx.subtype )
 				end select
 			end if
+			assert( pad_lgt = (symbGetRealSize( ctx.sym ) \ symbGetArrayElements( ctx.sym ))  )
 			pad_lgt *= elements
 
 			astTypeIniAddPad( ctx.tree, pad_lgt )
