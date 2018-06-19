@@ -523,12 +523,9 @@ private sub hFlushExprStatic( byval n as ASTNODE ptr, byval basesym as FBSYMBOL 
 		sym = basesym
 	end if
 
-	var sdtype = symbGetType( sym )
-	if( symbIsRef( sym ) ) then
-		'' Initializers for references initialize the pointer,
-		'' not an object of the symbol's type.
-		sdtype = typeAddrOf( sdtype )
-	end if
+	dim symrealtype as integer
+	dim symrealsubtype as FBSYMBOL ptr
+	symbGetRealType( sym, symrealtype, symrealsubtype )
 
 	'' Get rhs expression
 	var expr = n->l
@@ -548,13 +545,13 @@ private sub hFlushExprStatic( byval n as ASTNODE ptr, byval basesym as FBSYMBOL 
 		'' anything else
 		else
 			'' different types?
-			if( edtype <> sdtype ) then
-				expr = astNewCONV( sdtype, symbGetSubtype( sym ), expr, AST_CONVOPT_DONTCHKPTR )
+			if( edtype <> symrealtype ) then
+				expr = astNewCONV( symrealtype, symrealsubtype, expr, AST_CONVOPT_DONTCHKPTR )
 				assert( expr <> NULL )
 			end if
 
 			assert( astIsCONST( expr ) )
-			if( typeGetClass( sdtype ) = FB_DATACLASS_FPOINT ) then
+			if( typeGetClass( symrealtype ) = FB_DATACLASS_FPOINT ) then
 				irEmitVARINIf( sym, astConstGetFloat( expr ) )
 			else
 				irEmitVARINIi( sym, astConstGetInt( expr ) )
@@ -563,7 +560,7 @@ private sub hFlushExprStatic( byval n as ASTNODE ptr, byval basesym as FBSYMBOL 
 	'' literal string..
 	else
 		'' not a wstring?
-		if( sdtype <> FB_DATATYPE_WCHAR ) then
+		if( symrealtype <> FB_DATATYPE_WCHAR ) then
 			'' convert?
 			if( edtype <> FB_DATATYPE_WCHAR ) then
 				'' less the null-char

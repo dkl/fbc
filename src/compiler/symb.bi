@@ -1332,6 +1332,13 @@ declare sub symbGetRealParamDtype overload _
 		byref subtype as FBSYMBOL ptr _
 	)
 
+declare sub symbGetRealParamFullType _
+	( _
+		byval param as FBSYMBOL ptr, _
+		byref dtype as integer, _
+		byref subtype as FBSYMBOL ptr _
+	)
+
 declare function symbAddVarForParam( byval param as FBSYMBOL ptr ) as FBSYMBOL ptr
 declare function symbAddVarForProcResultParam( byval proc as FBSYMBOL ptr ) as FBSYMBOL ptr
 declare function symbAddProcResultVar( byval f as FBSYMBOL ptr ) as FBSYMBOL ptr
@@ -1533,7 +1540,10 @@ declare function symbAllocWstrConst _
 	) as FBSYMBOL ptr
 
 declare function symbGetRealSize( byval sym as FBSYMBOL ptr ) as longint
-declare sub symbGetRealType( byval sym as FBSYMBOL ptr, byref dtype as integer, byref subtype as FBSYMBOL ptr )
+declare sub symbGetRealFullType overload( byval sym as FBSYMBOL ptr, byref dtype as integer, byref subtype as FBSYMBOL ptr )
+declare function symbGetRealFullType overload( byval sym as FBSYMBOL ptr ) as integer
+declare sub symbGetRealType overload( byval sym as FBSYMBOL ptr, byref dtype as integer, byref subtype as FBSYMBOL ptr )
+declare function symbGetRealType overload( byval sym as FBSYMBOL ptr ) as integer
 
 declare function symbCalcArrayElements _
 	( _

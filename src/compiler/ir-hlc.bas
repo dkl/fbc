@@ -1712,6 +1712,17 @@ private function exprNewCAST _
 	function = n
 end function
 
+private function exprNewCastToRealType _
+	( _
+		byval sym as FBSYMBOL ptr, _
+		byval l as EXPRNODE ptr _
+	) as EXPRNODE ptr
+	dim realtype as integer
+	dim realsubtype as FBSYMBOL ptr
+	symbGetRealType( sym, realtype, realsubtype )
+	return exprNewCAST( realtype, realsubtype, l )
+end function
+
 private function exprNewSYM( byval sym as FBSYMBOL ptr ) as EXPRNODE ptr
 	dim as EXPRNODE ptr n = any
 	dim as integer dtype = any
@@ -3498,22 +3509,15 @@ private sub _emitVarIniI( byval sym as FBSYMBOL ptr, byval value as longint )
 	end if
 
 	var l = exprNewIMMi( value, dtype )
-	if( symbIsRef( sym ) ) then
-		dtype = typeAddrOf( dtype )
-	end if
-	l = exprNewCAST( dtype, sym->subtype, l )
+	l = exprNewCastToRealType( sym, l )
 
 	ctx.varini += exprFlush( l )
 	hVarIniSeparator( )
 end sub
 
 private sub _emitVarIniF( byval sym as FBSYMBOL ptr, byval value as double )
-	var dtype = symbGetType( sym )
-	var l = exprNewIMMf( value, dtype )
-	if( symbIsRef( sym ) ) then
-		dtype = typeAddrOf( dtype )
-	end if
-	l = exprNewCAST( dtype, sym->subtype, l )
+	var l = exprNewIMMf( value, symbGetType( sym ) )
+	l = exprNewCastToRealType( sym, l )
 	ctx.varini += exprFlush( l )
 	hVarIniSeparator( )
 end sub
@@ -3524,17 +3528,8 @@ private sub _emitVarIniOfs _
 		byval rhs as FBSYMBOL ptr, _
 		byval ofs as longint _
 	)
-
-	dim as EXPRNODE ptr l = any
-
-	l = exprNewOFFSET( rhs, ofs )
-
-	var dtype = symbGetType( sym )
-	if( symbIsRef( sym ) ) then
-		dtype = typeAddrOf( dtype )
-	end if
-	l = exprNewCAST( dtype, sym->subtype, l )
-
+	var l = exprNewOFFSET( rhs, ofs )
+	l = exprNewCastToRealType( sym, l )
 	ctx.varini += exprFlush( l )
 	hVarIniSeparator( )
 end sub

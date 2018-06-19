@@ -713,9 +713,9 @@ function symbGetRealSize( byval sym as FBSYMBOL ptr ) as longint
 	function = size
 end function
 
-sub symbGetRealType( byval sym as FBSYMBOL ptr, byref dtype as integer, byref subtype as FBSYMBOL ptr )
+sub symbGetRealFullType overload( byval sym as FBSYMBOL ptr, byref dtype as integer, byref subtype as FBSYMBOL ptr )
 	assert( symbIsVar( sym ) or symbIsField( sym ) )
-	dtype = symbGetType( sym )
+	dtype = symbGetFullType( sym )
 	subtype = sym->subtype
 	if( symbIsParam( sym ) ) then
 		dim parammode as integer
@@ -734,6 +734,25 @@ sub symbGetRealType( byval sym as FBSYMBOL ptr, byref dtype as integer, byref su
 		dtype = typeAddrOf( dtype )
 	end if
 end sub
+
+function symbGetRealFullType overload( byval sym as FBSYMBOL ptr ) as integer
+	dim symrealfulltype as integer
+	dim symrealsubtype as FBSYMBOL ptr
+	symbGetRealFullType( sym, symrealfulltype, symrealsubtype )
+	return symrealfulltype
+end function
+
+sub symbGetRealType overload( byval sym as FBSYMBOL ptr, byref dtype as integer, byref subtype as FBSYMBOL ptr )
+	symbGetRealFullType( sym, dtype, subtype )
+	dtype = typeGetDtAndPtrOnly( dtype )
+end sub
+
+function symbGetRealType overload( byval sym as FBSYMBOL ptr ) as integer
+	dim symrealtype as integer
+	dim symrealsubtype as FBSYMBOL ptr
+	symbGetRealType( sym, symrealtype, symrealsubtype )
+	return symrealtype
+end function
 
 '' Calculate a static array's total number of elements, all dimensions together.
 '' <first> may be specified to calculate only the elements for <first> and the

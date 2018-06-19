@@ -752,11 +752,7 @@ private function hGetGlobalTypeAlign( byval dtype as integer ) as integer
 end function
 
 private function hGetGlobalVarAlign( byval sym as FBSYMBOL ptr ) as integer
-	if( symbIsRef( sym ) ) then
-		function = 4
-	else
-		function = hGetGlobalTypeAlign( symbGetType( sym ) )
-	end if
+	function = hGetGlobalTypeAlign( symbGetRealType( sym ) )
 end function
 
 '':::::

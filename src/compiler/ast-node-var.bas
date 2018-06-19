@@ -29,13 +29,7 @@ function astNewVAR _
 				subtype = symbAddProcPtrFromFunction( sym )
 			end if
 		case else
-			dtype = symbGetFullType( sym )
-			subtype = symbGetSubtype( sym )
-			if( symbIsParamByRef( sym ) or symbIsImport( sym ) or symbIsRef( sym ) ) then
-				'' If it's a reference, then it's really a pointer
-				'' (the caller is expected to do the implicit DEREF)
-				dtype = typeAddrOf( dtype )
-			end if
+			symbGetRealFullType( sym, dtype, subtype )
 		end select
 	end if
 

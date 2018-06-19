@@ -1293,10 +1293,20 @@ sub symbGetRealParamDtype overload _
 		byref dtype as integer, _
 		byref subtype as FBSYMBOL ptr _
 	)
+	symbGetRealParamFullType( param, dtype, subtype )
+	dtype = typeGetDtAndPtrOnly( dtype )
+end sub
+
+sub symbGetRealParamFullType _
+	( _
+		byval param as FBSYMBOL ptr, _
+		byref dtype as integer, _
+		byref subtype as FBSYMBOL ptr _
+	)
 
 	assert( param->class = FB_SYMBCLASS_PARAM )
 
-	dtype = symbGetType( param )
+	dtype = symbGetFullType( param )
 	subtype = param->subtype
 
 	symbGetRealParamDtype( param->param.mode, param->param.bydescrealsubtype, dtype, subtype )
